@@ -92,7 +92,8 @@ class DataTable
 		}
 		$ret .= "<thead>";
 		$ret .= "<tr class='standard-table-header'>";
-		foreach ($this->columns as $column_key => $column) {
+		foreach ($this->columns as $column) {
+			$column_key = $column->get_column_key();
 			if ($column->get_sortable()) {
 				if ($this->remote) {
 					$ret .= "<th class='column_" . $column_key . "'>";
@@ -147,7 +148,7 @@ class DataTable
 
 		if ($this->is_searchable()) {
 			$ret .= "<tr class='standard-table-header'>";
-			foreach ($this->columns as $column_key => $column) {
+			foreach ($this->columns as $column) {
 				$ret .= "<th>";
 				if ($column->get_searchable()) {
 					if (is_string($column->get_searchable())) {
@@ -175,7 +176,8 @@ class DataTable
 			$ret .= "<tr class='shadedbg $shaded'>";
 
 
-			foreach ($this->columns as $column_key => $column) {
+			foreach ($this->columns as $column) {
+				$column_key = $column->get_column_key();
 				$ret .= "<td class='column_$column_key'>";
 				/** @var DataTableColumn $column */
 				if (array_key_exists($column_key, $row)) {

@@ -104,7 +104,7 @@ class DataFormState
 	 * @return string
 	 */
 	public function get_searching_state($column_key) {
-		return $this->find_item(array(self::searching_state_key));
+		return $this->find_item(array(self::searching_state_key, $column_key));
 	}
 
 	/**
@@ -114,7 +114,7 @@ class DataFormState
 	 * @return string
 	 */
 	public function get_sorting_state($column_key) {
-		return $this->find_item(array(self::sorting_state_key));
+		return $this->find_item(array(self::sorting_state_key, $column_key));
 	}
 
 	/**

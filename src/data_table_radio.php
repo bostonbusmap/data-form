@@ -14,14 +14,14 @@ class DataTableRadioFormatter implements IDataTableCellFormatter {
 	public function format($form_name, $column_header, $column_data, $rowid, $state)
 	{
 		// TODO: sanitize for HTML
-		$selected_items = $state->find_item(array($column_header));
-		if (is_array($selected_items) && in_array($rowid, $selected_items)) {
+		$selected_item = $state->find_item(array($column_header));
+		if ($selected_item === $column_data) {
 			$checked = "checked";
 		}
 		else
 		{
 			$checked = "";
 		}
-		return "<input type='radio' name='" . $form_name . "[$column_header][]' value='$rowid' $checked />";
+		return "<input type='radio' name='" . $form_name . "[$column_header]' value='$column_data' $checked />";
 	}
 }

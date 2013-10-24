@@ -24,7 +24,7 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 		if (is_array($checked_items) && in_array($rowid, $checked_items)) {
 			$checked = "checked";
 		}
-		return "<input type='checkbox' name='" . $form_name . "[$column_header][]' value='$rowid' $checked />";
+		return "<input type='checkbox' name='" . $form_name . "[$column_header][$rowid]' value='$column_data' $checked />";
 	}
 }
 
