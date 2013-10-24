@@ -79,7 +79,7 @@ class DataTable
 
 		foreach ($this->buttons as $button) {
 			if ($button->get_placement() == DataTableButton::placement_top) {
-				$ret .= $button->display($form_name);
+				$ret .= $button->display($form_name, $state);
 			}
 		}
 
@@ -116,7 +116,6 @@ class DataTable
 
 			/** @var DataTableColumn $column */
 			if ($column->get_sortable() && $this->remote) {
-				$sort_string = $form_name . "[" . DataFormState::only_display_form  . "]=true";
 				if ($state->get_sorting_state($column_key)) {
 					$old_sorting_state = $state->get_sorting_state($column_key);
 				}
@@ -133,7 +132,7 @@ class DataTable
 				{
 					$new_sorting_state = DataFormState::sorting_state_asc;
 				}
-				$sort_string .= "&" . $form_name . "[" . DataFormState::sorting_state_key . "][" . $column_key . "]=" . $new_sorting_state;
+				$sort_string = "&" . $form_name . "[" . DataFormState::sorting_state_key . "][" . $column_key . "]=" . $new_sorting_state;
 
 				$onclick = new DataTableBehaviorRefresh($sort_string);
 				$ret .= "<a onclick='$onclick'>";
@@ -167,6 +166,8 @@ class DataTable
 		$ret .= "<tbody>";
 		$row_count = 0;
 		foreach ($this->rows as $row_id => $row) {
+			$row_id = (string)$row_id;
+
 			$shaded = "";
 			if ($row_count % 2 == 0) {
 				$shaded = "unshaded";
@@ -199,7 +200,7 @@ class DataTable
 					// the row selection checkbox
 					$cell = null;
 				}
-				$ret .= $column->get_display_data($form_name, $column_key, $cell, $row_id);
+				$ret .= $column->get_display_data($form_name, $column_key, $cell, $row_id, $state);
 				$ret .= "</td>";
 			}
 
@@ -210,7 +211,7 @@ class DataTable
 		$ret .= "</table>";
 		foreach ($this->buttons as $button) {
 			if ($button->get_placement() == DataTableButton::placement_bottom) {
-				$ret .= $button->display($form_name);
+				$ret .= $button->display($form_name, $state);
 			}
 		}
 

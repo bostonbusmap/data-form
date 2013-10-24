@@ -25,10 +25,19 @@ class DataTableOption {
 		return $this->selected;
 	}
 
-	public function display() {
+	/**
+	 * @param $override_select bool|null Either override with true or false, or null if no override
+	 * @return string HTML
+	 */
+	public function display($override_select) {
 		$value = $this->value;
 		$text = $this->text;
-		if ($this->selected) {
+		$selected = $this->selected;
+
+		if (!is_null($override_select)) {
+			$selected = $override_select;
+		}
+		if ($selected) {
 			return "<option value='$value' selected>$text</option>";
 		}
 		else
@@ -90,22 +99,24 @@ class DataTableOptions implements IDataTableWidget {
 	 * Displays options for a form. To display options for a particular cell use DataTableOptionsCellFormatter
 	 *
 	 * @param $form_name string Name of form
+	 * @param $state DataFormState
 	 * @return string HTML
 	 */
-	public function display($form_name)
+	public function display($form_name, $state)
 	{
-		return self::display_options($form_name, $this->name, $this->form_action, $this->change_behavior, $this->options);
+		return self::display_options($form_name, array($this->name), $this->form_action, $this->change_behavior, $this->options, $state);
 	}
 
 	/**
 	 * @param $form_name string
-	 * @param $select_name string
+	 * @param $name_array string[] Name for select. Each item will be surrounded by square brackets and concatenated
 	 * @param $action string
 	 * @param $behavior IDataTableBehavior
 	 * @param $options DataTableOption[]
+	 * @param $state DataFormState
 	 * @return string
 	 */
-	public static function display_options($form_name, $select_name, $action, $behavior, $options) {
+	public static function display_options($form_name, $name_array, $action, $behavior, $options, $state) {
 		if ($action && $behavior) {
 			$onchange = $behavior->action($form_name, $action);
 		}
@@ -113,8 +124,13 @@ class DataTableOptions implements IDataTableWidget {
 		{
 			$onchange = "";
 		}
-		if ($select_name) {
-			$qualified_name = $form_name . "[" . $select_name . "]";
+		if ($name_array) {
+			$qualified_name = $form_name;
+			foreach ($name_array as $name) {
+				// TODO: sanitize
+				$qualified_name .= "[" . $name . "]";
+			}
+
 			$ret = "<select name='$qualified_name' onchange='$onchange'>";
 		}
 		else
@@ -122,8 +138,27 @@ class DataTableOptions implements IDataTableWidget {
 			$ret = "<select onchange='$onchange'>";
 		}
 
+		if ($name_array) {
+			$selected_item = $state->find_item($name_array);
+		}
+		else
+		{
+			$selected_item = null;
+		}
 		foreach ($options as $option) {
-			$ret .= $option->display();
+			if (is_null($selected_item)) {
+				$override_select = null;
+			}
+			elseif ($selected_item === $option->get_value())
+			{
+				$override_select = true;
+			}
+			else
+			{
+				$override_select = false;
+			}
+
+			$ret .= $option->display($override_select);
 		}
 
 		$ret .= "</select>";
@@ -143,10 +178,11 @@ class DataTableOptionsCellFormatter implements IDataTableCellFormatter {
 	 * @param string $form_name The name of the form
 	 * @param string $column_header Unused
 	 * @param DataTableOptions $column_data The link data
-	 * @param int $rowid Row id number
+	 * @param string $rowid Row id number
+	 * @param DataFormState $state State of form
 	 * @return string HTML for a link
 	 */
-	public function format($form_name, $column_header, $column_data, $rowid) {
-		return DataTableOptions::display_options($form_name, $column_header, "", null, $column_data->get_options());
+	public function format($form_name, $column_header, $column_data, $rowid, $state) {
+		return DataTableOptions::display_options($form_name, array($column_header, $rowid), "", null, $column_data->get_options(), $state);
 	}
 }

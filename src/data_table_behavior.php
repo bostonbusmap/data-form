@@ -30,15 +30,21 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 		$this->extra_params = $extra_params;
 	}
 	function action($form_name, $form_action) {
+		$params = "&" . $form_name . "[" . DataFormState::only_display_form  . "]=true";
+
 		if ($this->extra_params) {
-			$params = " + \"&" . $this->extra_params . "\"";
+			if (substr($this->extra_params, 0, 1) == "&") {
+				$extra_params = substr($this->extra_params, 1);
+			}
+			else
+			{
+				$extra_params = $this->extra_params;
+			}
+			$params .= "&" . $extra_params;
 		}
-		else
-		{
-			$params = "";
-		}
-		return "$.get(\"" . $form_action . "\", $(this).parents(\"form\").serialize() $params, function(data, textStatus, jqXHR) { $(\"#" .
-			$form_name . "\").html(data);})";
+
+		return "$.get(\"" . $form_action . "\", $(this).parents(\"form\").serialize()  + \"$params\", function(data, textStatus, jqXHR) { $(\"#" .
+			$form_name . "\").html(data);});return false;";
 	}
 }
 class DataTableBehaviorDefault implements IDataTableBehavior {

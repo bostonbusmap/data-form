@@ -12,9 +12,10 @@ class DefaultCellFormatter implements IDataTableCellFormatter {
 	 * @param string $column_header Column key
 	 * @param object $column_data Data to be shown for the cell
 	 * @param int $rowid ID for the cell's row
+	 * @param DataFormState $state State of form, in case we want to refresh form but keep existing values
 	 * @return string HTML formatted column data
 	 */
-	public function format($form_name, $column_header, $column_data, $rowid)
+	public function format($form_name, $column_header, $column_data, $rowid, $state)
 	{
 		return $column_data;
 	}
@@ -114,10 +115,11 @@ class DataTableColumn {
 	 * @param string $column_header Column key
 	 * @param object $column_data Data to display
 	 * @param int $rowid ID of cell's row
+	 * @param DataFormState $state State of form
 	 * @return string
 	 */
-	public function get_display_data($form_name, $column_header, $column_data, $rowid) {
-		return $this->cell_formatter->format($form_name, $column_header, $column_data, $rowid);
+	public function get_display_data($form_name, $column_header, $column_data, $rowid, $state) {
+		return $this->cell_formatter->format($form_name, $column_header, $column_data, $rowid, $state);
 	}
 
 	/**

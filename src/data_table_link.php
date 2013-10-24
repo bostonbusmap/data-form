@@ -33,9 +33,10 @@ class DataTableLinkFormatter implements IDataTableCellFormatter {
 	 * @param string $column_header Unused
 	 * @param DataTableLink $column_data The link data
 	 * @param int $rowid Row id number
+	 * @param DataFormState $state Unused
 	 * @return string HTML for a link
 	 */
-	public function format($form_name, $column_header, $column_data, $rowid) {
+	public function format($form_name, $column_header, $column_data, $rowid, $state) {
 		// TODO: sanitize for HTML
 		$text = $column_data->get_text();
 		$link = $column_data->get_link();

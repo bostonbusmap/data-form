@@ -40,8 +40,8 @@ class DataForm {
 		// form action is set in javascript
 		$ret .= "<form name='" . $this->form_name . "' method='post'>";
 
-		foreach ($this->forwarded_state as $state) {
-			$ret .= self::make_inputs_from_state($state->get_form_data(), $this->form_name . "[" . DataFormState::forwarded_state_key . "][" . $state->get_form_name() . "]");
+		foreach ($this->forwarded_state as $forwarded_state) {
+			$ret .= self::make_inputs_from_forwarded_state($forwarded_state->get_form_data(), $this->form_name . "[" . DataFormState::forwarded_state_key . "][" . $forwarded_state->get_form_name() . "]");
 		}
 
 		foreach ($this->tables as $table) {
@@ -52,13 +52,13 @@ class DataForm {
 		return $ret;
 	}
 
-	private static function make_inputs_from_state($obj, $base)
+	private static function make_inputs_from_forwarded_state($obj, $base)
 	{
 		// TODO: sanitize HTML
 		if (is_array($obj)) {
 			$ret = "";
 			foreach ($obj as $k => $v) {
-				$ret .= self::make_inputs_from_state($obj[$k], $base . "[" . $k . "]");
+				$ret .= self::make_inputs_from_forwarded_state($obj[$k], $base . "[" . $k . "]");
 			}
 		}
 		else

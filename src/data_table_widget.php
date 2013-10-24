@@ -5,9 +5,10 @@ interface IDataTableWidget {
 
 	/**
 	 * @param $form_name string Name of form
+	 * @param $state DataFormState
 	 * @return string HTML
 	 */
-	public function display($form_name);
+	public function display($form_name, $state);
 
 	public function get_placement();
 }

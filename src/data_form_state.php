@@ -14,19 +14,6 @@ class DataFormState
 	const forwarded_state_key = "_forwarded_state";
 
 	/**
-	 * @var string[]
-	 */
-	private $searching_state;
-	/**
-	 * @var string[]
-	 */
-	private $sorting_state;
-	/**
-	 * @var bool
-	 */
-	private $only_display_form;
-
-	/**
 	 * The piece of $_REQUEST that's relevant to this form
 	 * @var array
 	 */
@@ -40,28 +27,30 @@ class DataFormState
 	/**
 	 * @param $form_name string
 	 * @param $request array
+	 * @param $current_state DataFormState If not in $request, look in $current_state's forwarded_state
 	 * @throws Exception
 	 */
-	public function __construct($form_name, $request)
+	public function __construct($form_name, $request, $current_state=null)
 	{
 		$this->form_name = $form_name;
 		if (!$form_name) {
 			throw new Exception("form_name must not be blank");
 		}
-		$this->searching_state = array();
-		$this->sorting_state = array();
 
 		if (array_key_exists($form_name, $request)) {
 			$form_data = $request[$form_name];
 		}
-		elseif (array_key_exists(DataFormState::forwarded_state_key, $request) &&
-			array_key_exists($form_name, $request[DataFormState::forwarded_state_key]))
-		{
-			$form_data = $request[DataFormState::forwarded_state_key][$form_name];
-		}
-		else
-		{
-			$form_data = array();
+		else {
+			if ($current_state) {
+				$form_data = $current_state->find_item(array(self::forwarded_state_key, $form_name));
+				if (!$form_data) {
+					$form_data = array();
+				}
+			}
+			else
+			{
+				$form_data = array();
+			}
 		}
 		$this->form_data = $form_data;
 
@@ -70,20 +59,42 @@ class DataFormState
 				if (!is_array($form_data[self::sorting_state_key])) {
 					throw new Exception("Sorting state is expected to be an array");
 				}
-				$this->sorting_state = $form_data[self::sorting_state_key];
 			}
 
 			if (array_key_exists(self::searching_state_key, $form_data)) {
 				if (!is_array($form_data[self::searching_state_key])) {
 					throw new Exception("Searching state is expected to be an array");
 				}
-				$this->searching_state = $form_data[self::searching_state_key];
-			}
-
-			if (array_key_exists(self::only_display_form, $form_data) && $form_data[self::only_display_form]) {
-				$this->only_display_form = true;
 			}
 		}
+	}
+
+	/**
+	 * Searches hash for item that matches path. If $path = array("a", "b"), then this returns
+	 * whatever's at {'a' : {'b' : ???}}, or null
+	 *
+	 * @param $path string[] an array of keys to drill down with
+	 * @return object null if nothing found, else whatever value was found
+	 * @throws Exception
+	 */
+	public function find_item($path) {
+		if (!is_array($path)) {
+			throw new Exception("path must be an array of string keys");
+		}
+		$current = $this->form_data;
+		foreach ($path as $key) {
+			if (!$current) {
+				return null;
+			}
+			elseif (array_key_exists($key, $current)) {
+				$current = $current[$key];
+			}
+			else
+			{
+				return null;
+			}
+		}
+		return $current;
 	}
 
 	/**
@@ -93,10 +104,7 @@ class DataFormState
 	 * @return string
 	 */
 	public function get_searching_state($column_key) {
-		if (array_key_exists($column_key, $this->searching_state)) {
-			return $this->searching_state[$column_key];
-		}
-		return null;
+		return $this->find_item(array(self::searching_state_key));
 	}
 
 	/**
@@ -106,17 +114,14 @@ class DataFormState
 	 * @return string
 	 */
 	public function get_sorting_state($column_key) {
-		if (array_key_exists($column_key, $this->sorting_state)) {
-			return $this->sorting_state[$column_key];
-		}
-		return null;
+		return $this->find_item(array(self::sorting_state_key));
 	}
 
 	/**
 	 * @return bool Did client indicate that it wants the raw HTML form?
 	 */
 	public function only_display_form() {
-		return $this->only_display_form;
+		return $this->find_item(array(self::only_display_form));
 	}
 
 	public function get_form_data() {

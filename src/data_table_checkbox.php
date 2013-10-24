@@ -11,13 +11,20 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 	 * @param string $form_name The name of the form
 	 * @param string $column_header Name of column
 	 * @param object $column_data Unused
-	 * @param int $rowid Row id number
+	 * @param string $rowid Row id
+	 * @param DataFormState $state
 	 * @return string HTML for a checkbox
 	 */
-	public function format($form_name, $column_header, $column_data, $rowid)
+	public function format($form_name, $column_header, $column_data, $rowid, $state)
 	{
 		// TODO: sanitize for HTML
-		return "<input type='checkbox' name='" . $form_name . "[$column_header][]' value='$rowid' />";
+		$checked = "";
+
+		$checked_items = $state->find_item(array($column_header));
+		if (is_array($checked_items) && in_array($rowid, $checked_items)) {
+			$checked = "checked";
+		}
+		return "<input type='checkbox' name='" . $form_name . "[$column_header][]' value='$rowid' $checked />";
 	}
 }
 

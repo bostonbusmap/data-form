@@ -52,7 +52,7 @@ class DataTableButton implements IDataTableWidget {
 		$this->placement = $placement;
 	}
 
-	public function display($form_name)
+	public function display($form_name, $state)
 	{
 		$value = $this->text;
 		$qualified_name = $form_name . "[" . $this->name . "]";
