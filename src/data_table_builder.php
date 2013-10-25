@@ -23,6 +23,11 @@ class DataTableBuilder {
 	private $remote;
 
 	/**
+	 * @var string[] Mapping of row id to CSS classes
+	 */
+	private $row_classes;
+
+	/**
 	 * This is like the constructor but allows for chaining of methods
 	 * (ie, DataTableBuilder::create_builder()->buttons($buttons)->build())
 	 * @return DataTableBuilder
@@ -96,6 +101,15 @@ class DataTableBuilder {
 	}
 
 	/**
+	 * @param $row_classes string[]
+	 * @return DataTableBuilder
+	 */
+	public function row_classes($row_classes) {
+		$this->row_classes = $row_classes;
+		return $this;
+	}
+
+	/**
 	 * @return IDataTableWidget[] Buttons to display which submit or reset the form
 	 */
 	public function get_buttons() {
@@ -129,6 +143,15 @@ class DataTableBuilder {
 	 */
 	public function get_remote() {
 		return $this->remote;
+	}
+
+	/**
+	 * Mapping of row id to CSS classes
+	 *
+	 * @return string[]
+	 */
+	public function get_row_classes()
+	{
 	}
 
 	/**

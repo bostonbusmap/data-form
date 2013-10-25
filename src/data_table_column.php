@@ -75,14 +75,20 @@ class DataTableColumn {
 	protected $column_key;
 
 	/**
+	 * @var string CSS for this column
+	 */
+	protected $css;
+
+	/**
 	 * @param string $display_header_name The name for the column meant to be printed
 	 * @param string $column_key The key for the column which matches it with corresponding data
 	 * @param IDataTableCellFormatter $cell_formatter A callback to format column cell data. See default_display_data for example
 	 * @param IDataTableHeaderFormatter $header_formatter A callback to format column header. See default_display_header for example
 	 * @param bool|string $sortable Should column be sortable? Either false or a CSS class ('numeric', 'alphanumeric', etc)
 	 * @param bool $searchable Should column be searchable?
+	 * @param string $css CSS for this column
 	 */
-	public function __construct($display_header_name, $column_key, $cell_formatter = null, $header_formatter = null, $sortable = false, $searchable = false) {
+	public function __construct($display_header_name, $column_key, $cell_formatter = null, $header_formatter = null, $sortable = false, $searchable = false, $css="") {
 		if ($header_formatter) {
 			$this->header_formatter = $header_formatter;
 		}
@@ -105,6 +111,7 @@ class DataTableColumn {
 		}
 		$this->column_key = $column_key;
 		$this->display_header_name = $display_header_name;
+		$this->css = $css;
 	}
 
 	/**
@@ -152,5 +159,13 @@ class DataTableColumn {
 	 */
 	public function get_column_key() {
 		return $this->column_key;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function get_css()
+	{
+		return $this->css;
 	}
 }

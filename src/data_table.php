@@ -48,6 +48,11 @@ class DataTable
 	private $remote;
 
 	/**
+	 * @var string[] Mapping of row id to CSS classes. Can be null
+	 */
+	private $row_classes;
+
+	/**
 	 * @param DataTableBuilder $builder
 	 * @throws Exception
 	 */
@@ -57,6 +62,7 @@ class DataTable
 		$this->sql_field_names = $builder->get_sql_field_names();
 		$this->rows = $builder->get_rows();
 		$this->remote = $builder->get_remote();
+		$this->row_classes = $builder->get_row_classes();
 	}
 
 	/**
@@ -190,16 +196,26 @@ class DataTable
 			}
 			$row_id = (string)$row_id;
 
-			$shaded = "";
-			if ($row_count % 2 == 0) {
-				$shaded = "unshaded";
+			if ($this->row_classes && array_key_exists($row_id, $this->row_classes)) {
+				$row_class = $this->row_classes[$row_id];
 			}
-			$ret .= "<tr class='shadedbg $shaded'>";
+			else {
+				if ($row_count % 2 == 0) {
+					$row_class = "standard_row_even";
+				}
+				else
+				{
+					$row_class = "standard_row_odd";
+				}
+			}
+
+			$ret .= "<tr class='unshadedbg $row_class'>";
 
 
 			foreach ($this->columns as $column) {
 				$column_key = $column->get_column_key();
-				$ret .= "<td class='column_$column_key'>";
+				$col_css = $column->get_css();
+				$ret .= "<td class='column_$column_key $col_css'>";
 				/** @var DataTableColumn $column */
 				if (array_key_exists($column_key, $row)) {
 					$cell = $row[$column_key];
