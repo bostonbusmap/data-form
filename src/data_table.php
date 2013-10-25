@@ -243,7 +243,7 @@ class DataTable
 				$ret .= "</td>";
 			}
 
-			echo "</tr>";
+			$ret .= "</tr>";
 			$row_count++;
 		}
 		$ret .= "</tbody>";
