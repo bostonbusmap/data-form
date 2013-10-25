@@ -167,6 +167,9 @@ class DataTable
 		$ret .= "<tbody>";
 		$row_count = 0;
 		foreach ($this->rows as $row_id => $row) {
+			if (!is_array($row)) {
+				throw new Exception("Each row in rows expected to be an array");
+			}
 			$row_id = (string)$row_id;
 
 			$shaded = "";
@@ -186,7 +189,7 @@ class DataTable
 				elseif (array_key_exists($column_key, $indexes)) {
 					$index = $indexes[$column_key];
 					if ($index >= count($row)) {
-						throw new Exception("Tried to get index $index of row of size " . count($row));
+						throw new Exception("Tried to get index $index of row with " . count($row) . " columns");
 					}
 					if (array_key_exists($index, $row)) {
 						$cell = $row[$index];
