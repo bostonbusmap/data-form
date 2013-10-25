@@ -201,15 +201,15 @@ class DataTable
 			}
 			else {
 				if ($row_count % 2 == 0) {
-					$row_class = "standard_row_even";
+					$row_class = "shadedbg";
 				}
 				else
 				{
-					$row_class = "standard_row_odd";
+					$row_class = "unshadedbg";
 				}
 			}
 
-			$ret .= "<tr class='unshadedbg $row_class'>";
+			$ret .= "<tr class='$row_class'>";
 
 
 			foreach ($this->columns as $column) {
