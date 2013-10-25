@@ -158,14 +158,23 @@ class DataTable
 		if ($this->is_searchable()) {
 			$ret .= "<tr class='standard-table-header'>";
 			foreach ($this->columns as $column) {
+				$column_key = $column->get_column_key();
 				$ret .= "<th>";
 				if ($column->get_searchable()) {
-					if (is_string($column->get_searchable())) {
-						$ret .= "<strong>" . $column->get_searchable() . "</strong>";
+					if (!$this->remote) {
+						$ret .= "<input size='8' onkeyup='Table.filter(this, this)' />";
 					}
 					else
 					{
-						$ret .= "<input size='8' onkeyup='Table.filter(this, this)' />";
+						if ($state && $state->get_searching_state($column_key)) {
+							$old_searching_state = $state->get_searching_state($column_key);
+						}
+						else
+						{
+							$old_searching_state = "";
+						}
+						$name = $form_name . "[" . DataFormState::searching_state_key . "][" . $column_key . "]";
+						$ret .= "<input size='8' name='" . $name . "' value='" . $old_searching_state . "' />";
 					}
 				}
 				$ret .= "</th>";
