@@ -26,19 +26,19 @@ class DataFormState
 
 	/**
 	 * @param $form_name string
-	 * @param $request array
+	 * @param $post array should be $_POST
 	 * @param $current_state DataFormState If not in $request, look in $current_state's forwarded_state
 	 * @throws Exception
 	 */
-	public function __construct($form_name, $request, $current_state=null)
+	public function __construct($form_name, $post, $current_state=null)
 	{
 		$this->form_name = $form_name;
 		if (!$form_name) {
 			throw new Exception("form_name must not be blank");
 		}
 
-		if (array_key_exists($form_name, $request)) {
-			$form_data = $request[$form_name];
+		if (array_key_exists($form_name, $post)) {
+			$form_data = $post[$form_name];
 		}
 		else {
 			if ($current_state) {

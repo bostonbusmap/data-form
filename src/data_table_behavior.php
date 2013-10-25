@@ -43,7 +43,7 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 			$params .= "&" . $extra_params;
 		}
 
-		return "$.get(\"" . $form_action . "\", $(this).parents(\"form\").serialize()  + \"$params\", function(data, textStatus, jqXHR) { $(\"#" .
+		return "$.post(\"" . $form_action . "\", $(this).parents(\"form\").serialize()  + \"$params\", function(data, textStatus, jqXHR) { $(\"#" .
 			$form_name . "\").html(data);});return false;";
 	}
 }
