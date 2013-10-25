@@ -14,7 +14,13 @@ class DataTableRadioFormatter implements IDataTableCellFormatter {
 	public function format($form_name, $column_header, $column_data, $rowid, $state)
 	{
 		// TODO: sanitize for HTML
-		$selected_item = $state->find_item(array($column_header));
+		if ($state) {
+			$selected_item = $state->find_item(array($column_header));
+		}
+		else
+		{
+			$selected_item = null;
+		}
 		if ($selected_item === $column_data) {
 			$checked = "checked";
 		}

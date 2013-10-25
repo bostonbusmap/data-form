@@ -7,10 +7,10 @@ class DataTableOption {
 	/** @var  bool */
 	protected $selected;
 
-	public function __construct($text, $value, $is_selected) {
+	public function __construct($text, $value, $selected=false) {
 		$this->text = $text;
 		$this->value = $value;
-		$this->is_selected = $is_selected;
+		$this->selected = $selected;
 	}
 
 	public function get_text() {
@@ -65,14 +65,14 @@ class DataTableOptions implements IDataTableWidget {
 	protected $placement;
 
 	/**
-	 * @param $name
 	 * @param $options
+	 * @param $name
 	 * @param $form_action string Optional. URL of form to submit to on change.
 	 * @param $change_behavior IDataTableBehavior Optional. What happens when item is changed
 	 * @param string $placement string Optional. Where to display options relative to the table, either 'top' or 'bottom'
 	 * @throws Exception
 	 */
-	public function __construct($name, $options, $form_action="", $change_behavior=null, $placement=self::placement_top) {
+	public function __construct($options, $name, $form_action, $change_behavior = null, $placement = self::placement_top) {
 		$this->name = $name;
 		if (!$this->options) {
 			$this->options = array();
@@ -102,7 +102,7 @@ class DataTableOptions implements IDataTableWidget {
 	 * @param $state DataFormState
 	 * @return string HTML
 	 */
-	public function display($form_name, $state)
+	public function display($form_name, $state=null)
 	{
 		return self::display_options($form_name, array($this->name), $this->form_action, $this->change_behavior, $this->options, $state);
 	}
@@ -116,7 +116,7 @@ class DataTableOptions implements IDataTableWidget {
 	 * @param $state DataFormState
 	 * @return string
 	 */
-	public static function display_options($form_name, $name_array, $action, $behavior, $options, $state) {
+	public static function display_options($form_name, $name_array, $action, $behavior, $options, $state=null) {
 		if ($action && $behavior) {
 			$onchange = $behavior->action($form_name, $action);
 		}
@@ -138,7 +138,7 @@ class DataTableOptions implements IDataTableWidget {
 			$ret = "<select onchange='$onchange'>";
 		}
 
-		if ($name_array) {
+		if ($name_array && $state) {
 			$selected_item = $state->find_item($name_array);
 		}
 		else

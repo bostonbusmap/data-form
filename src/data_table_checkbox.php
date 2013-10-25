@@ -20,7 +20,13 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 		// TODO: sanitize for HTML
 		$checked = "";
 
-		$checked_items = $state->find_item(array($column_header));
+		if ($state) {
+			$checked_items = $state->find_item(array($column_header));
+		}
+		else
+		{
+			$checked_items = null;
+		}
 		if (is_array($checked_items) && in_array($rowid, $checked_items)) {
 			$checked = "checked";
 		}

@@ -27,14 +27,14 @@ class DataForm {
 	 * @param DataFormState $state
 	 * @return string HTML
 	 */
-	public function display($state) {
+	public function display($state=null) {
 		$ret =  "<div id='" . $this->form_name . "'>";
 		$ret .=  $this->display_form($state);
 		$ret .= "</div>";
 		return $ret;
 	}
 
-	public function display_form($state) {
+	public function display_form($state=null) {
 		$ret = "";
 
 		// form action is set in javascript
@@ -45,7 +45,7 @@ class DataForm {
 		}
 
 		foreach ($this->tables as $table) {
-			$ret .= $table->display_table($state, $this->form_name);
+			$ret .= $table->display_table($this->form_name, $state);
 		}
 		$ret .= "</form>";
 

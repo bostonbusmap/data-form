@@ -28,14 +28,14 @@ class DataTableButton implements IDataTableWidget {
 
 	/**
 	 * @param string $text Text to display
-	 * @param string $action URL to submit to
 	 * @param string $name Name of button
-	 * @param string $type Type of input (usually reset or submit)
+	 * @param string $action URL to submit to
 	 * @param IDataTableBehavior $behavior What happens when button is clicked
+	 * @param string $type Type of input (usually reset or submit)
 	 * @param string $placement Where button goes (currently either "top" or "bottom")
 	 * @throws Exception
 	 */
-	public function __construct($text, $action, $name, $type="submit", $behavior=null, $placement=self::placement_top) {
+	public function __construct($text, $name, $action, $behavior = null, $type = "submit", $placement = self::placement_top) {
 		$this->name = $name;
 		$this->action = $action;
 		$this->type = $type;
@@ -52,7 +52,7 @@ class DataTableButton implements IDataTableWidget {
 		$this->placement = $placement;
 	}
 
-	public function display($form_name, $state)
+	public function display($form_name, $state=null)
 	{
 		$value = $this->text;
 		$qualified_name = $form_name . "[" . $this->name . "]";

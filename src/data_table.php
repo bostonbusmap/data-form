@@ -62,12 +62,12 @@ class DataTable
 	/**
 	 * Returns HTML for table. This is useful if sending it via ajax to populate a div
 	 *
-	 * @param DataFormState $state
 	 * @param string $form_name
-	 * @return string HTML
+	 * @param DataFormState $state
 	 * @throws Exception
+	 * @return string HTML
 	 */
-	public function display_table($state, $form_name) {
+	public function display_table($form_name, $state=null) {
 		$ret = "";
 
 		$indexes = array();
@@ -97,7 +97,15 @@ class DataTable
 			if ($column->get_sortable()) {
 				if ($this->remote) {
 					$ret .= "<th class='column_" . $column_key . "'>";
-					$old_sorting_state = $state->get_sorting_state($column_key);
+					if ($state) {
+						$old_sorting_state = $state->get_sorting_state($column_key);
+						$ret .= "<input type='hidden' name='" . $form_name . "[" . DataFormState::sorting_state_key . "][" . $column_key . "]' value='" . $old_sorting_state . "' />";
+					}
+					else
+					{
+						$old_sorting_state = null;
+					}
+
 					if ($old_sorting_state == DataFormState::sorting_state_asc) {
 						$ret .= "&uarr; ";
 					}
@@ -117,7 +125,7 @@ class DataTable
 
 			/** @var DataTableColumn $column */
 			if ($column->get_sortable() && $this->remote) {
-				if ($state->get_sorting_state($column_key)) {
+				if ($state && $state->get_sorting_state($column_key)) {
 					$old_sorting_state = $state->get_sorting_state($column_key);
 				}
 				else
@@ -135,7 +143,8 @@ class DataTable
 				}
 				$sort_string = "&" . $form_name . "[" . DataFormState::sorting_state_key . "][" . $column_key . "]=" . $new_sorting_state;
 
-				$onclick = new DataTableBehaviorRefresh($sort_string);
+				$onclick_obj = new DataTableBehaviorRefresh($sort_string);
+				$onclick = $onclick_obj->action($form_name, $this->remote);
 				$ret .= "<a onclick='$onclick'>";
 			}
 			$ret .= $column->get_display_header($form_name, $column_key);
