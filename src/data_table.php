@@ -58,9 +58,9 @@ class DataTable
 	private $row_classes;
 
 	/**
-	 * @var bool If true, show pagination controls in table header
+	 * @var DataTablePaginationSettings Pagination settings. If null, no pagination should be done
 	 */
-	private $show_pagination_controls;
+	private $pagination_settings;
 
 	/**
 	 * @var string HTML to display within header. If null and related items are false, do not display header
@@ -79,7 +79,7 @@ class DataTable
 		$this->rows = $builder->get_rows();
 		$this->remote = $builder->get_remote();
 		$this->row_classes = $builder->get_row_classes();
-		$this->show_pagination_controls = $builder->get_show_pagination_controls();
+		$this->pagination_settings = $builder->get_pagination_settings();
 		$this->header = $builder->get_header();
 	}
 
@@ -111,26 +111,27 @@ class DataTable
 		}
 
 		// show blue header on top of table. May contain pagination controls
-		if ($this->header || $this->show_pagination_controls) {
-			$ret .= "<div class='gfy_browser_table'>";
+		if ($this->is_sortable()) {
+			$ret .= "<table class='table-autosort table-stripeclass:shadedbg table-altstripeclass:shadedbg' style='width: 400px;'>";
+		}
+		else
+		{
+			$ret .= "<table class='table-stripeclass:shadedbg table-altstripeclass:shadedbg' style='width: 400px;'>";
+		}
+		if ($this->header || $this->pagination_settings) {
+			$ret .= "<caption>";
 
 			if ($this->header) {
 				$ret .= $this->header;
 			}
-			if ($this->show_pagination_controls)
+			if ($this->pagination_settings)
 			{
-				$ret .= DataTablePagination::create_pagination_controls($form_name, $state, $this->remote, $this->table_name, count($this->rows));
+				$ret .= $this->pagination_settings->display_controls($form_name, $state,
+					$this->remote, $this->table_name);
 			}
-			$ret .= "</div>";
+			$ret .= "</caption>";
 		}
 
-		if ($this->is_sortable()) {
-			$ret .= "<table class='table-autosort table-stripeclass:shadedbg table-altstripeclass:shadedbg'>";
-		}
-		else
-		{
-			$ret .= "<table class='table-stripeclass:shadedbg table-altstripeclass:shadedbg'>";
-		}
 		$ret .= "<thead>";
 		$ret .= "<tr class='standard-table-header'>";
 		// TODO: replace with DOMDocument so we don't have to worry about sanitizing HTML

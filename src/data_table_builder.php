@@ -29,9 +29,9 @@ class DataTableBuilder {
 	 */
 	private $row_classes;
 	/**
-	 * @var bool whether to show pagination selection items
+	 * @var DataTablePaginationSettings Pagination settings. If null, no pagination should be done
 	 */
-	private $show_pagination_controls;
+	private $pagination_settings;
 	/**
 	 * @var string HTML shown for header
 	 */
@@ -129,11 +129,11 @@ class DataTableBuilder {
 	}
 
 	/**
-	 * @param $show_pagination_controls bool
+	 * @param $pagination_settings DataTablePaginationSettings  If null, no pagination should be done
 	 * @return DataTableBuilder
 	 */
-	public function show_pagination_controls($show_pagination_controls) {
-		$this->show_pagination_controls = $show_pagination_controls;
+	public function pagination_settings($pagination_settings) {
+		$this->pagination_settings = $pagination_settings;
 		return $this;
 	}
 
@@ -200,10 +200,10 @@ class DataTableBuilder {
 	}
 
 	/**
-	 * @return bool
+	 * @return DataTablePaginationSettings  If null, no pagination should be done
 	 */
-	public function get_show_pagination_controls() {
-		return $this->show_pagination_controls;
+	public function get_pagination_settings() {
+		return $this->pagination_settings;
 	}
 
 	/**

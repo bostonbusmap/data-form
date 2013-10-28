@@ -28,7 +28,7 @@ class DataForm {
 	 * @return string HTML
 	 */
 	public function display($state=null) {
-		$ret =  "<div id='" . $this->form_name . "'>";
+		$ret =  "<div class='gfy_browser_table' id='" . $this->form_name . "'>";
 		$ret .=  $this->display_form($state);
 		$ret .= "</div>";
 		return $ret;

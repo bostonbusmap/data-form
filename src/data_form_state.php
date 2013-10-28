@@ -59,15 +59,11 @@ class DataFormState
 		$this->form_data = $form_data;
 
 		if ($form_data) {
-			if (array_key_exists(self::sorting_state_key, $form_data)) {
-				if (!is_array($form_data[self::sorting_state_key])) {
-					throw new Exception("Sorting state is expected to be an array");
-				}
-			}
-
-			if (array_key_exists(self::searching_state_key, $form_data)) {
-				if (!is_array($form_data[self::searching_state_key])) {
-					throw new Exception("Searching state is expected to be an array");
+			foreach (array(self::sorting_state_key, self::searching_state_key, self::pagination_key) as $key) {
+				if (array_key_exists($key, $form_data)) {
+					if (!is_array($form_data[$key])) {
+						throw new Exception("$key is expected to be an array");
+					}
 				}
 			}
 		}
@@ -175,10 +171,11 @@ class DataFormState
 	/**
 	 * @param string $table_name Optional table name. If set, gets the pagination state for the table, else gets
 	 * the pagination state for the whole form
-	 * @return DataTablePagination The limit which says the number of rows to provide, or null if all rows
+	 * @throws Exception
+	 * @return DataTablePaginationState The form data relevant to data table pagination
 	 */
 	public function get_pagination_state($table_name="") {
-		return new DataTablePagination($this->find_item(self::get_pagination_state_key($table_name)));
+		return new DataTablePaginationState($this->find_item(self::get_pagination_state_key($table_name)));
 	}
 
 	/**

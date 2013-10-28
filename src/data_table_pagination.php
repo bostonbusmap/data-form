@@ -1,28 +1,245 @@
 <?php
+
 /**
- * Convenience class to contain pagination state
+ * Settings supplied by user
  */
-class DataTablePagination {
+class DataTablePaginationSettings {
+	/** @var  int */
+	protected $default_limit;
+	/** @var  int */
+	protected $total_rows;
+
+	/**
+	 * @param $default_limit int The default number of rows per page. If 0, show all rows
+	 * @param $total_rows int The total number of rows available
+	 * @throws Exception
+	 */
+	public function __construct($default_limit, $total_rows) {
+		if (!is_numeric($default_limit)) {
+			throw new Exception("default_limit must be a number");
+		}
+		$this->default_limit = $default_limit;
+		if (!is_numeric($total_rows)) {
+			throw new Exception("total_rows must be a number");
+		}
+		$this->total_rows = $total_rows;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function get_default_limit() {
+		return $this->default_limit;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function get_total_rows() {
+		return $this->total_rows;
+	}
+
+
+	/**
+	 * @param string $form_name
+	 * @param DataFormState $state
+	 * @param string $remote_url
+	 * @param string $table_name
+	 * @return string
+	 */
+	public function display_controls($form_name, $state, $remote_url, $table_name) {
+		$ret = "";
+		$ret .= $this->create_pagination_limit_controls($form_name, $state, $remote_url, $table_name);
+		$ret .= $this->create_pagination_page_controls($form_name, $state, $remote_url, $table_name);
+
+		return $ret;
+	}
+
+	/**
+	 * @param $form_name string
+	 * @param DataFormState $state
+	 * @param $remote_url string
+	 * @param $table_name string
+	 * @return string HTML
+	 */
+	protected function create_pagination_limit_controls($form_name, $state, $remote_url, $table_name) {
+		$ret = "<div style='float:right;'>";
+		$ret .= "limit: ";
+
+		$option_values = array();
+
+		$options = array(
+			0 => "ALL",
+			10 => "10",
+			25 => "25",
+			50 => "50",
+			100 => "100",
+			500 => "500",
+			1000 => "1000"
+		);
+
+		$default_pagination_limit = $this->get_default_limit();
+
+		foreach ($options as $limit => $text) {
+			$option_values[] = new DataTableOption($text, $limit, $limit === $default_pagination_limit);
+		}
+		$limit_name_array = array_merge(DataFormState::get_pagination_state_key($table_name),
+			array(DataTablePaginationState::limit_key));
+		$form_action = $remote_url;
+
+		$behavior = new DataTableBehaviorRefresh();
+
+		$ret .= DataTableOptions::display_options($form_name, $limit_name_array, $form_action, $behavior, $option_values, $state);
+		$ret .= "</div>";
+		return $ret;
+	}
+
+	/**
+	 * @param $page_num int
+	 * @param $text string
+	 * @param $title string
+	 * @param $form_name string
+	 * @param $remote_url string
+	 * @param $table_name string
+	 * @return string HTML
+	 */
+	protected function create_page_link($page_num, $text, $title, $form_name, $remote_url, $table_name) {
+		$current_page_name_array = array_merge(DataFormState::get_pagination_state_key($table_name),
+			array(DataTablePaginationState::current_page_key));
+		$current_page_name = DataFormState::make_field_name($form_name, $current_page_name_array);
+		$behavior = new DataTableBehaviorRefresh($current_page_name. "=" . $page_num);
+		$onclick = $behavior->action($form_name, $remote_url);
+
+		return " <a href='#' onclick='$onclick' title='$title'>$text</a> ";
+	}
+
+	/**
+	 * @param string $form_name
+	 * @param DataFormState $state
+	 * @param string $remote_url
+	 * @param string $table_name
+	 * @return string HTML
+	 * @throws Exception
+	 */
+	protected function create_pagination_page_controls($form_name, $state, $remote_url, $table_name) {
+		$ret = "<div style='text-align: left;'>";
+		$pagination_state = $state->get_pagination_state($table_name);
+
+		// number of nearby pages to show
+		$window = 5;
+
+		$current_page = $pagination_state->get_current_page();
+
+		if (is_null($pagination_state->get_limit())) {
+			$limit = $this->get_default_limit();
+		}
+		else {
+			$limit = $pagination_state->get_limit();
+		}
+
+		$num_rows = $this->get_total_rows();
+		if ($limit == 0) {
+			$num_pages = 1;
+		}
+		elseif (($num_rows % $limit) !== 0) {
+			$num_pages = (int)(($num_rows / $limit) + 1);
+		}
+		else
+		{
+			$num_pages = (int)($num_rows / $limit);
+		}
+
+		// note that current_page is 0-indexed
+		if ($current_page > 0) {
+			// there is a previous page
+			$ret .= $this->create_page_link($current_page - 1, "&laquo; Previous", "Go to previous page",
+				$form_name, $remote_url, $table_name);
+		}
+		else
+		{
+			$ret .= "&laquo; Previous ";
+		}
+
+		$starting_page = $current_page - (int)($window/2);
+		if ($starting_page < 0) {
+			$starting_page = 0;
+		}
+		$ending_page = $starting_page + $window;
+
+		if ($starting_page > 0) {
+			$ret .= $this->create_page_link(0, "1", "Go to first page",
+				$form_name, $remote_url, $table_name);
+			$ret .= " ... ";
+		}
+
+
+		for ($page_num = $starting_page; $page_num < $ending_page; $page_num++) {
+			if ($page_num < 0 || $page_num >= $num_pages) {
+				continue;
+			}
+			if ($page_num == $current_page) {
+				$ret .= " " . ($page_num + 1) . " ";
+			}
+			else
+			{
+				$link_title = "Go to page " . ($page_num + 1) . " of " . ($num_pages);
+				$ret .= $this->create_page_link($page_num, (string)($page_num + 1), $link_title,
+					$form_name, $remote_url, $table_name);
+			}
+		}
+
+		if ($ending_page < $num_pages) {
+			$ret .= " ... ";
+			$ret .= $this->create_page_link($num_pages - 1, (string)($num_pages), "Go to last page",
+				$form_name, $remote_url, $table_name);
+		}
+
+		if ($current_page < $num_pages - 1) {
+			// there is a next page
+			$ret .= $this->create_page_link($current_page + 1, "Next &raquo; ", "Go to next page",
+				$form_name, $remote_url, $table_name);
+		}
+		else
+		{
+			$ret .= " Next &raquo; ";
+		}
+
+		// write out current page as hidden field
+		$current_page_name_array = array_merge(DataFormState::get_pagination_state_key($table_name),
+			array(DataTablePaginationState::current_page_key));
+		$current_page_name = DataFormState::make_field_name($form_name, $current_page_name_array);
+		$ret .= "<input type='hidden' name='$current_page_name' value='$current_page' />";
+		$ret .= "</div>";
+		return $ret;
+	}
+
+}
+
+/**
+ * Class to contain pagination state
+ */
+class DataTablePaginationState {
 	const limit_key = "_limit";
 	const current_page_key = "_current_page";
 
-	const default_limit = 25;
-
-	/** @var  int|null Number of rows per page, or falsey for all rows on one page */
+	/** @var  int Number of rows per page, or 0 for all rows */
 	protected $limit;
-	/** @var  int The current page */
+	/** @var  int The current page (0-indexed) */
 	protected $current_page;
 
+	/**
+	 * @param $array array Array from $_POST with pagination data
+	 */
 	public function __construct($array) {
 		if (!$array) {
-			$array = array(self::limit_key => 0,
+			$array = array(self::limit_key => null,
 				self::current_page_key => 0);
 		}
 		if (array_key_exists(self::limit_key, $array) && $array[self::limit_key]) {
 			$this->limit = (int)$array[self::limit_key];
 		}
 		else {
-			$this->limit = 0;
+			$this->limit = null;
 		}
 		if (array_key_exists(self::current_page_key, $array) && $array[self::current_page_key]) {
 			$this->current_page = (int)$array[self::current_page_key];
@@ -35,7 +252,7 @@ class DataTablePagination {
 
 	/**
 	 * @return int|null
-	 * Number of rows per page, or falsey if all rows
+	 * Number of rows per page, or 0 if all rows. May be null if unset
 	 */
 	public function get_limit()
 	{
@@ -50,128 +267,4 @@ class DataTablePagination {
 	{
 		return $this->current_page;
 	}
-
-	/**
-	 * @param string $form_name
-	 * @param DataFormState $state
-	 * @param string $remote_url
-	 * @param string $table_name
-	 * @param int $num_rows Number of rows
-	 * @return string
-	 */
-	public static function create_pagination_controls($form_name, $state, $remote_url, $table_name, $num_rows) {
-		$ret = "";
-		$ret .= self::create_pagination_limit_controls($form_name, $state, $remote_url, $table_name);
-		$ret .= self::create_pagination_page_controls($form_name, $state, $remote_url, $table_name, $num_rows);
-
-		return $ret;
-	}
-
-	/**
-	 * @param $form_name string
-	 * @param DataFormState $state
-	 * @param $remote_url string
-	 * @param $table_name string
-	 * @return string HTML
-	 */
-	public static function create_pagination_limit_controls($form_name, $state, $remote_url, $table_name) {
-		$ret = "<div style='float:right;'>";
-		$ret .= "limit: ";
-
-		$option_values = array();
-		$option_values[] = new DataTableOption("ALL", 0, false);
-		foreach (array(10, 25, 50, 100, 500, 1000) as $value) {
-			if ($value == self::default_limit) {
-				$selected = true;
-			}
-			else
-			{
-				$selected = false;
-			}
-			$option_values[] = new DataTableOption($value, $value, $selected);
-		}
-		$limit_name_array = array_merge(DataFormState::get_pagination_state_key($table_name), array(self::limit_key));
-		$limit_name = DataFormState::make_field_name($form_name, $limit_name_array);
-		$form_action = $remote_url;
-
-		$behavior = new DataTableBehaviorRefresh();
-		$options = new DataTableOptions($option_values, $limit_name, $form_action, $behavior);
-
-		$ret .= $options->display($form_name, $state);
-		$ret .= "</div>";
-		return $ret;
-	}
-
-	/**
-	 * @param string $form_name
-	 * @param DataFormState $state
-	 * @param string $remote_url
-	 * @param string $table_name
-	 * @param int $num_rows
-	 * @return string HTML
-	 */
-	public static function create_pagination_page_controls($form_name, $state, $remote_url, $table_name, $num_rows) {
-		$ret = "<div>";
-		$pagination = $state->get_pagination_state($table_name);
-
-		// number of nearby pages to show
-		$window = 5;
-
-		$current_page_name_array = array_merge(DataFormState::get_pagination_state_key($table_name), array(self::current_page_key));
-		$current_page_name = DataFormState::make_field_name($form_name, $current_page_name_array);
-
-		$current_page = $pagination->current_page;
-		if ($pagination->limit == 0) {
-			$num_pages = 1;
-		}
-		elseif ($num_rows % $pagination->limit != 0) {
-			$num_pages = ($num_rows / $pagination->limit) + 1;
-		}
-		else
-		{
-			$num_pages = $num_rows / $pagination->limit;
-		}
-
-		// note that current_page is 0-indexed
-		if ($current_page > 0) {
-			// there is a previous page
-			$onclick_previous_obj = new DataTableBehaviorRefresh($current_page_name. "=" . ($current_page - 1));
-			$onclick_previous = $onclick_previous_obj->action($form_name, $remote_url);
-			$ret .= "<a href='#' onclick='$onclick_previous' title='Go to previous page'>&laquo; Previous</a> ";
-		}
-		else
-		{
-			$ret .= "&laquo; Previous ";
-		}
-
-		if ($current_page - ($window/2) > 1) {
-			$ret .= " &hellip; ";
-		}
-
-		for ($page_num = $current_page - ($window/2); $page_num <= $current_page - ($window / 2); $page_num++) {
-			if ($page_num < 0 || $page_num >= $num_pages) {
-				continue;
-			}
-			if ($page_num == $current_page) {
-				$ret .= " " . ($page_num + 1) . " ";
-			}
-			else
-			{
-				$behavior = new DataTableBehaviorRefresh($current_page_name . "=" . $page_num);
-				$page_onclick = $behavior->action($form_name, $remote_url);
-				$link_title = "Go to page " . ($page_num + 1) . " of " . ($num_pages);
-				$ret .= " <a href='#' onclick='$page_onclick' title='$link_title'>" . ($page_num + 1) . "</a> ";
-			}
-		}
-
-		if ($current_page < $num_pages - 1) {
-			// there is a previous page
-			$onclick_next_obj = new DataTableBehaviorRefresh($current_page_name. "=" . ($current_page + 1));
-			$onclick_next = $onclick_next_obj->action($form_name, $remote_url);
-			$ret .= "<a href='#' onclick='$onclick_next' title='Go to next page'>Next &raquo;</a> ";
-		}
-		$ret .= "</div>";
-		return $ret;
-	}
-
 }
