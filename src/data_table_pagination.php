@@ -9,12 +9,16 @@ class DataTablePaginationSettings {
 	/** @var  int */
 	protected $total_rows;
 
+	/** @var string[] Mapping of limit number to text to display for that limit number */
+	protected $limit_options;
+
 	/**
 	 * @param $default_limit int The default number of rows per page. If 0, show all rows
 	 * @param $total_rows int The total number of rows available
+	 * @param $limit_options string[] Mapping of limit number to text to display for that limit number. Null for default limit options
 	 * @throws Exception
 	 */
-	public function __construct($default_limit, $total_rows) {
+	public function __construct($default_limit, $total_rows, $limit_options=null) {
 		if (!is_numeric($default_limit)) {
 			throw new Exception("default_limit must be a number");
 		}
@@ -23,6 +27,19 @@ class DataTablePaginationSettings {
 			throw new Exception("total_rows must be a number");
 		}
 		$this->total_rows = $total_rows;
+
+		if (is_null($limit_options)) {
+			$limit_options = array(
+				0 => "ALL",
+				10 => "10",
+				25 => "25",
+				50 => "50",
+				100 => "100",
+				500 => "500",
+				1000 => "1000"
+			);
+		}
+		$this->limit_options = $limit_options;
 	}
 
 	/**
@@ -39,6 +56,12 @@ class DataTablePaginationSettings {
 		return $this->total_rows;
 	}
 
+	/**
+	 * @return string[] Mapping of limit number to text to display for that limit number. Null for default limit options
+	 */
+	public function get_limit_options() {
+		return $this->limit_options;
+	}
 
 	/**
 	 * @param string $form_name
@@ -68,15 +91,7 @@ class DataTablePaginationSettings {
 
 		$option_values = array();
 
-		$options = array(
-			0 => "ALL",
-			10 => "10",
-			25 => "25",
-			50 => "50",
-			100 => "100",
-			500 => "500",
-			1000 => "1000"
-		);
+		$options = $this->get_limit_options();
 
 		$default_pagination_limit = $this->get_default_limit();
 

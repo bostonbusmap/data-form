@@ -48,7 +48,6 @@ function make_form($state) {
 	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/pagination.php";
 
 	$pagination = $state->get_pagination_state();
-	$limit = $pagination->get_limit();
 	$current_page = $pagination->get_current_page();
 
 	$columns = array();
@@ -56,9 +55,16 @@ function make_form($state) {
 
 	$rows = array();
 	$total_count = 1473;
-	if (!$limit) {
+	$pagination_settings = new DataTablePaginationSettings(25, $total_count);
+
+	$limit = $pagination->get_limit();
+	if (is_null($limit)) {
+		$limit = $pagination_settings->get_default_limit();
+	}
+	elseif ($limit === 0) {
 		$limit = $total_count;
 	}
+
 	for ($i = $limit * $current_page; $i < $limit * ($current_page + 1); $i++) {
 		$row = array();
 		$row["number"] = $i;
@@ -73,7 +79,6 @@ function make_form($state) {
 		usort($rows, "compare_number_column_desc");
 	}
 
-	$pagination_settings = new DataTablePaginationSettings(25, $total_count);
 
 
 	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->remote($this_url)->
