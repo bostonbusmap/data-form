@@ -16,6 +16,7 @@ require_once "data_table_column.php";
 require_once "data_table_header_formatter.php";
 require_once "data_table_link.php";
 require_once "data_table_options.php";
+require_once "data_table_pagination.php";
 require_once "data_table_radio.php";
 require_once "data_form_state.php";
 require_once "data_table_widget.php";
@@ -35,6 +36,10 @@ require_once "data_table_widget.php";
  */
 class DataTable
 {
+	/**
+	 * @var string Allows for table-specific state. Optional
+	 */
+	private $table_name;
 	/** @var \DataTableButton[]  */
 	private $buttons;
 	/** @var \DataTableColumn[]  */
@@ -53,16 +58,29 @@ class DataTable
 	private $row_classes;
 
 	/**
+	 * @var bool If true, show pagination controls in table header
+	 */
+	private $show_pagination_controls;
+
+	/**
+	 * @var string HTML to display within header. If null and related items are false, do not display header
+	 */
+	private $header;
+
+	/**
 	 * @param DataTableBuilder $builder
 	 * @throws Exception
 	 */
 	public function __construct($builder) {
+		$this->table_name = $builder->get_table_name();
 		$this->buttons = $builder->get_buttons();
 		$this->columns = $builder->get_columns();
 		$this->sql_field_names = $builder->get_sql_field_names();
 		$this->rows = $builder->get_rows();
 		$this->remote = $builder->get_remote();
 		$this->row_classes = $builder->get_row_classes();
+		$this->show_pagination_controls = $builder->get_show_pagination_controls();
+		$this->header = $builder->get_header();
 	}
 
 	/**
@@ -76,6 +94,8 @@ class DataTable
 	public function display_table($form_name, $state=null) {
 		$ret = "";
 
+		// user can either have field names as keys for each row, or set them in $this->sql_field_names
+		// and map them to indexes
 		$indexes = array();
 		$count = 0;
 		foreach ($this->sql_field_names as $field_name) {
@@ -83,10 +103,25 @@ class DataTable
 			$count++;
 		}
 
+		// display top buttons
 		foreach ($this->buttons as $button) {
 			if ($button->get_placement() == DataTableButton::placement_top) {
 				$ret .= $button->display($form_name, $state);
 			}
+		}
+
+		// show blue header on top of table. May contain pagination controls
+		if ($this->header || $this->show_pagination_controls) {
+			$ret .= "<div class='gfy_browser_table'>";
+
+			if ($this->header) {
+				$ret .= $this->header;
+			}
+			if ($this->show_pagination_controls)
+			{
+				$ret .= DataTablePagination::create_pagination_controls($form_name, $state, $this->remote, $this->table_name, count($this->rows));
+			}
+			$ret .= "</div>";
 		}
 
 		if ($this->is_sortable()) {
@@ -98,14 +133,31 @@ class DataTable
 		}
 		$ret .= "<thead>";
 		$ret .= "<tr class='standard-table-header'>";
+		// TODO: replace with DOMDocument so we don't have to worry about sanitizing HTML
+
+		// write out header cells
+
+		// The most significant field here is $this->remote. If falsey, the table is strictly browser based
+		// with sorting and searching done via Javascript.
+		// If $this->remote is not falsey, it's a string pointing to the AJAX url
+		// which it contacts with sorting, searching and pagination data. Entire div is refreshed at once.
 		foreach ($this->columns as $column) {
 			$column_key = $column->get_column_key();
+
+			// if an AJAX form, get_sortable is treated like a boolean
+			// if a local form, get_sortable may have the string which says what kind of sorting will be done
+			// either 'numeric' or 'alphanumeric'
 			if ($column->get_sortable()) {
 				if ($this->remote) {
+					// draw sorting arrow and set hidden field
 					$ret .= "<th class='column_" . $column_key . "'>";
 					if ($state) {
-						$old_sorting_state = $state->get_sorting_state($column_key);
-						$ret .= "<input type='hidden' name='" . $form_name . "[" . DataFormState::sorting_state_key . "][" . $column_key . "]' value='" . $old_sorting_state . "' />";
+						// set sorting state in form
+						// Note that the code at $this->remote is responsible for reading sorting state
+						// and doing something useful with it (probably incorporating it into SQL somehow)
+						$old_sorting_state = $state->get_sorting_state($column_key, $this->table_name);
+						$sorting_name = DataFormState::make_field_name($form_name, DataFormState::get_sorting_state_key($column_key, $this->table_name));
+						$ret .= "<input type='hidden' name='$sorting_name' value='$old_sorting_state' />";
 					}
 					else
 					{
@@ -121,14 +173,17 @@ class DataTable
 				}
 				else
 				{
+					// let Javascript handle it
 					$ret .= "<th class='column_" . $column_key . " table-sortable:" . $column->get_sortable() . " table-sortable' title='Click to sort'>";
 				}
 			}
 			else
 			{
+				// no sorting
 				$ret .= "<th class='column_" . $column_key . "'>";
 			}
 
+			// If sortable, make header text a link which flips sorting
 			/** @var DataTableColumn $column */
 			if ($column->get_sortable() && $this->remote) {
 				if ($state && $state->get_sorting_state($column_key)) {
@@ -147,12 +202,13 @@ class DataTable
 				{
 					$new_sorting_state = DataFormState::sorting_state_asc;
 				}
-				$sort_string = "&" . $form_name . "[" . DataFormState::sorting_state_key . "][" . $column_key . "]=" . $new_sorting_state;
+				$sort_string = "&" . DataFormState::get_sorting_state_key($column_key, $this->table_name) . "=" . $new_sorting_state;
 
 				$onclick_obj = new DataTableBehaviorRefresh($sort_string);
 				$onclick = $onclick_obj->action($form_name, $this->remote);
 				$ret .= "<a onclick='$onclick'>";
 			}
+			// display special header cell if specified
 			$ret .= $column->get_display_header($form_name, $column_key);
 			if ($column->get_sortable() && $this->remote) {
 				$ret .= "</a>";
@@ -161,6 +217,7 @@ class DataTable
 		}
 		$ret .= "</tr>";
 
+		// if searchable, write a second header row with text fields
 		if ($this->is_searchable()) {
 			$ret .= "<tr class='standard-table-header'>";
 			foreach ($this->columns as $column) {
@@ -168,10 +225,13 @@ class DataTable
 				$ret .= "<th>";
 				if ($column->get_searchable()) {
 					if (!$this->remote) {
+						// use javascript to filter via regex
 						$ret .= "<input size='8' onkeyup='Table.filter(this, this)' />";
 					}
 					else
 					{
+						// set searching state then call for a refresh
+						// It's up to code at $this->remote to specify how searching state is used to filter
 						if ($state && $state->get_searching_state($column_key)) {
 							$old_searching_state = $state->get_searching_state($column_key);
 						}
@@ -179,8 +239,8 @@ class DataTable
 						{
 							$old_searching_state = "";
 						}
-						$name = $form_name . "[" . DataFormState::searching_state_key . "][" . $column_key . "]";
-						$ret .= "<input size='8' name='" . $name . "' value='" . $old_searching_state . "' />";
+						$searching_name = DataFormState::get_searching_state_key($column_key, $this->table_name);
+						$ret .= "<input size='8' name='" . $searching_name . "' value='" . $old_searching_state . "' />";
 					}
 				}
 				$ret .= "</th>";
@@ -189,6 +249,8 @@ class DataTable
 		}
 		$ret .= "</thead>";
 		$ret .= "<tbody>";
+
+		// end of header, start writing cells
 		$row_count = 0;
 		foreach ($this->rows as $row_id => $row) {
 			if (!is_array($row)) {
@@ -212,6 +274,8 @@ class DataTable
 			$ret .= "<tr class='$row_class'>";
 
 
+			// We are writing each column in order and only matching it up with data
+			// if the data exists in $row
 			foreach ($this->columns as $column) {
 				$column_key = $column->get_column_key();
 				$col_css = $column->get_css();
@@ -248,6 +312,8 @@ class DataTable
 		}
 		$ret .= "</tbody>";
 		$ret .= "</table>";
+
+		// write buttons at bottom of table
 		foreach ($this->buttons as $button) {
 			if ($button->get_placement() == DataTableButton::placement_bottom) {
 				$ret .= $button->display($form_name, $state);
@@ -274,4 +340,6 @@ class DataTable
 		}
 		return false;
 	}
+
+
 }

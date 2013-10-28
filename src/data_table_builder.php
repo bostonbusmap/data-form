@@ -9,6 +9,8 @@
  * echo $data_form->display();
  */
 class DataTableBuilder {
+	/** @var  string */
+	private $table_name;
 	/** @var \IDataTableWidget[] Buttons to display which submit or reset the form */
 	private $buttons;
 	/** @var \DataTableColumn[] Mapping of SQL field name to DataTableColumn object */
@@ -26,6 +28,14 @@ class DataTableBuilder {
 	 * @var string[] Mapping of row id to CSS classes
 	 */
 	private $row_classes;
+	/**
+	 * @var bool whether to show pagination selection items
+	 */
+	private $show_pagination_controls;
+	/**
+	 * @var string HTML shown for header
+	 */
+	private $header;
 
 	/**
 	 * This is like the constructor but allows for chaining of methods
@@ -34,6 +44,15 @@ class DataTableBuilder {
 	 */
 	public static function create() {
 		return new DataTableBuilder();
+	}
+
+	/**
+	 * @param $table_name string Name of table. Differentiates two tables in same form. Optional.
+	 * @return DataTableBuilder
+	 */
+	public function table_name($table_name) {
+		$this->table_name = $table_name;
+		return $this;
 	}
 
 	/**
@@ -110,6 +129,31 @@ class DataTableBuilder {
 	}
 
 	/**
+	 * @param $show_pagination_controls bool
+	 * @return DataTableBuilder
+	 */
+	public function show_pagination_controls($show_pagination_controls) {
+		$this->show_pagination_controls = $show_pagination_controls;
+		return $this;
+	}
+
+	/**
+	 * @param $header string
+	 * @return DataTableBuilder
+	 */
+	public function header($header) {
+		$this->header = $header;
+		return $this;
+	}
+
+	/**
+	 * @return string Name of table
+	 */
+	public function get_table_name() {
+		return $this->table_name;
+	}
+
+	/**
 	 * @return IDataTableWidget[] Buttons to display which submit or reset the form
 	 */
 	public function get_buttons() {
@@ -152,6 +196,21 @@ class DataTableBuilder {
 	 */
 	public function get_row_classes()
 	{
+		return $this->row_classes;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function get_show_pagination_controls() {
+		return $this->show_pagination_controls;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function get_header() {
+		return $this->header;
 	}
 
 	/**

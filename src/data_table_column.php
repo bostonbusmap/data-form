@@ -104,7 +104,13 @@ class DataTableColumn {
 		{
 			$this->cell_formatter = new DefaultCellFormatter();
 		}
-		$this->sortable = $sortable;
+		if ($sortable === true) {
+			$this->sortable = "numeric";
+		}
+		else
+		{
+			$this->sortable = $sortable;
+		}
 		$this->searchable = $searchable;
 		if (!$this->column_key) {
 			$this->column_key = "";

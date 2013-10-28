@@ -3,15 +3,30 @@
  * Represents a link for use with DataTable. To use, create a DataTableLink object for each cell in the column.
  * Use DataTableLinkFormatter as an option for the DataTableColumn to display the links
  */
-class DataTableLink {
+class DataTableLink implements IDataTableWidget {
+	/** @var  string */
 	protected $link;
+	/** @var  string */
 	protected $text;
+	/**
+	 * @var string URL
+	 */
+	protected $action;
+	/**
+	 * @var IDataTableBehavior
+	 */
+	protected $behavior;
+	/** @var string  */
+	protected $placement;
 
 	// add other parameters as appropriate
 
-	public function __construct($link, $text) {
+	public function __construct($text, $link, $action="", $behavior=null, $placement = self::placement_top) {
 		$this->link = $link;
 		$this->text = $text;
+		$this->action = $action;
+		$this->behavior = $behavior;
+		$this->placement = $placement;
 	}
 
 	public function get_link() {
@@ -20,6 +35,25 @@ class DataTableLink {
 
 	public function get_text() {
 		return $this->text;
+	}
+
+	public function display($form_name, $state)
+	{
+		$link = $this->link;
+		$text = $this->text;
+		if ($this->behavior) {
+			$onclick = $this->behavior->action($form_name, $this->action);
+		}
+		else
+		{
+			$onclick = "";
+		}
+		return "<a href='$link' onclick='$onclick'>$text</a>";
+	}
+
+	public function get_placement()
+	{
+		return $this->placement;
 	}
 }
 
