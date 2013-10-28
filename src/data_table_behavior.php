@@ -30,7 +30,8 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 		$this->extra_params = $extra_params;
 	}
 	function action($form_name, $form_action) {
-		$params = "&" . $form_name . "[" . DataFormState::only_display_form  . "]=true";
+		$only_display_form_name = DataFormState::make_field_name($form_name, DataFormState::only_display_form_key());
+		$params = "&" . $only_display_form_name . "=true";
 
 		if ($this->extra_params) {
 			if (substr($this->extra_params, 0, 1) == "&") {

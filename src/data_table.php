@@ -202,7 +202,9 @@ class DataTable
 				{
 					$new_sorting_state = DataFormState::sorting_state_asc;
 				}
-				$sort_string = "&" . DataFormState::get_sorting_state_key($column_key, $this->table_name) . "=" . $new_sorting_state;
+				$sorting_state_name = DataFormState::make_field_name($form_name,
+					DataFormState::get_sorting_state_key($column_key, $this->table_name));
+				$sort_string = "&" . $sorting_state_name . "=" . $new_sorting_state;
 
 				$onclick_obj = new DataTableBehaviorRefresh($sort_string);
 				$onclick = $onclick_obj->action($form_name, $this->remote);
@@ -239,7 +241,8 @@ class DataTable
 						{
 							$old_searching_state = "";
 						}
-						$searching_name = DataFormState::get_searching_state_key($column_key, $this->table_name);
+						$searching_name = DataFormState::make_field_name($form_name,
+							DataFormState::get_searching_state_key($column_key, $this->table_name));
 						$ret .= "<input size='8' name='" . $searching_name . "' value='" . $old_searching_state . "' />";
 					}
 				}
