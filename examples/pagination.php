@@ -32,14 +32,6 @@ class PrimeFormatter implements IDataTableCellFormatter {
 	}
 }
 
-function compare_number_column_asc($a, $b) {
-	return $a["number"] < $b["number"];
-}
-
-function compare_number_column_desc($a, $b) {
-	return $a["number"] > $b["number"];
-}
-
 /**
  * @param DataFormState $state
  * @return DataForm
@@ -65,20 +57,17 @@ function make_form($state) {
 		$limit = $total_count;
 	}
 
-	for ($i = $limit * $current_page; $i < $limit * ($current_page + 1); $i++) {
-		$row = array();
-		$row["number"] = $i;
-
-		$rows[] = $row;
+	$start = $limit * $current_page;
+	$end = $limit * ($current_page + 1);
+	for ($i = $start; $i < $end; $i++) {
+		if ($state->get_sorting_state("number") == DataFormState::sorting_state_desc) {
+			$rows[] = array("number" => $total_count - $i - 1);
+		}
+		else
+		{
+			$rows[] = array("number" => $i);
+		}
 	}
-
-	if ($state->get_sorting_state("number") == DataFormState::sorting_state_asc) {
-		usort($rows, "compare_number_column_asc");
-	}
-	elseif ($state->get_sorting_state("number") == DataFormState::sorting_state_desc) {
-		usort($rows, "compare_number_column_desc");
-	}
-
 
 
 	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->remote($this_url)->
