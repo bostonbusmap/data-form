@@ -62,7 +62,7 @@ function make_form($state) {
 	$buttons = array();
 	$buttons[] = new DataTableButton("Refresh", "refresh", $this_url, new DataTableBehaviorRefresh());
 
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->remote($this_url)->buttons($buttons)->build();
+	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->remote($this_url)->widgets($buttons)->build();
 	$form = DataFormBuilder::create("searchable")->tables(array($table))->build();
 	return $form;
 }

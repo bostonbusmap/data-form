@@ -40,8 +40,8 @@ class DataTable
 	 * @var string Allows for table-specific state. Optional
 	 */
 	private $table_name;
-	/** @var \DataTableButton[]  */
-	private $buttons;
+	/** @var \IDataTableWidget[]  */
+	private $widgets;
 	/** @var \DataTableColumn[]  */
 	private $columns;
 	/** @var \string[]  */
@@ -73,7 +73,7 @@ class DataTable
 	 */
 	public function __construct($builder) {
 		$this->table_name = $builder->get_table_name();
-		$this->buttons = $builder->get_buttons();
+		$this->widgets = $builder->get_widgets();
 		$this->columns = $builder->get_columns();
 		$this->sql_field_names = $builder->get_sql_field_names();
 		$this->rows = $builder->get_rows();
@@ -114,9 +114,9 @@ class DataTable
 		}
 
 		// display top buttons
-		foreach ($this->buttons as $button) {
-			if ($button->get_placement() == DataTableButton::placement_top) {
-				$ret .= $button->display($form_name, $form_method, $state);
+		foreach ($this->widgets as $widget) {
+			if ($widget->get_placement() == DataTableButton::placement_top) {
+				$ret .= $widget->display($form_name, $form_method, $state);
 			}
 		}
 
@@ -328,9 +328,9 @@ class DataTable
 		$ret .= "</table>";
 
 		// write buttons at bottom of table
-		foreach ($this->buttons as $button) {
-			if ($button->get_placement() == DataTableButton::placement_bottom) {
-				$ret .= $button->display($form_name, $form_method, $state);
+		foreach ($this->widgets as $widget) {
+			if ($widget->get_placement() == DataTableButton::placement_bottom) {
+				$ret .= $widget->display($form_name, $form_method, $state);
 			}
 		}
 

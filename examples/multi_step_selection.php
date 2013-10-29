@@ -27,7 +27,7 @@ function make_form($state) {
 		$rows[$obj["city"]] = array("city" => $obj["city"]);
 	}
 
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->buttons($buttons)->
+	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->
 		remote($this_url)->build();
 	$form = DataFormBuilder::create("select_cities")->tables(array($table))->method("GET")->build();
 	return $form;

@@ -12,7 +12,7 @@ class DataTableBuilder {
 	/** @var  string */
 	private $table_name;
 	/** @var \IDataTableWidget[] Buttons to display which submit or reset the form */
-	private $buttons;
+	private $widgets;
 	/** @var \DataTableColumn[] Mapping of SQL field name to DataTableColumn object */
 	private $columns;
 	/** @var \string[] Array of field names which correspond to each row item */
@@ -58,13 +58,13 @@ class DataTableBuilder {
 	/**
 	 * Buttons to display which submit or reset the form
 	 *
-	 * @param \IDataTableWidget[] $buttons
+	 * @param \IDataTableWidget[] $widgets
 	 * @return DataTableBuilder
 	 * @throws Exception
 	 */
-	public function buttons($buttons)
+	public function widgets($widgets)
 	{
-		$this->buttons = $buttons;
+		$this->widgets = $widgets;
 		return $this;
 	}
 
@@ -156,8 +156,8 @@ class DataTableBuilder {
 	/**
 	 * @return IDataTableWidget[] Buttons to display which submit or reset the form
 	 */
-	public function get_buttons() {
-		return $this->buttons;
+	public function get_widgets() {
+		return $this->widgets;
 	}
 
 	/**
@@ -241,13 +241,13 @@ class DataTableBuilder {
 			}
 		}
 
-		if (!$this->buttons) {
-			$this->buttons = array();
+		if (!$this->widgets) {
+			$this->widgets = array();
 		}
-		if (!is_array($this->buttons)) {
+		if (!is_array($this->widgets)) {
 			throw new Exception("buttons must be an array of IDataTableWidget");
 		}
-		foreach ($this->buttons as $button) {
+		foreach ($this->widgets as $button) {
 			if (!($button instanceof IDataTableWidget)) {
 				throw new Exception("Each button must be instance of IDataTableWidget");
 			}

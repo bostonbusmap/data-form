@@ -69,7 +69,7 @@ function make_form($state) {
 
 	$buttons[] = new DataTableOptions($options, "multiplier", $this_url, new DataTableBehaviorRefresh());
 
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->buttons($buttons)->remote($this_url)->build();
+	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->remote($this_url)->build();
 	$form = DataFormBuilder::create("multiplication")->tables(array($table))->build();
 	return $form;
 }
