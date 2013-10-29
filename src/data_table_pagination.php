@@ -65,27 +65,29 @@ class DataTablePaginationSettings {
 
 	/**
 	 * @param string $form_name
+	 * @param string $form_method GET or POST
 	 * @param DataFormState $state
 	 * @param string $remote_url
 	 * @param string $table_name
 	 * @return string
 	 */
-	public function display_controls($form_name, $state, $remote_url, $table_name) {
+	public function display_controls($form_name, $form_method, $state, $remote_url, $table_name) {
 		$ret = "";
-		$ret .= $this->create_pagination_limit_controls($form_name, $state, $remote_url, $table_name);
-		$ret .= $this->create_pagination_page_controls($form_name, $state, $remote_url, $table_name);
+		$ret .= $this->create_pagination_limit_controls($form_name, $form_method, $state, $remote_url, $table_name);
+		$ret .= $this->create_pagination_page_controls($form_name, $form_method, $state, $remote_url, $table_name);
 
 		return $ret;
 	}
 
 	/**
 	 * @param $form_name string
+	 * @param $form_method string GET or POST
 	 * @param DataFormState $state
 	 * @param $remote_url string
 	 * @param $table_name string
 	 * @return string HTML
 	 */
-	protected function create_pagination_limit_controls($form_name, $state, $remote_url, $table_name) {
+	protected function create_pagination_limit_controls($form_name, $form_method, $state, $remote_url, $table_name) {
 		$ret = "<div style='float:right;'>";
 		$ret .= "limit: ";
 
@@ -104,7 +106,7 @@ class DataTablePaginationSettings {
 
 		$behavior = new DataTableBehaviorRefresh();
 
-		$ret .= DataTableOptions::display_options($form_name, $limit_name_array, $form_action, $behavior, $option_values, $state);
+		$ret .= DataTableOptions::display_options($form_name, $limit_name_array, $form_action, $form_method, $behavior, $option_values, $state);
 		$ret .= "</div>";
 		return $ret;
 	}
@@ -115,28 +117,30 @@ class DataTablePaginationSettings {
 	 * @param $title string
 	 * @param $form_name string
 	 * @param $remote_url string
+	 * @param $form_method string GET or POST
 	 * @param $table_name string
 	 * @return string HTML
 	 */
-	protected function create_page_link($page_num, $text, $title, $form_name, $remote_url, $table_name) {
+	protected function create_page_link($page_num, $text, $title, $form_name, $remote_url, $form_method, $table_name) {
 		$current_page_name_array = array_merge(DataFormState::get_pagination_state_key($table_name),
 			array(DataTablePaginationState::current_page_key));
 		$current_page_name = DataFormState::make_field_name($form_name, $current_page_name_array);
 		$behavior = new DataTableBehaviorRefresh($current_page_name. "=" . $page_num);
-		$onclick = $behavior->action($form_name, $remote_url);
+		$onclick = $behavior->action($form_name, $remote_url, $form_method);
 
 		return " <a href='#' onclick='$onclick' title='$title'>$text</a> ";
 	}
 
 	/**
 	 * @param string $form_name
+	 * @param string $form_method GET or POST
 	 * @param DataFormState $state
 	 * @param string $remote_url
 	 * @param string $table_name
 	 * @return string HTML
 	 * @throws Exception
 	 */
-	protected function create_pagination_page_controls($form_name, $state, $remote_url, $table_name) {
+	protected function create_pagination_page_controls($form_name, $form_method, $state, $remote_url, $table_name) {
 		$ret = "<div style='text-align: left;'>";
 		$pagination_state = $state->get_pagination_state($table_name);
 
@@ -168,7 +172,7 @@ class DataTablePaginationSettings {
 		if ($current_page > 0) {
 			// there is a previous page
 			$ret .= $this->create_page_link($current_page - 1, "&laquo; Previous", "Go to previous page",
-				$form_name, $remote_url, $table_name);
+				$form_name, $remote_url, $form_method, $table_name);
 		}
 		else
 		{
@@ -183,7 +187,7 @@ class DataTablePaginationSettings {
 
 		if ($starting_page > 0) {
 			$ret .= $this->create_page_link(0, "1", "Go to first page",
-				$form_name, $remote_url, $table_name);
+				$form_name, $remote_url, $form_method, $table_name);
 			$ret .= " ... ";
 		}
 
@@ -199,20 +203,20 @@ class DataTablePaginationSettings {
 			{
 				$link_title = "Go to page " . ($page_num + 1) . " of " . ($num_pages);
 				$ret .= $this->create_page_link($page_num, (string)($page_num + 1), $link_title,
-					$form_name, $remote_url, $table_name);
+					$form_name, $remote_url, $form_method, $table_name);
 			}
 		}
 
 		if ($ending_page < $num_pages) {
 			$ret .= " ... ";
 			$ret .= $this->create_page_link($num_pages - 1, (string)($num_pages), "Go to last page",
-				$form_name, $remote_url, $table_name);
+				$form_name, $remote_url, $form_method, $table_name);
 		}
 
 		if ($current_page < $num_pages - 1) {
 			// there is a next page
 			$ret .= $this->create_page_link($current_page + 1, "Next &raquo; ", "Go to next page",
-				$form_name, $remote_url, $table_name);
+				$form_name, $remote_url, $form_method, $table_name);
 		}
 		else
 		{

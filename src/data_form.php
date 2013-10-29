@@ -13,6 +13,9 @@ class DataForm {
 	/** @var  DataFormState[] State received which should be forwarded */
 	private $forwarded_state;
 
+	/** @var  string Form method, either GET or POST */
+	private $method;
+
 	/**
 	 * @param $builder DataFormBuilder
 	 */
@@ -20,6 +23,7 @@ class DataForm {
 		$this->tables = $builder->get_tables();
 		$this->form_name = $builder->get_form_name();
 		$this->forwarded_state = $builder->get_forwarded_state();
+		$this->method = $builder->get_method();
 	}
 
 	/**
@@ -38,14 +42,14 @@ class DataForm {
 		$ret = "";
 
 		// form action is set in javascript
-		$ret .= "<form name='" . $this->form_name . "' method='post'>";
+		$ret .= "<form name='" . $this->form_name . "' method='" . $this->method . "'>";
 
 		foreach ($this->forwarded_state as $forwarded_state) {
 			$ret .= self::make_inputs_from_forwarded_state($forwarded_state->get_form_data(), $this->form_name . "[" . DataFormState::forwarded_state_key . "][" . $forwarded_state->get_form_name() . "]");
 		}
 
 		foreach ($this->tables as $table) {
-			$ret .= $table->display_table($this->form_name, $state);
+			$ret .= $table->display_table($this->form_name, $this->method, $state);
 		}
 		$ret .= "</form>";
 

@@ -102,26 +102,28 @@ class DataTableOptions implements IDataTableWidget {
 	 * Displays options for a form. To display options for a particular cell use DataTableOptionsCellFormatter
 	 *
 	 * @param $form_name string Name of form
+	 * @param $form_method string Either GET or POST
 	 * @param $state DataFormState
 	 * @return string HTML
 	 */
-	public function display($form_name, $state=null)
+	public function display($form_name, $form_method, $state=null)
 	{
-		return self::display_options($form_name, array($this->name), $this->form_action, $this->change_behavior, $this->options, $state);
+		return self::display_options($form_name, array($this->name), $this->form_action, $form_method, $this->change_behavior, $this->options, $state);
 	}
 
 	/**
 	 * @param $form_name string
 	 * @param $name_array string[] Name for select. Each item will be surrounded by square brackets and concatenated
 	 * @param $action string
+	 * @param $form_method string GET or POST
 	 * @param $behavior IDataTableBehavior
 	 * @param $options DataTableOption[]
 	 * @param $state DataFormState
 	 * @return string
 	 */
-	public static function display_options($form_name, $name_array, $action, $behavior, $options, $state=null) {
+	public static function display_options($form_name, $name_array, $action, $form_method, $behavior, $options, $state=null) {
 		if ($action && $behavior) {
-			$onchange = $behavior->action($form_name, $action);
+			$onchange = $behavior->action($form_name, $action, $form_method);
 		}
 		else
 		{
@@ -186,6 +188,6 @@ class DataTableOptionsCellFormatter implements IDataTableCellFormatter {
 	 * @return string HTML for a link
 	 */
 	public function format($form_name, $column_header, $column_data, $rowid, $state) {
-		return DataTableOptions::display_options($form_name, array($column_header, $rowid), "", null, $column_data->get_options(), $state);
+		return DataTableOptions::display_options($form_name, array($column_header, $rowid), "", "POST", null, $column_data->get_options(), $state);
 	}
 }

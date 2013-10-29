@@ -20,9 +20,9 @@ class DataTableTextbox implements IDataTableWidget {
 
 	}
 
-	public function display($form_name, $state)
+	public function display($form_name, $form_method, $state)
 	{
-		return self::display_textbox($form_name, array($this->name), $this->action, $this->submit_behavior, $this->text, $state);
+		return self::display_textbox($form_name, array($this->name), $this->action, $form_method, $this->submit_behavior, $this->text, $state);
 	}
 
 	public function get_placement()
@@ -34,14 +34,15 @@ class DataTableTextbox implements IDataTableWidget {
 	 * @param $form_name string
 	 * @param $name_array string[] Name for select. Each item will be surrounded by square brackets and concatenated
 	 * @param $action string
+	 * @param $form_method string GET or POST
 	 * @param $behavior IDataTableBehavior
 	 * @param $default_text string
 	 * @param $state DataFormState
 	 * @return string
 	 */
-	public static function display_textbox($form_name, $name_array, $action, $behavior, $default_text, $state=null) {
+	public static function display_textbox($form_name, $name_array, $action, $form_method, $behavior, $default_text, $state=null) {
 		if ($action && $behavior) {
-			$onchange = $behavior->action($form_name, $action);
+			$onchange = $behavior->action($form_name, $action, $form_method);
 		}
 		else
 		{
@@ -78,6 +79,6 @@ class DataTableTextbox implements IDataTableWidget {
 class DataTableTextboxCellFormatter implements IDataTableCellFormatter {
 	public function format($form_name, $column_header, $column_data, $rowid, $state)
 	{
-		return DataTableTextbox::display_textbox($form_name, array($column_header, $rowid), "", null, $column_data, $state);
+		return DataTableTextbox::display_textbox($form_name, array($column_header, $rowid), "", "POST", null, $column_data, $state);
 	}
 }

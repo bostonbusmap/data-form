@@ -3,23 +3,24 @@ interface IDataTableBehavior {
 	/**
 	 * @param string $form_name Name of form
 	 * @param string $form_action URL to submit to or refresh from
+	 * @param string $form_method Method of form, either GET or POST. Should be same as what form is declared as in HTML
 	 * @return string Javascript to execute when submit button is clicked or select item is changed
 	 */
-	function action($form_name, $form_action);
+	function action($form_name, $form_action, $form_method);
 }
 
 class DataTableBehaviorNone implements IDataTableBehavior {
-	function action($form_name, $form_action) {
+	function action($form_name, $form_action, $form_method) {
 		return "return false;";
 	}
 }
 class DataTableBehaviorSubmitNewWindow implements IDataTableBehavior {
-	function action($form_name, $form_action) {
+	function action($form_name, $form_action, $form_method) {
 		return "$(this).parent(\"form\").attr(\"action\", \"$form_action\");$(this).parent(\"form\").attr(\"target\", \"_blank\");";
 	}
 }
 class DataTableBehaviorSubmit implements IDataTableBehavior {
-	function action($form_name, $form_action) {
+	function action($form_name, $form_action, $form_method) {
 		return "$(this).parent(\"form\").attr(\"action\", \"$form_action\");";
 	}
 }
@@ -29,7 +30,7 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 	public function __construct($extra_params="") {
 		$this->extra_params = $extra_params;
 	}
-	function action($form_name, $form_action) {
+	function action($form_name, $form_action, $form_method) {
 		$only_display_form_name = DataFormState::make_field_name($form_name, DataFormState::only_display_form_key());
 		$params = "&" . $only_display_form_name . "=true";
 
@@ -44,12 +45,17 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 			$params .= "&" . $extra_params;
 		}
 
-		return "$.post(\"" . $form_action . "\", $(this).parents(\"form\").serialize()  + \"$params\", function(data, textStatus, jqXHR) { $(\"#" .
+		$method = strtolower($form_method);
+		if ($method != "post" && $method != "get") {
+			throw new Exception("Unknown method '$method");
+		}
+
+		return "$." . $method . "(\"" . $form_action . "\", $(this).parents(\"form\").serialize()  + \"$params\", function(data, textStatus, jqXHR) { $(\"#" .
 			$form_name . "\").html(data);});return false;";
 	}
 }
 class DataTableBehaviorDefault implements IDataTableBehavior {
-	function action($form_name, $form_action) {
+	function action($form_name, $form_action, $form_method) {
 		return "";
 	}
 }

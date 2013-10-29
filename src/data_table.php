@@ -87,11 +87,12 @@ class DataTable
 	 * Returns HTML for table. This is useful if sending it via ajax to populate a div
 	 *
 	 * @param string $form_name
+	 * @param string $form_method Either GET or POST
 	 * @param DataFormState $state
 	 * @throws Exception
 	 * @return string HTML
 	 */
-	public function display_table($form_name, $state=null) {
+	public function display_table($form_name, $form_method, $state=null) {
 		$ret = "";
 
 		// user can either have field names as keys for each row, or set them in $this->sql_field_names
@@ -126,7 +127,7 @@ class DataTable
 			}
 			if ($this->pagination_settings)
 			{
-				$ret .= $this->pagination_settings->display_controls($form_name, $state,
+				$ret .= $this->pagination_settings->display_controls($form_name, $form_method, $state,
 					$this->remote, $this->table_name);
 			}
 			$ret .= "</caption>";
@@ -208,7 +209,7 @@ class DataTable
 				$sort_string = "&" . $sorting_state_name . "=" . $new_sorting_state;
 
 				$onclick_obj = new DataTableBehaviorRefresh($sort_string);
-				$onclick = $onclick_obj->action($form_name, $this->remote);
+				$onclick = $onclick_obj->action($form_name, $this->remote, $form_method);
 				$ret .= "<a onclick='$onclick'>";
 			}
 			// display special header cell if specified

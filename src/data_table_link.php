@@ -37,12 +37,12 @@ class DataTableLink implements IDataTableWidget {
 		return $this->text;
 	}
 
-	public function display($form_name, $state)
+	public function display($form_name, $form_method, $state)
 	{
 		$link = $this->link;
 		$text = $this->text;
 		if ($this->behavior) {
-			$onclick = $this->behavior->action($form_name, $this->action);
+			$onclick = $this->behavior->action($form_name, $this->action, $form_method);
 		}
 		else
 		{
