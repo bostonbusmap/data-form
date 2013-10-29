@@ -250,8 +250,8 @@ class DataTable
 			// If sortable, make header text a link which flips sorting
 			/** @var DataTableColumn $column */
 			if ($column->get_sortable() && $this->remote) {
-				if ($state && $state->get_sorting_state($column_key)) {
-					$old_sorting_state = $state->get_sorting_state($column_key);
+				if ($state && $state->get_sorting_state($column_key, $this->table_name)) {
+					$old_sorting_state = $state->get_sorting_state($column_key, $this->table_name);
 				}
 				else
 				{
@@ -298,8 +298,8 @@ class DataTable
 					{
 						// set searching state then call for a refresh
 						// It's up to code at $this->remote to specify how searching state is used to filter
-						if ($state && $state->get_searching_state($column_key)) {
-							$old_searching_state = $state->get_searching_state($column_key);
+						if ($state && $state->get_searching_state($column_key, $this->table_name)) {
+							$old_searching_state = $state->get_searching_state($column_key, $this->table_name);
 						}
 						else
 						{

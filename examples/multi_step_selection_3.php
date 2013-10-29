@@ -68,7 +68,8 @@ function make_zip_table($zip_state, $current_state) {
 		$rows[] = array("zip" => $zip);
 	}
 
-	$current_sorting_state = $current_state->get_sorting_state("zip");
+	$table_name = "zip";
+	$current_sorting_state = $current_state->get_sorting_state("zip", $table_name);
 	if ($current_sorting_state == DataFormState::sorting_state_desc) {
 		usort($rows, "compare_zip_column_desc");
 	}
@@ -77,7 +78,7 @@ function make_zip_table($zip_state, $current_state) {
 		usort($rows, "compare_zip_column_asc");
 	}
 
-	$table = DataTableBuilder::create()->table_name("zip")->columns($columns)->
+	$table = DataTableBuilder::create()->table_name($table_name)->columns($columns)->
 		rows($rows)->remote($this_url)->empty_message("No zip codes selected!")->build();
 	return $table;
 }
