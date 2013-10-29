@@ -16,7 +16,7 @@ class DataTableBuilder {
 	/** @var \DataTableColumn[] Mapping of SQL field name to DataTableColumn object */
 	private $columns;
 	/** @var \string[] Array of field names which correspond to each row item */
-	private $sql_field_names;
+	private $field_names;
 	/** @var array Mapping of row_id => row. row is array of items with either field name keys or index keys */
 	private $rows;
 
@@ -85,12 +85,12 @@ class DataTableBuilder {
 	 * Array of field names which correspond to each row item. NOTE: if the field names are keys for each row
 	 * (if you used fetch_assoc) then you don't need to use this.
 	 *
-	 * @param \string[] $sql_field_names
+	 * @param \string[] $field_names
 	 * @return DataTableBuilder
 	 */
-	public function sql_field_names($sql_field_names)
+	public function field_names($field_names)
 	{
-		$this->sql_field_names = $sql_field_names;
+		$this->field_names = $field_names;
 		return $this;
 	}
 
@@ -170,8 +170,8 @@ class DataTableBuilder {
 	/**
 	 * @return string[] Array of field names which correspond to each row item
 	 */
-	public function get_sql_field_names() {
-		return $this->sql_field_names;
+	public function get_field_names() {
+		return $this->field_names;
 	}
 
 	/**
@@ -253,14 +253,14 @@ class DataTableBuilder {
 			}
 		}
 
-		if (!$this->sql_field_names) {
+		if (!$this->field_names) {
 			// make sure this is an array
-			$this->sql_field_names = array();
+			$this->field_names = array();
 		}
-		if (!is_array($this->sql_field_names)) {
+		if (!is_array($this->field_names)) {
 			throw new Exception("sql_field_names must be an array of strings corresponding to field names");
 		}
-		foreach ($this->sql_field_names as $field_name) {
+		foreach ($this->field_names as $field_name) {
 			if (!is_string($field_name)) {
 				throw new Exception("Each item in sql_field_names must be a string");
 			}

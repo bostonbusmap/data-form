@@ -45,7 +45,7 @@ class DataTable
 	/** @var \DataTableColumn[]  */
 	private $columns;
 	/** @var \string[]  */
-	private $sql_field_names;
+	private $field_names;
 	/** @var array  */
 	private $rows;
 
@@ -75,7 +75,7 @@ class DataTable
 		$this->table_name = $builder->get_table_name();
 		$this->widgets = $builder->get_widgets();
 		$this->columns = $builder->get_columns();
-		$this->sql_field_names = $builder->get_sql_field_names();
+		$this->field_names = $builder->get_field_names();
 		$this->rows = $builder->get_rows();
 		$this->remote = $builder->get_remote();
 		$this->row_classes = $builder->get_row_classes();
@@ -108,7 +108,7 @@ class DataTable
 		// and map them to indexes
 		$indexes = array();
 		$count = 0;
-		foreach ($this->sql_field_names as $field_name) {
+		foreach ($this->field_names as $field_name) {
 			$indexes[$field_name] = $count;
 			$count++;
 		}
