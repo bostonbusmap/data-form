@@ -21,6 +21,7 @@ require_once "data_table_pagination.php";
 require_once "data_table_radio.php";
 require_once "data_form_state.php";
 require_once "data_table_widget.php";
+require_once "selected.php";
 
 /**
  * This displays a table of data which is also a form.

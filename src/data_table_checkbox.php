@@ -20,15 +20,19 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 		// TODO: sanitize for HTML
 		$checked = "";
 
-		if ($state) {
+		if ($state && is_array($state->find_item(array($column_header)))) {
 			$checked_items = $state->find_item(array($column_header));
+			$checked = (in_array($rowid, $checked_items) ? "checked" : "");
 		}
 		else
 		{
-			$checked_items = null;
-		}
-		if (is_array($checked_items) && in_array($rowid, $checked_items)) {
-			$checked = "checked";
+			if ($column_data instanceof Selected) {
+				$checked = ($column_data->is_selected() ? "checked" : "");
+			}
+			else
+			{
+				$checked = "";
+			}
 		}
 		return "<input type='checkbox' name='" . $form_name . "[$column_header][$rowid]' value='$column_data' $checked />";
 	}
