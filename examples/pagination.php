@@ -60,6 +60,9 @@ function make_form($state) {
 
 	$start = $limit * $current_page;
 	$end = $limit * ($current_page + 1);
+	if ($end > $total_count) {
+		$end = $total_count;
+	}
 	for ($i = $start; $i < $end; $i++) {
 		if ($state->get_sorting_state("number") == DataFormState::sorting_state_desc) {
 			$rows[] = array("number" => $total_count - $i - 1);
