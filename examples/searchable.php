@@ -47,7 +47,7 @@ function make_form($state) {
 	$rows = array();
 	foreach ($birds as $bird) {
 		// note: case sensitive search
-		if (!$state->get_searching_state("bird") || strpos($bird, $state->get_searching_state("bird")) !== false) {
+		if (!$state->get_searching_state("bird") || strpos(strtolower($bird), strtolower($state->get_searching_state("bird"))) !== false) {
 			$rows[] = array("bird" => $bird);
 		}
 	}
