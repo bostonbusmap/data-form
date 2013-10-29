@@ -37,6 +37,9 @@ class DataTableBuilder {
 	 */
 	private $header;
 
+	/** @var string HTML shown in place of table if no text. If falsey, table is shown anyway */
+	private $empty_message;
+
 	/**
 	 * This is like the constructor but allows for chaining of methods
 	 * (ie, DataTableBuilder::create_builder()->buttons($buttons)->build())
@@ -147,6 +150,15 @@ class DataTableBuilder {
 	}
 
 	/**
+	 * @param $empty_message string HTML shown in place of table if no text. If falsey, table is shown anyway
+	 * @return DataTableBuilder
+	 */
+	public function empty_message($empty_message) {
+		$this->empty_message = $empty_message;
+		return $this;
+	}
+
+	/**
 	 * @return string Name of table
 	 */
 	public function get_table_name() {
@@ -211,6 +223,13 @@ class DataTableBuilder {
 	 */
 	public function get_header() {
 		return $this->header;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function get_empty_message() {
+		return $this->empty_message;
 	}
 
 	/**
@@ -307,6 +326,13 @@ class DataTableBuilder {
 
 		if ($this->pagination_settings && !($this->pagination_settings instanceof DataTablePaginationSettings)) {
 			throw new Exception("pagination_settings must be instance of DataTablePaginationSettings");
+		}
+
+		if (!$this->empty_message) {
+			$this->empty_message = "";
+		}
+		if (!is_string($this->empty_message)) {
+			throw new Exception("empty_message must be a string containing HTML");
 		}
 
 		return new DataTable($this);

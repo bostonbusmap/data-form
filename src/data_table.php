@@ -12,6 +12,7 @@ require_once "data_table_builder.php";
 require_once "data_table_button.php";
 require_once "data_table_cell_formatter.php";
 require_once "data_table_checkbox.php";
+require_once "data_table_column_builder.php";
 require_once "data_table_column.php";
 require_once "data_table_header_formatter.php";
 require_once "data_table_link.php";
@@ -67,6 +68,9 @@ class DataTable
 	 */
 	private $header;
 
+	/** @var string HTML shown in place of table if no text. If falsey, table is shown anyway */
+	private $empty_message;
+
 	/**
 	 * @param DataTableBuilder $builder
 	 * @throws Exception
@@ -81,10 +85,13 @@ class DataTable
 		$this->row_classes = $builder->get_row_classes();
 		$this->pagination_settings = $builder->get_pagination_settings();
 		$this->header = $builder->get_header();
+		$this->empty_message = $builder->get_empty_message();
 	}
 
 	/**
 	 * Returns HTML for table. This is useful if sending it via ajax to populate a div
+	 *
+	 * May display empty message instead of empty_message is set and there are no rows
 	 *
 	 * @param string $form_name
 	 * @param string $form_method Either GET or POST
@@ -104,13 +111,8 @@ class DataTable
 		}
 		$ret = "";
 
-		// user can either have field names as keys for each row, or set them in $this->sql_field_names
-		// and map them to indexes
-		$indexes = array();
-		$count = 0;
-		foreach ($this->field_names as $field_name) {
-			$indexes[$field_name] = $count;
-			$count++;
+		if (!$this->rows && $this->empty_message) {
+			return $this->empty_message;
 		}
 
 		// display top buttons
@@ -142,7 +144,58 @@ class DataTable
 			$ret .= "</caption>";
 		}
 
-		$ret .= "<thead>";
+		$ret .= $this->display_table_header($form_name, $form_method, $state);
+
+		$ret .= $this->display_table_body($form_name, $form_method, $state);
+		$ret .= "</table>";
+
+		// write buttons at bottom of table
+		foreach ($this->widgets as $widget) {
+			if ($widget->get_placement() == DataTableButton::placement_bottom) {
+				$ret .= $widget->display($form_name, $form_method, $state);
+			}
+		}
+
+		return $ret;
+	}
+
+	public function is_sortable() {
+		foreach ($this->columns as $column) {
+			if ($column->get_sortable()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function is_searchable() {
+		foreach ($this->columns as $column) {
+			if ($column->get_searchable()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function get_table_name()
+	{
+		return $this->table_name;
+	}
+
+	/** @return string HTML shown in place of table if no text. If falsey, table is shown anyway */
+	public function get_empty_message() {
+		return $this->empty_message;
+	}
+
+	/**
+	 * @param $form_name string
+	 * @param $form_method string GET or POST
+	 * @param $state DataFormState
+	 * @return string HTML
+	 */
+	protected function display_table_header($form_name, $form_method, $state)
+	{
+		$ret = "<thead>";
 		$ret .= "<tr class='standard-table-header'>";
 		// TODO: replace with DOMDocument so we don't have to worry about sanitizing HTML
 
@@ -262,7 +315,29 @@ class DataTable
 			$ret .= "</tr>";
 		}
 		$ret .= "</thead>";
-		$ret .= "<tbody>";
+		return $ret;
+	}
+
+	/**
+	 * @param $form_name string Name of form
+	 * @param $form_method string GET or POST
+	 * @param $state DataFormState
+	 * @return string
+	 * @throws Exception
+	 */
+	public function display_table_body($form_name, $form_method, $state)
+	{
+		$ret = "<tbody>";
+
+		// user can either have field names as keys for each row, or set them in $this->sql_field_names
+		// and map them to indexes
+		$indexes = array();
+		$count = 0;
+		foreach ($this->field_names as $field_name) {
+			$indexes[$field_name] = $count;
+			$count++;
+		}
+
 
 		// end of header, start writing cells
 		$row_count = 0;
@@ -274,13 +349,10 @@ class DataTable
 
 			if ($this->row_classes && array_key_exists($row_id, $this->row_classes)) {
 				$row_class = $this->row_classes[$row_id];
-			}
-			else {
+			} else {
 				if ($row_count % 2 == 0) {
 					$row_class = "shadedbg";
-				}
-				else
-				{
+				} else {
 					$row_class = "unshadedbg";
 				}
 			}
@@ -297,22 +369,17 @@ class DataTable
 				/** @var DataTableColumn $column */
 				if (array_key_exists($column_key, $row)) {
 					$cell = $row[$column_key];
-				}
-				elseif (array_key_exists($column_key, $indexes)) {
+				} elseif (array_key_exists($column_key, $indexes)) {
 					$index = $indexes[$column_key];
 					if ($index >= count($row)) {
 						throw new Exception("Tried to get index $index of row with " . count($row) . " columns");
 					}
 					if (array_key_exists($index, $row)) {
 						$cell = $row[$index];
-					}
-					else
-					{
+					} else {
 						$cell = null;
 					}
-				}
-				else
-				{
+				} else {
 					// a column where there is no data is a common case, for instance
 					// the row selection checkbox
 					$cell = null;
@@ -325,40 +392,6 @@ class DataTable
 			$row_count++;
 		}
 		$ret .= "</tbody>";
-		$ret .= "</table>";
-
-		// write buttons at bottom of table
-		foreach ($this->widgets as $widget) {
-			if ($widget->get_placement() == DataTableButton::placement_bottom) {
-				$ret .= $widget->display($form_name, $form_method, $state);
-			}
-		}
-
 		return $ret;
 	}
-
-	public function is_sortable() {
-		foreach ($this->columns as $column) {
-			if ($column->get_sortable()) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public function is_searchable() {
-		foreach ($this->columns as $column) {
-			if ($column->get_searchable()) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public function get_table_name()
-	{
-		return $this->table_name;
-	}
-
-
 }

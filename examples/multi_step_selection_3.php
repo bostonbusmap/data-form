@@ -25,14 +25,21 @@ function make_city_table($cities_state, $current_state) {
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Cities")->column_key("city")->build();
 
 	$city_state_data = $cities_state->get_form_data();
-	$selected_cities = $city_state_data["city"];
+	if (array_key_exists("city", $city_state_data)) {
+		$selected_cities = $city_state_data["city"];
+	}
+	else
+	{
+		$selected_cities = array();
+	}
 
 	$rows = array();
 	foreach ($selected_cities as $city) {
 		$rows[] = array("city" => $city);
 	}
 
-	$table = DataTableBuilder::create()->table_name("city")->columns($columns)->rows($rows)->remote($this_url)->build();
+	$table = DataTableBuilder::create()->table_name("city")->columns($columns)->
+		rows($rows)->remote($this_url)->empty_message("No cities selected!")->build();
 	return $table;
 }
 
@@ -48,7 +55,13 @@ function make_zip_table($zip_state, $current_state) {
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Zip codes")->column_key("zip")->sortable(true)->build();
 
 	$zip_state_data = $zip_state->get_form_data();
-	$selected_zip_codes = $zip_state_data["zip"];
+	if (array_key_exists("zip", $zip_state_data)) {
+		$selected_zip_codes = $zip_state_data["zip"];
+	}
+	else
+	{
+		$selected_zip_codes = array();
+	}
 
 	$rows = array();
 	foreach ($selected_zip_codes as $zip) {
@@ -64,7 +77,8 @@ function make_zip_table($zip_state, $current_state) {
 		usort($rows, "compare_zip_column_asc");
 	}
 
-	$table = DataTableBuilder::create()->table_name("zip")->columns($columns)->rows($rows)->remote($this_url)->build();
+	$table = DataTableBuilder::create()->table_name("zip")->columns($columns)->
+		rows($rows)->remote($this_url)->empty_message("No zip codes selected!")->build();
 	return $table;
 }
 

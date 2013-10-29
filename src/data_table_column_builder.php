@@ -154,6 +154,9 @@ class DataTableColumnBuilder {
 			throw new Exception("If sortable is true, it must be a string which is the CSS class for how it's sorted (for example, numeric)");
 		}
 
+		if (!$this->searchable) {
+			$this->searchable = false;
+		}
 		if (!is_bool($this->searchable)) {
 			throw new Exception("searchable must be a bool");
 		}

@@ -23,7 +23,8 @@ function make_form($prev_state, $current_state) {
 	$next_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/multi_step_selection_3.php";
 
 	$columns = array();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Select")->column_key("zip")->build();
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Select")->column_key("zip")->
+		cell_formatter(new DataTableCheckboxCellFormatter())->build();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Zip code")->column_key("zip")->sortable(true)->build();
 
 	$buttons = array();
@@ -31,7 +32,13 @@ function make_form($prev_state, $current_state) {
 		new DataTableBehaviorSubmit());
 
 	$prev_form_data = $prev_state->get_form_data();
-	$selected_city = $prev_form_data["city"];
+	if (array_key_exists("city", $prev_form_data)) {
+		$selected_city = $prev_form_data["city"];
+	}
+	else
+	{
+		$selected_city = array();
+	}
 
 	$rows = array();
 	foreach (get_data() as $obj) {
@@ -61,7 +68,13 @@ try {
 	$prev_state = new DataFormState("select_cities", $_GET, $current_state);
 	$prev_form_data = $prev_state->get_form_data();
 
-	$selected_city = $prev_form_data["city"];
+	if (array_key_exists("city", $prev_form_data)) {
+		$selected_cities = $prev_form_data["city"];
+	}
+	else
+	{
+		$selected_cities = array();
+	}
 
 	$form = make_form($prev_state, $current_state);
 	if ($current_state->only_display_form()) {
@@ -70,7 +83,13 @@ try {
 	else
 	{
 		gfy_header("Select zip codes", "");
-		echo "You have selected: " . join(", ", $selected_city) . "<br />";
+		if ($selected_cities) {
+			echo "You have selected: " . join(", ", $selected_cities) . "<br />";
+		}
+		else
+		{
+			echo "You have selected nothing!";
+		}
 		echo $form->display($current_state);
 	}
 }
