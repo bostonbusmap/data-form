@@ -222,13 +222,18 @@ class DataTableBuilder {
 	public function build() {
 		// if unspecified, set options here
 
-		if (!$this->sql_field_names) {
-			// make sure this is an array
-			$this->sql_field_names = array();
+		if (!$this->table_name) {
+			$this->table_name = "";
+		}
+		if (!is_string($this->table_name)) {
+			throw new Exception("table_name must be a string");
 		}
 
 		if (!$this->columns) {
 			throw new Exception("columns must have at least one column");
+		}
+		if (!is_array($this->columns)) {
+			throw new Exception("columns must be an array of DataTableColumn");
 		}
 		foreach ($this->columns as $column) {
 			if (!($column instanceof DataTableColumn)) {
@@ -239,10 +244,69 @@ class DataTableBuilder {
 		if (!$this->buttons) {
 			$this->buttons = array();
 		}
+		if (!is_array($this->buttons)) {
+			throw new Exception("buttons must be an array of IDataTableWidget");
+		}
 		foreach ($this->buttons as $button) {
 			if (!($button instanceof IDataTableWidget)) {
 				throw new Exception("Each button must be instance of IDataTableWidget");
 			}
+		}
+
+		if (!$this->sql_field_names) {
+			// make sure this is an array
+			$this->sql_field_names = array();
+		}
+		if (!is_array($this->sql_field_names)) {
+			throw new Exception("sql_field_names must be an array of strings corresponding to field names");
+		}
+		foreach ($this->sql_field_names as $field_name) {
+			if (!is_string($field_name)) {
+				throw new Exception("Each item in sql_field_names must be a string");
+			}
+		}
+
+		if (!$this->rows) {
+			// TODO: show special message saying there's no data to display
+			$this->rows = array();
+		}
+		if (!is_array($this->rows)) {
+			throw new Exception("rows must be an array of arrays, the data to display in the table");
+		}
+		foreach ($this->rows as $row) {
+			if (!is_array($row)) {
+				throw new Exception("Each row in rows must be an array");
+			}
+		}
+
+		if (!$this->remote) {
+			$this->remote = false;
+		}
+		if ($this->remote && !is_string($this->remote)) {
+			throw new Exception("remote must be a string which is the URL the form refreshes from");
+		}
+
+		if (!$this->row_classes) {
+			$this->row_classes = array();
+		}
+		if (!is_array($this->row_classes)) {
+			throw new Exception("row_classes must be an array");
+		}
+		foreach ($this->row_classes as $row_class) {
+			if (!is_string($row_class)) {
+				throw new Exception("row_classes must be an array of strings which are CSS classes");
+			}
+		}
+
+		if (!$this->header) {
+			$this->header = "";
+		}
+		if (!is_string($this->header)) {
+			throw new Exception("header must be a string containing HTML to display above the table");
+		}
+
+		if ($this->pagination_settings && !($this->pagination_settings instanceof DataTablePaginationSettings)) {
+			throw new Exception("pagination_settings must be instance of DataTablePaginationSettings");
 		}
 
 		return new DataTable($this);

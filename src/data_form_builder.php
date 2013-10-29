@@ -27,7 +27,7 @@ class DataFormBuilder {
 
 	/**
 	 * @param $tables DataTable[]
-	 * @return DataTableBuilder
+	 * @return DataFormBuilder
 	 */
 	public function tables($tables) {
 		$this->tables = $tables;
@@ -36,7 +36,7 @@ class DataFormBuilder {
 
 	/**
 	 * @param $forwarded_state DataFormState[]
-	 * @return DataTableBuilder
+	 * @return DataFormBuilder
 	 */
 	public function forwarded_state($forwarded_state) {
 		$this->forwarded_state = $forwarded_state;
@@ -60,9 +60,15 @@ class DataFormBuilder {
 		if (!$this->form_name) {
 			throw new Exception("form_name is blank");
 		}
+		if (!is_string($this->form_name)) {
+			throw new Exception("form_name must be a string");
+		}
 
 		if (!$this->forwarded_state) {
 			$this->forwarded_state = array();
+		}
+		if (!is_array($this->forwarded_state)) {
+			throw new Exception("forwarded_state must be an array of DataFormState");
 		}
 		foreach ($this->forwarded_state as $state) {
 			if (!($state instanceof DataFormState)) {
@@ -73,8 +79,37 @@ class DataFormBuilder {
 		if (!$this->method) {
 			$this->method = "POST";
 		}
-		elseif (strtolower($this->method) != "get" && strtolower($this->method) != "post") {
+		if (!is_string($this->method)) {
+			throw new Exception("method must be a string, either GET or POST");
+		}
+		if (strtolower($this->method) != "get" && strtolower($this->method) != "post") {
 			throw new Exception("method must be GET or POST");
+		}
+
+		if (!$this->tables) {
+			$this->tables = array();
+		}
+		if (!is_array($this->tables)) {
+			throw new Exception("tables must be an array of DataTable objects");
+		}
+		foreach ($this->tables as $table) {
+			if (!($table instanceof DataTable)) {
+				throw new Exception("Each item in tables must be a DataTable object");
+			}
+		}
+		if (count($this->tables) > 1) {
+			$names = array();
+			foreach ($this->tables as $table) {
+				/** @var $table DataTable */
+				$table_name = $table->get_table_name();
+				if (!$table_name) {
+					throw new Exception("Each table must have a name if there is more than one in a form");
+				}
+				if (in_array($table_name, $names)) {
+					throw new Exception("Each table must have a unique name. Found duplicate for '$table_name'");
+				}
+				$names[] = $table_name;
+			}
 		}
 
 		return new DataForm($this);

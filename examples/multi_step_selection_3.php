@@ -5,37 +5,54 @@ require_once FILE_BASE_PATH . "/www/browser/lib/data_table/data_form.php";
 require_once "data.php";
 
 
-function compare_zip_column_asc($a, $b) {
+function compare_zip_column_desc($a, $b) {
 	return $a["zip"] < $b["zip"];
 }
 
-function compare_zip_column_desc($a, $b) {
+function compare_zip_column_asc($a, $b) {
 	return $a["zip"] > $b["zip"];
 }
 
 /**
  * @param DataFormState $cities_state
- * @param DataFormState $zip_codes_state
  * @param DataFormState $current_state
- * @return DataForm
+ * @return DataTable
  */
-function make_form($cities_state, $zip_codes_state, $current_state) {
+function make_city_table($cities_state, $current_state) {
 	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/multi_step_selection_3.php";
 
 	$columns = array();
 	$columns[] = new DataTableColumn("Cities", "city");
-	$columns[] = new DataTableColumn("Zip code", "zip", null, null, true);
 
 	$city_state_data = $cities_state->get_form_data();
 	$selected_cities = $city_state_data["city"];
-	$zip_data = $zip_codes_state->get_form_data();
-	$selected_zip_codes = $zip_data["zip"];
 
 	$rows = array();
-	foreach (get_data() as $obj) {
-		if (in_array($obj["city"], $selected_cities) && in_array($obj["zip"], $selected_zip_codes)) {
-			$rows[] = array("zip" => $obj["zip"], "city" => $obj["city"]);
-		}
+	foreach ($selected_cities as $city) {
+		$rows[] = array("city" => $city);
+	}
+
+	$table = DataTableBuilder::create()->table_name("city")->columns($columns)->rows($rows)->remote($this_url)->build();
+	return $table;
+}
+
+/**
+ * @param $zip_state DataFormState
+ * @param $current_state DataFormState
+ * @return DataTable
+ */
+function make_zip_table($zip_state, $current_state) {
+	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/multi_step_selection_3.php";
+
+	$columns = array();
+	$columns[] = new DataTableColumn("Zip codes", "zip", null, null, true);
+
+	$zip_state_data = $zip_state->get_form_data();
+	$selected_zip_codes = $zip_state_data["zip"];
+
+	$rows = array();
+	foreach ($selected_zip_codes as $zip) {
+		$rows[] = array("zip" => $zip);
 	}
 
 	$current_sorting_state = $current_state->get_sorting_state("zip");
@@ -47,17 +64,21 @@ function make_form($cities_state, $zip_codes_state, $current_state) {
 		usort($rows, "compare_zip_column_asc");
 	}
 
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->remote($this_url)->build();
-	$form = DataFormBuilder::create("results")->tables(array($table))->build();
-	return $form;
+	$table = DataTableBuilder::create()->table_name("zip")->columns($columns)->rows($rows)->remote($this_url)->build();
+	return $table;
 }
 
 try {
-	$current_state = new DataFormState("results", $_POST);
-	$zip_code_state = new DataFormState("select_zipcodes", $_POST, $current_state);
-	$city_state = new DataFormState("select_cities", $_POST, $zip_code_state);
+	$current_state = new DataFormState("results", $_GET);
+	$zip_code_state = new DataFormState("select_zipcodes", $_GET, $current_state);
+	$city_state = new DataFormState("select_cities", $_GET, $zip_code_state);
 
-	$form = make_form($city_state, $zip_code_state, $current_state);
+	$zip_table = make_zip_table($zip_code_state, $current_state);
+	$city_table = make_city_table($city_state, $current_state);
+	$form = DataFormBuilder::create("results")->tables(array($zip_table, $city_table))->
+		method("GET")->
+		forwarded_state(array($current_state, $zip_code_state))->build();
+
 	if ($current_state->only_display_form()) {
 		echo $form->display_form($current_state);
 	}

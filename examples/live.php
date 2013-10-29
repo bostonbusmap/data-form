@@ -11,11 +11,11 @@ class RedFormatter implements IDataTableCellFormatter {
 	}
 }
 
-function compare_result_column_asc($a, $b) {
+function compare_result_column_desc($a, $b) {
 	return $a["result"] < $b["result"];
 }
 
-function compare_result_column_desc($a, $b) {
+function compare_result_column_asc($a, $b) {
 	return $a["result"] > $b["result"];
 }
 

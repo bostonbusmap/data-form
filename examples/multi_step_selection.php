@@ -26,13 +26,14 @@ function make_form($state) {
 		$rows[$obj["city"]] = array("city" => $obj["city"]);
 	}
 
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->buttons($buttons)->remote($this_url)->build();
-	$form = DataFormBuilder::create("select_cities")->tables(array($table))->build();
+	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->buttons($buttons)->
+		remote($this_url)->build();
+	$form = DataFormBuilder::create("select_cities")->tables(array($table))->method("GET")->build();
 	return $form;
 }
 
 try {
-	$state = new DataFormState("select_cities", $_POST);
+	$state = new DataFormState("select_cities", $_GET);
 	$form = make_form($state);
 	if ($state->only_display_form()) {
 		echo $form->display_form($state);
