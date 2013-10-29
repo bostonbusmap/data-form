@@ -254,7 +254,7 @@ class DataTablePaginationState {
 			$array = array(self::limit_key => null,
 				self::current_page_key => 0);
 		}
-		if (array_key_exists(self::limit_key, $array)) {
+		if (array_key_exists(self::limit_key, $array) && !is_null($array[self::limit_key])) {
 			$this->limit = (int)$array[self::limit_key];
 		}
 		else {
