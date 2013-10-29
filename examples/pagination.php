@@ -44,7 +44,7 @@ function make_form($state) {
 
 	$columns = array();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Prime numbers")->column_key("number")->
-		cell_formatter(new PrimeFormatter())->sortable(true);
+		cell_formatter(new PrimeFormatter())->sortable(true)->build();
 
 	$rows = array();
 	$total_count = 1473;
