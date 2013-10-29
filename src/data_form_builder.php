@@ -13,6 +13,9 @@ class DataFormBuilder {
 	/** @var  string Form submit method, either POST or GET. POST by default */
 	private $method;
 
+	/** @var  string CSS class for div */
+	private $div_class;
+
 	public function __construct($form_name) {
 		$this->form_name = $form_name;
 	}
@@ -49,6 +52,15 @@ class DataFormBuilder {
 	 */
 	public function method($method) {
 		$this->method = $method;
+		return $this;
+	}
+
+	/**
+	 * @param $div_class string
+	 * @return DataFormBuilder
+	 */
+	public function div_class($div_class) {
+		$this->div_class = $div_class;
 		return $this;
 	}
 
@@ -112,6 +124,13 @@ class DataFormBuilder {
 			}
 		}
 
+		if (!$this->div_class) {
+			$this->div_class = "";
+		}
+		if (!is_string($this->div_class)) {
+			throw new Exception("div_class must be a string");
+		}
+
 		return new DataForm($this);
 	}
 
@@ -130,5 +149,9 @@ class DataFormBuilder {
 
 	public function get_method() {
 		return $this->method;
+	}
+
+	public function get_div_class() {
+		return $this->div_class;
 	}
 }

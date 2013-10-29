@@ -16,6 +16,9 @@ class DataForm {
 	/** @var  string Form method, either GET or POST */
 	private $method;
 
+	/** @var  string CSS class for div */
+	private $div_class;
+
 	/**
 	 * @param $builder DataFormBuilder
 	 */
@@ -24,6 +27,7 @@ class DataForm {
 		$this->form_name = $builder->get_form_name();
 		$this->forwarded_state = $builder->get_forwarded_state();
 		$this->method = $builder->get_method();
+		$this->div_class = $builder->get_div_class();
 	}
 
 	/**
@@ -37,7 +41,7 @@ class DataForm {
 			throw new Exception("state must be instance of DataFormState");
 		}
 
-		$ret =  "<div class='gfy_browser_table' id='" . $this->form_name . "'>";
+		$ret =  "<div class='" . $this->div_class . "' id='" . $this->form_name . "'>";
 		$ret .=  $this->display_form($state);
 		$ret .= "</div>";
 		return $ret;
