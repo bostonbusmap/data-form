@@ -30,17 +30,20 @@ class DataFormState
 
 	/**
 	 * @param $form_name string
-	 * @param $post array should be $_POST
+	 * @param $post array should be $_POST or $_GET
 	 * @param $current_state DataFormState If not in $request, look in $current_state's forwarded_state
 	 * @throws Exception
 	 */
 	public function __construct($form_name, $post, $current_state=null)
 	{
 		$this->form_name = $form_name;
-		if (!$form_name) {
-			throw new Exception("form_name must not be blank");
+		if (!$form_name || !is_string($form_name)) {
+			throw new Exception("form_name must not be blank and must be a string");
 		}
 
+		if (!is_array($post)) {
+			throw new Exception("post must be an array, probably POST or GET global variables");
+		}
 		if (array_key_exists($form_name, $post)) {
 			$form_data = $post[$form_name];
 		}
@@ -58,10 +61,14 @@ class DataFormState
 		}
 		$this->form_data = $form_data;
 
-		if ($form_data) {
+		if (!$this->form_data) {
+			$this->form_data = array();
+		}
+
+		if ($this->form_data) {
 			foreach (array(self::sorting_state_key, self::searching_state_key, self::pagination_key) as $key) {
-				if (array_key_exists($key, $form_data)) {
-					if (!is_array($form_data[$key])) {
+				if (array_key_exists($key, $this->form_data)) {
+					if (!is_array($this->form_data[$key])) {
 						throw new Exception("$key is expected to be an array");
 					}
 				}
@@ -74,7 +81,7 @@ class DataFormState
 	 * whatever's at {'a' : {'b' : ???}}, or null
 	 *
 	 * @param $path string[] an array of keys to drill down with
-	 * @return object null if nothing found, else whatever value was found
+	 * @return array|string|number null if nothing found, else whatever value was found
 	 * @throws Exception
 	 */
 	public function find_item($path) {
@@ -83,6 +90,9 @@ class DataFormState
 		}
 		$current = $this->form_data;
 		foreach ($path as $key) {
+			if (!is_string($key)) {
+				throw new Exception("Each item in path must be a string");
+			}
 			if (!$current) {
 				return null;
 			}
@@ -106,8 +116,17 @@ class DataFormState
 	 * @throws Exception
 	 */
 	public static function make_field_name($form_name, $path) {
+		if (!$form_name || !is_string($form_name)) {
+			throw new Exception("form_name must be a non-empty string");
+		}
+		if (!is_array($path)) {
+			throw new Exception("path must be an array of strings");
+		}
 		$ret = $form_name;
 		foreach ($path as $item) {
+			if (!is_string($item)) {
+				throw new Exception("Each item in path must be a string");
+			}
 			if (strpos($item, "[") !== false || strpos($item, "]") !== false) {
 				throw new Exception("Cannot use square bracket within item name");
 			}

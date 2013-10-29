@@ -43,7 +43,8 @@ function make_form($state) {
 	$current_page = $pagination->get_current_page();
 
 	$columns = array();
-	$columns[] = new DataTableColumn("Prime numbers", "number", new PrimeFormatter(), null, true, false);
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Prime numbers")->column_key("number")->
+		cell_formatter(new PrimeFormatter())->sortable(true);
 
 	$rows = array();
 	$total_count = 1473;

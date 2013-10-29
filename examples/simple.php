@@ -9,8 +9,8 @@ require_once FILE_BASE_PATH . "/www/browser/lib/data_table/data_form.php";
  */
 function make_form() {
 	$columns = array();
-	$columns[] = new DataTableColumn("Numbers", "number");
-	$columns[] = new DataTableColumn("Squared number", "square");
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Numbers")->column_key("number")->build();
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Squared number")->column_key("square")->build();
 
 	$rows = array();
 	for ($i = 0; $i < 15; $i++) {

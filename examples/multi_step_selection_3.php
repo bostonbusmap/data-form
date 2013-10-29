@@ -22,7 +22,7 @@ function make_city_table($cities_state, $current_state) {
 	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/multi_step_selection_3.php";
 
 	$columns = array();
-	$columns[] = new DataTableColumn("Cities", "city");
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Cities")->column_key("city")->build();
 
 	$city_state_data = $cities_state->get_form_data();
 	$selected_cities = $city_state_data["city"];
@@ -45,7 +45,7 @@ function make_zip_table($zip_state, $current_state) {
 	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/multi_step_selection_3.php";
 
 	$columns = array();
-	$columns[] = new DataTableColumn("Zip codes", "zip", null, null, true);
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Zip codes")->column_key("zip")->sortable(true)->build();
 
 	$zip_state_data = $zip_state->get_form_data();
 	$selected_zip_codes = $zip_state_data["zip"];

@@ -93,6 +93,15 @@ class DataTable
 	 * @return string HTML
 	 */
 	public function display_table($form_name, $form_method, $state=null) {
+		if (!is_string($form_name)) {
+			throw new Exception("form_name must be a string");
+		}
+		if (strtolower($form_method) != "get" && strtolower($form_method) != "post") {
+			throw new Exception("form_method must be GET or POST");
+		}
+		if ($state && !($state instanceof DataFormState)) {
+			throw new Exception("state must be instance of DataFormState");
+		}
 		$ret = "";
 
 		// user can either have field names as keys for each row, or set them in $this->sql_field_names

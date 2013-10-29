@@ -27,8 +27,8 @@ function make_form($state) {
 	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/live.php";
 
 	$columns = array();
-	$columns[] = new DataTableColumn("Numbers", "number");
-	$columns[] = new DataTableColumn("Result", "result", new RedFormatter(), null, true, false);
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Numbers")->column_key("numbers")->build();
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Result")->column_key("result")->sortable(true)->build();
 
 	$multiplier = $state->find_item(array("multiplier"));
 	if (is_null($multiplier)) {

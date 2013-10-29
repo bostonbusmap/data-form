@@ -23,8 +23,8 @@ function make_form($prev_state, $current_state) {
 	$next_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/multi_step_selection_3.php";
 
 	$columns = array();
-	$columns[] = new DataTableColumn("Select", "zip", new DataTableCheckboxCellFormatter());
-	$columns[] = new DataTableColumn("Zip code", "zip", null, null, true);
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Select")->column_key("zip")->build();
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Zip code")->column_key("zip")->sortable(true)->build();
 
 	$buttons = array();
 	$buttons[] = new DataTableButton("Continue >>", "submit", $next_url,

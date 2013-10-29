@@ -14,8 +14,9 @@ function make_form($state) {
 	$next_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/multi_step_selection_2.php";
 
 	$columns = array();
-	$columns[] = new DataTableColumn("Select", "city", new DataTableCheckboxCellFormatter());
-	$columns[] = new DataTableColumn("City", "city");
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Select")->column_key("city")->
+		cell_formatter(new DataTableCheckboxCellFormatter())->build();
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("City")->column_key("city")->build();
 
 	$buttons = array();
 	$buttons[] = new DataTableButton("Continue >>", "submit", $next_url,

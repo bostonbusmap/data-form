@@ -20,7 +20,8 @@ function make_form($state) {
 	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/searchable.php";
 
 	$columns = array();
-	$columns[] = new DataTableColumn("Bird", "bird", null, null, true, true);
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Bird")->column_key("bird")->
+		searchable(true)->sortable(true)->build();
 
 	$birds = array("1.1 Struthioniformes",
 		"1.2 Anseriformes",

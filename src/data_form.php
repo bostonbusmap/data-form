@@ -29,9 +29,14 @@ class DataForm {
 	/**
 	 * Returns HTML for a div wrapping a form
 	 * @param DataFormState $state
+	 * @throws Exception
 	 * @return string HTML
 	 */
 	public function display($state=null) {
+		if ($state && !($state instanceof DataFormState)) {
+			throw new Exception("state must be instance of DataFormState");
+		}
+
 		$ret =  "<div class='gfy_browser_table' id='" . $this->form_name . "'>";
 		$ret .=  $this->display_form($state);
 		$ret .= "</div>";
@@ -39,6 +44,9 @@ class DataForm {
 	}
 
 	public function display_form($state=null) {
+		if ($state && !($state instanceof DataFormState)) {
+			throw new Exception("state must be instance of DataFormState");
+		}
 		$ret = "";
 
 		// form action is set in javascript
@@ -56,8 +64,24 @@ class DataForm {
 		return $ret;
 	}
 
+	/**
+	 * Writes a bunch of hidden inputs for $obj. Names are concatenated such that a[b][c] will be stored
+	 * in $_POST or $_GET as {'a' : {'b' : {'c' : value}}}
+	 *
+	 * @param $obj array|string|number either an array with more hidden inputs, or something convertable to a string
+	 * @param $base string Prefix for input name
+	 * @throws Exception
+	 * @return string HTML of hidden inputs
+	 */
 	private static function make_inputs_from_forwarded_state($obj, $base)
 	{
+		if (!$base) {
+			throw new Exception("base must not be empty");
+		}
+		if (!is_string($base)) {
+			throw new Exception("base must be a string");
+		}
+
 		// TODO: sanitize HTML
 		if (is_array($obj)) {
 			$ret = "";
