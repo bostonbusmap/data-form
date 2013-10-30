@@ -117,7 +117,7 @@ class SQLBuilder {
 	public function build_count() {
 		$this->validate_inputs();
 
-		return $this->create_sql(null, true);
+		return $this->create_sql(true);
 	}
 
 	/**
