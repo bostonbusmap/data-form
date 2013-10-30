@@ -73,3 +73,13 @@ class DataTableBehaviorDefault implements IDataTableBehavior {
 		return "";
 	}
 }
+class DataTableBehaviorCustom implements IDataTableBehavior {
+	/** @var  string */
+	protected $javascript;
+	public function __construct($javascript) {
+		$this->javascript = $javascript;
+	}
+	function action($form_name, $form_action, $form_method) {
+		return $this->javascript;
+	}
+}
