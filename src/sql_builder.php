@@ -145,9 +145,9 @@ class SQLBuilder {
 					if (is_string($value)) {
 						if ($value == DataFormState::sorting_state_desc ||
 							$value == DataFormState::sorting_state_asc) {
-							$orderbys[] = "ORDER BY $key $value ";
+							$orderbys[] = " $key $value ";
 						}
-						else
+						elseif ($value)
 						{
 							throw new Exception("Unexpected sorting value received: '$value'");
 						}
@@ -185,7 +185,9 @@ class SQLBuilder {
 
 		$orderbys = self::create_orderby($state, $table_name);
 
-		$ret .= " " . join(" ", $orderbys);
+		if ($orderbys) {
+			$ret .= " ORDER BY " . join(", ", $orderbys);
+		}
 
 		if ($pagination_settings) {
 			$ret .= self::create_pagination($pagination_settings, $state, $table_name);
