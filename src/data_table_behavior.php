@@ -16,12 +16,12 @@ class DataTableBehaviorNone implements IDataTableBehavior {
 }
 class DataTableBehaviorSubmitNewWindow implements IDataTableBehavior {
 	function action($form_name, $form_action, $form_method) {
-		return "$(this).parent(\"form\").attr(\"action\", \"$form_action\");$(this).parent(\"form\").attr(\"target\", \"_blank\");";
+		return "$(this).parents(\"form\").attr(\"action\", \"$form_action\");$(this).parent(\"form\").attr(\"target\", \"_blank\");";
 	}
 }
 class DataTableBehaviorSubmit implements IDataTableBehavior {
 	function action($form_name, $form_action, $form_method) {
-		return "$(this).parent(\"form\").attr(\"action\", \"$form_action\");";
+		return "$(this).parents(\"form\").attr(\"action\", \"$form_action\");";
 	}
 }
 class DataTableBehaviorRefresh implements IDataTableBehavior {
@@ -52,6 +52,20 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 
 		return "$." . $method . "(\"" . $form_action . "\", $(this).parents(\"form\").serialize()  + \"$params\", function(data, textStatus, jqXHR) { $(\"#" .
 			$form_name . "\").html(data);});return false;";
+	}
+}
+class DataTableBehaviorClearSortThenRefresh implements IDataTableBehavior {
+	/** @var $extra_params string */
+	protected $extra_params;
+	public function __construct($extra_params) {
+		$this->extra_params = $extra_params;
+	}
+
+	function action($form_name, $form_action, $form_method) {
+
+		$clear_sorts = "$(this).parents(\"form\").find(\".hidden_sorting\").attr(\"value\", \"\");";
+		$refresh_behavior = new DataTableBehaviorRefresh($this->extra_params);
+		return $clear_sorts . $refresh_behavior->action($form_name, $form_action, $form_method);
 	}
 }
 class DataTableBehaviorDefault implements IDataTableBehavior {

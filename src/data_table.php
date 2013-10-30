@@ -222,7 +222,7 @@ class DataTable
 						// and doing something useful with it (probably incorporating it into SQL somehow)
 						$old_sorting_state = $state->get_sorting_state($column_key, $this->table_name);
 						$sorting_name = DataFormState::make_field_name($form_name, DataFormState::get_sorting_state_key($column_key, $this->table_name));
-						$ret .= "<input type='hidden' name='$sorting_name' value='$old_sorting_state' />";
+						$ret .= "<input type='hidden' name='$sorting_name' value='$old_sorting_state' class='hidden_sorting' />";
 					}
 					else
 					{
@@ -271,7 +271,7 @@ class DataTable
 					DataFormState::get_sorting_state_key($column_key, $this->table_name));
 				$sort_string = "&" . $sorting_state_name . "=" . $new_sorting_state;
 
-				$onclick_obj = new DataTableBehaviorRefresh($sort_string);
+				$onclick_obj = new DataTableBehaviorClearSortThenRefresh($sort_string);
 				$onclick = $onclick_obj->action($form_name, $this->remote, $form_method);
 				$ret .= "<a onclick='$onclick'>";
 			}
