@@ -18,6 +18,9 @@ class SQLBuilder {
 	/** @var  string */
 	protected $table_name;
 
+	/** @var  DataTablePaginationSettings */
+	protected $pagination_settings;
+
 	public function __construct() {
 		$this->wheres = array();
 		$this->selects = array();
@@ -82,6 +85,11 @@ class SQLBuilder {
 		return $this;
 	}
 
+	public function pagination_settings($pagination_settings) {
+		$this->pagination_settings = $pagination_settings;
+		return $this;
+	}
+
 	/**
 	 * @throws Exception
 	 */
@@ -95,6 +103,11 @@ class SQLBuilder {
 		}
 		if (!$this->froms) {
 			throw new Exception("At least one item in FROM clause must be pushed");
+		}
+
+		if ($this->pagination_settings &&
+			!($this->pagination_settings instanceof DataTablePaginationSettings)) {
+			throw new Exception("pagination_settings must be DataTablePaginationSettings");
 		}
 	}
 
@@ -110,14 +123,13 @@ class SQLBuilder {
 	/**
 	 * Create SQL from state and clauses
 	 *
-	 * @param $pagination_settings DataTablePaginationSettings
 	 * @return string SQL (not escaped!)
 	 * @throws Exception
 	 */
-	public function build($pagination_settings) {
+	public function build() {
 		$this->validate_inputs();
 
-		return $this->create_sql($pagination_settings, false);
+		return $this->create_sql(false);
 	}
 
 	/**
@@ -163,11 +175,10 @@ class SQLBuilder {
 	/**
 	 * Create SQL. Assumes validation of inputs is done
 	 *
-	 * @param $pagination_settings DataTablePaginationSettings
 	 * @param $count_only bool
 	 * @return string
 	 */
-	protected function create_sql($pagination_settings, $count_only) {
+	protected function create_sql($count_only) {
 		$ret = "SELECT ";
 		if (!$count_only) {
 			$ret .= join(", ", $this->selects);
@@ -191,8 +202,8 @@ class SQLBuilder {
 				$ret .= " ORDER BY " . join(", ", $orderbys);
 			}
 
-			if ($pagination_settings) {
-				$ret .= self::create_pagination($pagination_settings, $this->state, $this->table_name);
+			if ($this->pagination_settings) {
+				$ret .= self::create_pagination($this->pagination_settings, $this->state, $this->table_name);
 			}
 		}
 		return $ret;
