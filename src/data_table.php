@@ -200,6 +200,33 @@ class DataTable
 		$ret .= "<tr class='standard-table-header'>";
 		// TODO: replace with DOMDocument so we don't have to worry about sanitizing HTML
 
+		// figure out sorting state
+		/** @var string[] $old_sorting_state mapping of column key to 'asc' or 'desc' */
+		$old_sorting_state = array();
+		if ($this->remote) {
+			foreach ($this->columns as $column) {
+				$column_key = $column->get_column_key();
+
+				if ($column->get_sortable()) {
+					if ($state && $state->get_sorting_state($column_key, $this->table_name)) {
+						$old_sorting_state = array($column_key => $state->get_sorting_state($column_key, $this->table_name));
+						break;
+					}
+				}
+			}
+			if (!$old_sorting_state) {
+				// if nothing was previously set in the state, use the default if any
+				foreach ($this->columns as $column) {
+					$column_key = $column->get_column_key();
+
+					if ($column->get_default_sort()) {
+						$old_sorting_state = array($column_key => $column->get_default_sort());
+						break;
+					}
+				}
+			}
+		}
+
 		// write out header cells
 
 		// The most significant field here is $this->remote. If falsey, the table is strictly browser based
@@ -216,24 +243,19 @@ class DataTable
 				if ($this->remote) {
 					// draw sorting arrow and set hidden field
 					$ret .= "<th class='column_" . $column_key . "'>";
-					if ($state) {
+					if (array_key_exists($column_key, $old_sorting_state)) {
 						// set sorting state in form
 						// Note that the code at $this->remote is responsible for reading sorting state
 						// and doing something useful with it (probably incorporating it into SQL somehow)
-						$old_sorting_state = $state->get_sorting_state($column_key, $this->table_name);
 						$sorting_name = DataFormState::make_field_name($form_name, DataFormState::get_sorting_state_key($column_key, $this->table_name));
-						$ret .= "<input type='hidden' name='$sorting_name' value='$old_sorting_state' class='hidden_sorting' />";
-					}
-					else
-					{
-						$old_sorting_state = null;
-					}
+						$ret .= "<input type='hidden' name='$sorting_name' value='" . $old_sorting_state[$column_key] . "' class='hidden_sorting' />";
 
-					if ($old_sorting_state == DataFormState::sorting_state_asc) {
-						$ret .= "&uarr; ";
-					}
-					elseif ($old_sorting_state == DataFormState::sorting_state_desc) {
-						$ret .= "&darr; ";
+						if ($old_sorting_state[$column_key] == DataFormState::sorting_state_asc) {
+							$ret .= "&uarr; ";
+						}
+						elseif ($old_sorting_state[$column_key] == DataFormState::sorting_state_desc) {
+							$ret .= "&darr; ";
+						}
 					}
 				}
 				else
@@ -251,21 +273,14 @@ class DataTable
 			// If sortable, make header text a link which flips sorting
 			/** @var DataTableColumn $column */
 			if ($column->get_sortable() && $this->remote) {
-				if ($state && $state->get_sorting_state($column_key, $this->table_name)) {
-					$old_sorting_state = $state->get_sorting_state($column_key, $this->table_name);
-				}
-				else
-				{
-					// not really true but it provides a default
-					$old_sorting_state = DataFormState::sorting_state_asc;
-				}
-
-				if ($old_sorting_state == DataFormState::sorting_state_asc) {
-					$new_sorting_state = DataFormState::sorting_state_desc;
-				}
-				else
-				{
+				// write a link to sort in the opposite direction
+				if (array_key_exists($column_key, $old_sorting_state) &&
+					$old_sorting_state[$column_key] == DataFormState::sorting_state_desc) {
 					$new_sorting_state = DataFormState::sorting_state_asc;
+				}
+				else
+				{
+					$new_sorting_state = DataFormState::sorting_state_desc;
 				}
 				$sorting_state_name = DataFormState::make_field_name($form_name,
 					DataFormState::get_sorting_state_key($column_key, $this->table_name));

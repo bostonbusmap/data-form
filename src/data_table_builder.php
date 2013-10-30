@@ -259,6 +259,16 @@ class DataTableBuilder {
 				throw new Exception("Each column must be instance of DataTableColumn.");
 			}
 		}
+		$default_sort_column = null;
+		foreach ($this->columns as $column) {
+			/** @var $column DataTableColumn */
+			if ($column->get_default_sort()) {
+				if ($default_sort_column) {
+					throw new Exception('default_sort cannot be set on two columns at the same time');
+				}
+				$default_sort_column = $column->get_column_key();
+			}
+		}
 
 		if (!$this->widgets) {
 			$this->widgets = array();

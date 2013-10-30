@@ -32,6 +32,11 @@ class DataTableColumnBuilder {
 	 */
 	protected $css;
 
+	/**
+	 * @var string default sort (Either DataFormState::sorting_state_asc, DataFormState::sorting_state_desc, or null)
+	 */
+	protected $default_sort;
+
 	public static function create() {
 		return new DataTableColumnBuilder();
 	}
@@ -99,6 +104,15 @@ class DataTableColumnBuilder {
 		return $this;
 	}
 
+	/**
+	 * @param string $default_sort (Either DataFormState::sorting_state_asc, DataFormState::sorting_state_desc, or null)
+	 * @return DataTableColumnBuilder
+	 */
+	public function default_sort($default_sort) {
+		$this->default_sort = $default_sort;
+		return $this;
+	}
+
 	public function get_header_formatter() {
 		return $this->header_formatter;
 	}
@@ -127,6 +141,9 @@ class DataTableColumnBuilder {
 		return $this->css;
 	}
 
+	public function get_default_sort() {
+		return $this->default_sort;
+	}
 
 	/**
 	 * @return DataTableColumn
@@ -178,6 +195,16 @@ class DataTableColumnBuilder {
 		}
 		if (!is_string($this->css)) {
 			throw new Exception("css must be a string");
+		}
+
+		if ($this->default_sort && !$this->sortable) {
+			throw new Exception("default_sort is set but sortable is false");
+		}
+		if ($this->default_sort &&
+			$this->default_sort != DataFormState::sorting_state_asc &&
+			$this->default_sort != DataFormState::sorting_state_desc)
+		{
+			throw new Exception("Unknown default_sort option set");
 		}
 
 		return new DataTableColumn($this);
