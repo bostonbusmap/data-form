@@ -25,6 +25,11 @@ class SQLBuilder {
 		$this->table_name = "";
 	}
 
+	/**
+	 * @param $where string
+	 * @return SQLBuilder
+	 * @throws Exception
+	 */
 	public function push_where($where) {
 		if (!is_string($where) || !$where) {
 			throw new Exception("where must be a non-empty string");
@@ -33,6 +38,11 @@ class SQLBuilder {
 		return $this;
 	}
 
+	/**
+	 * @param $select string
+	 * @return SQLBuilder
+	 * @throws Exception
+	 */
 	public function push_select($select) {
 		if (!is_string($select) || !$select) {
 			throw new Exception("select must be a non-empty string");
@@ -41,6 +51,11 @@ class SQLBuilder {
 		return $this;
 	}
 
+	/**
+	 * @param $from string
+	 * @return SQLBuilder
+	 * @throws Exception
+	 */
 	public function push_from($from) {
 		if (!is_string($from) || !$from) {
 			throw new Exception("from must be a non-empty string");
@@ -49,27 +64,28 @@ class SQLBuilder {
 		return $this;
 	}
 
+	/**
+	 * @param $table_name string
+	 * @return SQLBuilder
+	 */
 	public function table_name($table_name) {
 		$this->table_name = $table_name;
 		return $this;
 	}
 
+	/**
+	 * @param $state DataFormState
+	 * @return SQLBuilder
+	 */
 	public function state($state) {
 		$this->state = $state;
 		return $this;
 	}
 
-	public function build_count() {
-		return $this->create_sql(null, $this->state, $this->table_name,
-			array("COUNT(*)"), $this->froms, $this->wheres);
-	}
-
 	/**
-	 * @param $pagination_settings DataTablePaginationSettings
-	 * @return string SQL (not escaped!)
 	 * @throws Exception
 	 */
-	public function build($pagination_settings) {
+	protected function validate_inputs() {
 		if ($this->state && !($this->state instanceof DataFormState)) {
 			throw new Exception("state must be instance of DataFormState");
 		}
@@ -80,12 +96,35 @@ class SQLBuilder {
 		if (!$this->froms) {
 			throw new Exception("At least one item in FROM clause must be pushed");
 		}
+	}
+
+	/**
+	 * @return string SQL which counts the rows
+	 */
+	public function build_count() {
+		$this->validate_inputs();
+
+		return $this->create_sql(null, $this->state, $this->table_name,
+			array("COUNT(*)"), $this->froms, $this->wheres);
+	}
+
+	/**
+	 * Create SQL from state and clauses
+	 *
+	 * @param $pagination_settings DataTablePaginationSettings
+	 * @return string SQL (not escaped!)
+	 * @throws Exception
+	 */
+	public function build($pagination_settings) {
+		$this->validate_inputs();
 
 		return self::create_sql($pagination_settings, $this->state, $this->table_name,
 			$this->selects, $this->froms, $this->wheres);
 	}
 
 	/**
+	 * Create ORDER BY portion of SQL
+	 *
 	 * @param $state DataFormState
 	 * @param $table_name string
 	 * @return string[]
@@ -124,6 +163,8 @@ class SQLBuilder {
 	}
 
 	/**
+	 * Create SQL. Assumes validation of inputs is done
+	 *
 	 * @param $pagination_settings DataTablePaginationSettings
 	 * @param $state DataFormState
 	 * @param $table_name string
@@ -153,6 +194,7 @@ class SQLBuilder {
 	}
 
 	/**
+	 * Add WHERE clauses for filters
 	 * @param $state DataFormState
 	 * @param $table_name string
 	 * @throws Exception
@@ -186,6 +228,8 @@ class SQLBuilder {
 	}
 
 	/**
+	 * Add LIMIT and OFFSET clauses given pagination state and settings
+	 *
 	 * @param $pagination_settings DataTablePaginationSettings
 	 * @param $state DataFormState
 	 * @param $table_name string
