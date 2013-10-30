@@ -142,14 +142,26 @@ class DataTablePaginationSettings {
 	 */
 	protected function create_pagination_page_controls($form_name, $form_method, $state, $remote_url, $table_name) {
 		$ret = "<div style='text-align: left;'>";
-		$pagination_state = $state->get_pagination_state($table_name);
+		if ($state) {
+			$pagination_state = $state->get_pagination_state($table_name);
+		}
+		else
+		{
+			$pagination_state = null;
+		}
 
 		// number of nearby pages to show
 		$window = 5;
 
-		$current_page = $pagination_state->get_current_page();
+		if ($pagination_state) {
+			$current_page = $pagination_state->get_current_page();
+		}
+		else
+		{
+			$current_page = 0;
+		}
 
-		if (is_null($pagination_state->get_limit())) {
+		if (!$pagination_state || is_null($pagination_state->get_limit())) {
 			$limit = $this->get_default_limit();
 		}
 		else {
@@ -280,7 +292,7 @@ class DataTablePaginationState {
 
 	/**
 	 * @return int
-	 * The current page
+	 * The current page (starting from 0)
 	 */
 	public function get_current_page()
 	{
