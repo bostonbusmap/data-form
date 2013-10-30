@@ -19,11 +19,11 @@ class DataTablePaginationSettings {
 	 * @throws Exception
 	 */
 	public function __construct($default_limit, $total_rows, $limit_options=null) {
-		if (!is_numeric($default_limit)) {
+		if (!is_int($default_limit)) {
 			throw new Exception("default_limit must be a number");
 		}
 		$this->default_limit = $default_limit;
-		if (!is_numeric($total_rows)) {
+		if (!is_int($total_rows)) {
 			throw new Exception("total_rows must be a number");
 		}
 		$this->total_rows = $total_rows;

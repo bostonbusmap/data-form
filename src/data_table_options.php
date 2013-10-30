@@ -9,7 +9,7 @@ class DataTableOption {
 
 	public function __construct($text, $value, $selected=false) {
 		$this->text = $text;
-		if (is_numeric($value)) {
+		if (is_int($value)) {
 			$value = (string)$value;
 		}
 		$this->value = $value;
