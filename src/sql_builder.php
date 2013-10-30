@@ -104,8 +104,7 @@ class SQLBuilder {
 	public function build_count() {
 		$this->validate_inputs();
 
-		return $this->create_sql(null, $this->state, $this->table_name,
-			array("COUNT(*)"), $this->froms, $this->wheres);
+		return $this->create_sql(null, true);
 	}
 
 	/**
@@ -118,8 +117,7 @@ class SQLBuilder {
 	public function build($pagination_settings) {
 		$this->validate_inputs();
 
-		return self::create_sql($pagination_settings, $this->state, $this->table_name,
-			$this->selects, $this->froms, $this->wheres);
+		return $this->create_sql($pagination_settings, false);
 	}
 
 	/**
@@ -166,31 +164,36 @@ class SQLBuilder {
 	 * Create SQL. Assumes validation of inputs is done
 	 *
 	 * @param $pagination_settings DataTablePaginationSettings
-	 * @param $state DataFormState
-	 * @param $table_name string
-	 * @param $selects string[]
-	 * @param $froms string[]
-	 * @param $wheres string[]
+	 * @param $count_only bool
 	 * @return string
 	 */
-	protected static function create_sql($pagination_settings, $state, $table_name, $selects, $froms, $wheres) {
-		$ret = "SELECT " . join(", ", $selects);
-		$ret .= " FROM " . join(", ", $froms);
+	protected function create_sql($pagination_settings, $count_only) {
+		$ret = "SELECT ";
+		if (!$count_only) {
+			$ret .= join(", ", $this->selects);
+		}
+		else
+		{
+			$ret .= "COUNT(*) ";
+		}
+		$ret .= " FROM " . join(", ", $this->froms);
 
-		$filter_wheres = self::create_filters($state, $table_name);
-		$wheres = array_merge($wheres, $filter_wheres);
+		$filter_wheres = self::create_filters($this->state, $this->table_name);
+		$wheres = array_merge($this->wheres, $filter_wheres);
 		if ($wheres) {
 			$ret .= " WHERE (" . join(") AND (", $wheres) . ") ";
 		}
 
-		$orderbys = self::create_orderby($state, $table_name);
+		if (!$count_only) {
+			$orderbys = self::create_orderby($this->state, $this->table_name);
 
-		if ($orderbys) {
-			$ret .= " ORDER BY " . join(", ", $orderbys);
-		}
+			if ($orderbys) {
+				$ret .= " ORDER BY " . join(", ", $orderbys);
+			}
 
-		if ($pagination_settings) {
-			$ret .= self::create_pagination($pagination_settings, $state, $table_name);
+			if ($pagination_settings) {
+				$ret .= self::create_pagination($pagination_settings, $this->state, $this->table_name);
+			}
 		}
 		return $ret;
 	}
