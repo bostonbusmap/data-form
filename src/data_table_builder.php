@@ -328,6 +328,10 @@ class DataTableBuilder {
 			throw new Exception("pagination_settings must be instance of DataTablePaginationSettings");
 		}
 
+		if ($this->pagination_settings && !$this->remote) {
+			throw new Exception("Remote URL must be set for pagination settings to work properly.");
+		}
+
 		if (!$this->empty_message) {
 			$this->empty_message = "";
 		}
