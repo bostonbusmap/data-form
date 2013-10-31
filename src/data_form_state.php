@@ -31,10 +31,10 @@ class DataFormState
 	/**
 	 * @param $form_name string
 	 * @param $post array should be $_POST or $_GET
-	 * @param $current_state DataFormState If not in $request, look in $current_state's forwarded_state
+	 * @param $source_state DataFormState If not in $request, look in $current_state's forwarded_state
 	 * @throws Exception
 	 */
-	public function __construct($form_name, $post, $current_state=null)
+	public function __construct($form_name, $post, $source_state=null)
 	{
 		$this->form_name = $form_name;
 		if (!$form_name || !is_string($form_name)) {
@@ -48,8 +48,8 @@ class DataFormState
 			$form_data = $post[$form_name];
 		}
 		else {
-			if ($current_state) {
-				$form_data = $current_state->find_item(array(self::forwarded_state_key, $form_name));
+			if ($source_state) {
+				$form_data = $source_state->find_item(array(self::forwarded_state_key, $form_name));
 				if (!$form_data) {
 					$form_data = array();
 				}
