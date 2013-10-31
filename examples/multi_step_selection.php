@@ -19,8 +19,8 @@ function make_form($state) {
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("City")->column_key("city")->build();
 
 	$buttons = array();
-	$buttons[] = new DataTableButton("Continue >>", "submit", $next_url,
-		new DataTableBehaviorSubmit());
+	$buttons[] = DataTableButtonBuilder::create()->text("Continue >>")->name("submit")->form_action($next_url)->
+		behavior(new DataTableBehaviorSubmit())->build();
 
 	$rows = array();
 	foreach (get_data() as $obj) {

@@ -1,4 +1,7 @@
 <?php
+/**
+ * Represents a simple one line textbox
+ */
 class DataTableTextbox implements IDataTableWidget {
 	/** @var  string */
 	protected $text;
@@ -11,12 +14,15 @@ class DataTableTextbox implements IDataTableWidget {
 	/** @var string either 'top' or 'bottom' */
 	protected $placement;
 
-	public function __construct($text, $name, $form_action, $submit_behavior = null, $placement = self::placement_top) {
-		$this->text = $text;
-		$this->name = $name;
-		$this->action = $form_action;
-		$this->submit_behavior = $submit_behavior;
-		$this->placement = $placement;
+	/**
+	 * @param $builder DataTableTextboxBuilder
+	 */
+	public function __construct($builder) {
+		$this->text = $builder->get_text();
+		$this->name = $builder->get_name();
+		$this->action = $builder->get_form_action();
+		$this->submit_behavior = $builder->get_behavior();
+		$this->placement = $builder->get_placement();
 
 	}
 

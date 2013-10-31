@@ -1,54 +1,4 @@
 <?php
-class DataTableOption {
-	/** @var  string */
-	protected $text;
-	/** @var  string */
-	protected $value;
-	/** @var  bool */
-	protected $selected;
-
-	public function __construct($text, $value, $selected=false) {
-		$this->text = $text;
-		if (is_int($value)) {
-			$value = (string)$value;
-		}
-		$this->value = $value;
-		$this->selected = $selected;
-	}
-
-	public function get_text() {
-		return $this->text;
-	}
-
-	public function get_value() {
-		return $this->value;
-	}
-
-	public function is_selected() {
-		return $this->selected;
-	}
-
-	/**
-	 * @param $override_select bool|null Either override with true or false, or null if no override
-	 * @return string HTML
-	 */
-	public function display($override_select) {
-		$value = $this->value;
-		$text = $this->text;
-		$selected = $this->selected;
-
-		if (!is_null($override_select)) {
-			$selected = $override_select;
-		}
-		if ($selected) {
-			return '<option value="' . htmlspecialchars($value) . '" selected>' . $text . "</option>";
-		}
-		else
-		{
-			return '<option value="' . htmlspecialchars($value) . '">' . $text . "</option>";
-		}
-	}
-}
 
 /**
  * Formats for the HTML select element. To use, create a DataTableOptions object for each cell in the column.
@@ -68,25 +18,15 @@ class DataTableOptions implements IDataTableWidget {
 	protected $placement;
 
 	/**
-	 * @param $options
-	 * @param $name
-	 * @param $form_action string Optional. URL of form to submit to on change.
-	 * @param $change_behavior IDataTableBehavior Optional. What happens when item is changed
-	 * @param string $placement string Optional. Where to display options relative to the table, either 'top' or 'bottom'
+	 * @param $builder DataTableOptionsBuilder
 	 * @throws Exception
 	 */
-	public function __construct($options, $name, $form_action, $change_behavior = null, $placement = self::placement_top) {
-		$this->name = $name;
-		if (!$this->options) {
-			$this->options = array();
-		}
-		$this->options = $options;
-		$this->form_action = $form_action;
-		$this->change_behavior = $change_behavior;
-		if ($placement != self::placement_top && $placement != self::placement_bottom) {
-			throw new Exception("placement must be 'top' or 'bottom'");
-		}
-		$this->placement = $placement;
+	public function __construct($builder) {
+		$this->options = $builder->get_options();
+		$this->name = $builder->get_name();
+		$this->form_action = $builder->get_form_action();
+		$this->change_behavior = $builder->get_behavior();
+		$this->placement = $builder->get_placement();
 	}
 
 	public function get_options() {
@@ -97,6 +37,10 @@ class DataTableOptions implements IDataTableWidget {
 		return $this->name;
 	}
 
+	public function get_placement()
+	{
+		return $this->placement;
+	}
 
 	/**
 	 * Displays options for a form. To display options for a particular cell use DataTableOptionsCellFormatter
@@ -170,10 +114,6 @@ class DataTableOptions implements IDataTableWidget {
 		return $ret;
 	}
 
-	public function get_placement()
-	{
-		return $this->placement;
-	}
 }
 
 class DataTableOptionsCellFormatter implements IDataTableCellFormatter {

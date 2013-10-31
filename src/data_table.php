@@ -9,16 +9,23 @@
 
 require_once "data_table_behavior.php";
 require_once "data_table_builder.php";
+require_once "data_table_button_builder.php";
 require_once "data_table_button.php";
 require_once "data_table_cell_formatter.php";
 require_once "data_table_checkbox.php";
 require_once "data_table_column_builder.php";
 require_once "data_table_column.php";
 require_once "data_table_header_formatter.php";
+require_once "data_table_hidden.php";
+require_once "data_table_hidden_builder.php";
 require_once "data_table_link.php";
+require_once "data_table_option.php";
+require_once "data_table_options_builder.php";
 require_once "data_table_options.php";
 require_once "data_table_pagination.php";
 require_once "data_table_radio.php";
+require_once "data_table_textbox_builder.php";
+require_once "data_table_textbox.php";
 require_once "data_form_state.php";
 require_once "data_table_widget.php";
 require_once "selected.php";

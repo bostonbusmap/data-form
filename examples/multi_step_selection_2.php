@@ -28,8 +28,8 @@ function make_form($prev_state, $current_state) {
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Zip code")->column_key("zip")->sortable(true)->build();
 
 	$buttons = array();
-	$buttons[] = new DataTableButton("Continue >>", "submit", $next_url,
-		new DataTableBehaviorSubmit());
+	$buttons[] = DataTableButtonBuilder::create()->text("Continue >>")->name("submit")->form_action($next_url)->
+		behavior(new DataTableBehaviorSubmit())->build();
 
 	$prev_form_data = $prev_state->get_form_data();
 	if (array_key_exists("city", $prev_form_data)) {

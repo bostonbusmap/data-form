@@ -27,29 +27,16 @@ class DataTableButton implements IDataTableWidget {
 	private $placement;
 
 	/**
-	 * @param string $text Text to display
-	 * @param string $name Name of button
-	 * @param string $action URL to submit to
-	 * @param IDataTableBehavior $behavior What happens when button is clicked
-	 * @param string $type Type of input (usually reset or submit)
-	 * @param string $placement Where button goes (currently either "top" or "bottom")
+	 * @param $builder DataTableButtonBuilder
 	 * @throws Exception
 	 */
-	public function __construct($text, $name, $action, $behavior = null, $type = "submit", $placement = self::placement_top) {
-		$this->name = $name;
-		$this->action = $action;
-		$this->type = $type;
-		if ($behavior && !($behavior instanceof IDataTableBehavior)) {
-			throw new Exception("Must specify behavior, must be instance of IDataTableBehavior");
-		}
-		$this->behavior = $behavior;
-
-		$this->text = $text;
-
-		if ($placement != self::placement_top && $placement != self::placement_bottom) {
-			throw new Exception("placement must be 'top' or 'bottom'");
-		}
-		$this->placement = $placement;
+	public function __construct($builder) {
+		$this->text = $builder->get_text();
+		$this->type = $builder->get_type();
+		$this->action = $builder->get_form_action();
+		$this->behavior = $builder->get_behavior();
+		$this->name = $builder->get_name();
+		$this->placement = $builder->get_placement();
 	}
 
 	public function display($form_name, $form_method, $state=null)

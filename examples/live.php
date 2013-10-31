@@ -56,8 +56,7 @@ function make_form($state) {
 	}
 
 	$buttons = array();
-	$buttons[] = new DataTableButton("(x * ?) % 7", "refresh", $this_url,
-		new DataTableBehaviorRefresh());
+	$buttons[] = DataTableButtonBuilder::create()->name("refresh")->text("(x * ?) % 7")->form_action($this_url)->behavior(new DataTableBehaviorRefresh())->build();
 
 	// note that '4' is selected by default, but this will be overridden
 	// if the form is refreshed
@@ -67,7 +66,7 @@ function make_form($state) {
 	$options[] = new DataTableOption("5", "5");
 
 
-	$buttons[] = new DataTableOptions($options, "multiplier", $this_url, new DataTableBehaviorRefresh());
+	$buttons[] = DataTableOptionsBuilder::create()->options($options)->name("multiplier")->form_action($this_url)->behavior(new DataTableBehaviorRefresh())->build();
 
 	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->remote($this_url)->build();
 	$form = DataFormBuilder::create("multiplication")->tables(array($table))->build();

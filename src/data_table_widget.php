@@ -1,4 +1,7 @@
 <?php
+/**
+ * Some piece of HTML displayed right outside the table
+ */
 interface IDataTableWidget {
 	const placement_top = "top";
 	const placement_bottom = "bottom";

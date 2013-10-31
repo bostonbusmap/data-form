@@ -21,12 +21,15 @@ class DataTableLink implements IDataTableWidget {
 
 	// add other parameters as appropriate
 
-	public function __construct($text, $link, $action="", $behavior=null, $placement = self::placement_top) {
-		$this->link = $link;
-		$this->text = $text;
-		$this->action = $action;
-		$this->behavior = $behavior;
-		$this->placement = $placement;
+	/**
+	 * @param $builder DataTableLinkBuilder
+	 */
+	public function __construct($builder) {
+		$this->link = $builder->get_link();
+		$this->text = $builder->get_text();
+		$this->action = $builder->get_form_action();
+		$this->behavior = $builder->get_behavior();
+		$this->placement = $builder->get_placement();
 	}
 
 	public function get_link() {
