@@ -29,6 +29,6 @@ class DataTableRadioFormatter implements IDataTableCellFormatter {
 				$checked = "";
 			}
 		}
-		return "<input type='radio' name='" . $form_name . "[$column_header]' value='$column_data' $checked />";
+		return '<input type="radio" name="' . htmlspecialchars($form_name . "[$column_header]") . '" value="' . htmlspecialchars($column_data) . '" ' . $checked . ' />';
 	}
 }

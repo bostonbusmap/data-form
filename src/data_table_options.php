@@ -41,11 +41,11 @@ class DataTableOption {
 			$selected = $override_select;
 		}
 		if ($selected) {
-			return "<option value='$value' selected>$text</option>";
+			return '<option value="' . htmlspecialchars($value) . '" selected>' . $text . "</option>";
 		}
 		else
 		{
-			return "<option value='$value'>$text</option>";
+			return '<option value="' . htmlspecialchars($value) . '">' . $text . "</option>";
 		}
 	}
 }
@@ -136,11 +136,11 @@ class DataTableOptions implements IDataTableWidget {
 				$qualified_name .= "[" . $name . "]";
 			}
 
-			$ret = "<select name='$qualified_name' onchange='$onchange'>";
+			$ret = '<select name="' . htmlspecialchars($qualified_name) . '" onchange="' . htmlspecialchars($onchange) . '">';
 		}
 		else
 		{
-			$ret = "<select onchange='$onchange'>";
+			$ret = '<select onchange="' . htmlspecialchars($onchange) . '">';
 		}
 
 		if ($name_array && $state) {

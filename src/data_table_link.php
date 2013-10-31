@@ -48,7 +48,7 @@ class DataTableLink implements IDataTableWidget {
 		{
 			$onclick = "";
 		}
-		return "<a href='$link' onclick='$onclick'>$text</a>";
+		return '<a href="' . htmlspecialchars($link) . '" onclick="' . htmlspecialchars($onclick) . '">' . $text . '</a>';
 	}
 
 	public function get_placement()
@@ -74,6 +74,6 @@ class DataTableLinkFormatter implements IDataTableCellFormatter {
 		// TODO: sanitize for HTML
 		$text = $column_data->get_text();
 		$link = $column_data->get_link();
-		return "<a href='$link'>$text</a>";
+		return '<a href="' . htmlspecialchars($link) . '">' . $text . '</a>';
 	}
 }

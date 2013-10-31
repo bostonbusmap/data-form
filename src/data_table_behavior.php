@@ -16,12 +16,12 @@ class DataTableBehaviorNone implements IDataTableBehavior {
 }
 class DataTableBehaviorSubmitNewWindow implements IDataTableBehavior {
 	function action($form_name, $form_action, $form_method) {
-		return "$(this).parents(\"form\").attr(\"action\", \"$form_action\");$(this).parent(\"form\").attr(\"target\", \"_blank\");";
+		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parent("form").attr("target", "_blank");';
 	}
 }
 class DataTableBehaviorSubmit implements IDataTableBehavior {
 	function action($form_name, $form_action, $form_method) {
-		return "$(this).parents(\"form\").attr(\"action\", \"$form_action\");";
+		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');';
 	}
 }
 class DataTableBehaviorRefresh implements IDataTableBehavior {
@@ -47,11 +47,10 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 
 		$method = strtolower($form_method);
 		if ($method != "post" && $method != "get") {
-			throw new Exception("Unknown method '$method");
+			throw new Exception("Unknown method '$method'");
 		}
 
-		return "$." . $method . "(\"" . $form_action . "\", $(this).parents(\"form\").serialize()  + \"$params\", function(data, textStatus, jqXHR) { $(\"#" .
-			$form_name . "\").html(data);});return false;";
+		return '$.' . $method . '(' . json_encode($form_action) . ', $(this).parents("form").serialize()  + ' . json_encode($params) . ', function(data, textStatus, jqXHR) { $(' . json_encode("#" . $form_name) . ').html(data);});return false;';
 	}
 }
 class DataTableBehaviorClearSortThenRefresh implements IDataTableBehavior {
@@ -63,7 +62,7 @@ class DataTableBehaviorClearSortThenRefresh implements IDataTableBehavior {
 
 	function action($form_name, $form_action, $form_method) {
 
-		$clear_sorts = "$(this).parents(\"form\").find(\".hidden_sorting\").attr(\"value\", \"\");";
+		$clear_sorts = '$(this).parents("form").find(".hidden_sorting").attr("value", "");';
 		$refresh_behavior = new DataTableBehaviorRefresh($this->extra_params);
 		return $clear_sorts . $refresh_behavior->action($form_name, $form_action, $form_method);
 	}

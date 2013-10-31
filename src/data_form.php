@@ -41,9 +41,9 @@ class DataForm {
 			throw new Exception("state must be instance of DataFormState");
 		}
 
-		$ret =  "<div class='" . $this->div_class . "' id='" . $this->form_name . "'>";
+		$ret =  '<div class="' . htmlspecialchars($this->div_class) . '" id="' . htmlspecialchars($this->form_name) . '">';
 		$ret .=  $this->display_form($state);
-		$ret .= "</div>";
+		$ret .= '</div>';
 		return $ret;
 	}
 
@@ -54,7 +54,7 @@ class DataForm {
 		$ret = "";
 
 		// form action is set in javascript
-		$ret .= "<form name='" . $this->form_name . "' method='" . $this->method . "'>";
+		$ret .= '<form name="' . htmlspecialchars($this->form_name) . '" method="' . htmlspecialchars($this->method) . '">';
 
 		foreach ($this->forwarded_state as $forwarded_state) {
 			$ret .= self::make_inputs_from_forwarded_state($forwarded_state->get_form_data(), $this->form_name . "[" . DataFormState::forwarded_state_key . "][" . $forwarded_state->get_form_name() . "]");
@@ -86,7 +86,6 @@ class DataForm {
 			throw new Exception("base must be a string");
 		}
 
-		// TODO: sanitize HTML
 		if (is_array($obj)) {
 			$ret = "";
 			foreach ($obj as $k => $v) {
@@ -95,7 +94,7 @@ class DataForm {
 		}
 		else
 		{
-			$ret = "<input type='hidden' name='" . $base . "' value='" . $obj . "' />";
+			$ret = '<input type="hidden" name="' . htmlspecialchars($base) . '" value="' . htmlspecialchars($obj) . '" />';
 		}
 		return $ret;
 	}

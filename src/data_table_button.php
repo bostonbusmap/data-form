@@ -64,7 +64,7 @@ class DataTableButton implements IDataTableWidget {
 			$onclick = '';
 		}
 		$type = $this->type;
-		return "<input type='$type' name='$qualified_name' value='$value' onclick='" . $onclick . "'/>";
+		return '<input type="' . htmlspecialchars($type) . '" name="' . htmlspecialchars($qualified_name) . '" value="' . htmlspecialchars($value) . '" onclick="' . htmlspecialchars($onclick) . '"/>';
 	}
 
 	public function get_placement() {

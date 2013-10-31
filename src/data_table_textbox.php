@@ -64,11 +64,11 @@ class DataTableTextbox implements IDataTableWidget {
 				$qualified_name .= "[" . $name . "]";
 			}
 
-			$ret = "<input type='text' name='$qualified_name' onsubmit='$onchange' value='$text' />";
+			$ret = '<input type="text" name="' . htmlspecialchars($qualified_name) . '" onsubmit="' . htmlspecialchars($onchange) . '" value="' . htmlspecialchars($text) . '" />';
 		}
 		else
 		{
-			$ret = "<input type='text' onsubmit='$onchange' value='$text' />";
+			$ret = '<input type="text" onsubmit="' . htmlspecialchars($onchange) . '" value="' . htmlspecialchars($text) . '" />';
 		}
 
 		$ret .= "</select>";

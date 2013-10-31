@@ -17,9 +17,6 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 	 */
 	public function format($form_name, $column_header, $column_data, $rowid, $state)
 	{
-		// TODO: sanitize for HTML
-		$checked = "";
-
 		if ($state && is_array($state->find_item(array($column_header)))) {
 			$checked_items = $state->find_item(array($column_header));
 			$checked = (in_array($rowid, $checked_items) ? "checked" : "");
@@ -34,7 +31,8 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 				$checked = "";
 			}
 		}
-		return "<input type='checkbox' name='" . $form_name . "[$column_header][$rowid]' value='$column_data' $checked />";
+		$input_name = $form_name . "[$column_header][$rowid]";
+		return '<input type="checkbox" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" ' . $checked . ' />';
 	}
 }
 
@@ -51,7 +49,8 @@ class DataTableCheckboxHeaderFormatter implements IDataTableHeaderFormatter {
 	public function format($form_name, $column_header, $column_display_header)
 	{
 		// this selects or clears all other checkboxes in column
-		$ret = "<input type='checkbox' onclick='$(this).parents(\"form\").find(\"td.column_$column_header :checkbox\").prop(\"checked\", this.checked)' />";
+		$onclick = '$(this).parents("form").find(' . json_encode('td.column_' . $column_header . ' :checkbox') . ').prop("checked", this.checked)';
+		$ret = '<input type="checkbox" onclick="' . htmlspecialchars($onclick) . '" />';
 		return $ret;
 	}
 }

@@ -75,6 +75,11 @@ class DataFormBuilder {
 		if (!is_string($this->form_name)) {
 			throw new Exception("form_name must be a string");
 		}
+		if (strpos($this->form_name, ".") !== false ||
+			strpos($this->form_name, " ") !== false ||
+			strpos($this->form_name, ":") !== false) {
+			throw new Exception("Illegal character in form_name");
+		}
 
 		if (!$this->forwarded_state) {
 			$this->forwarded_state = array();

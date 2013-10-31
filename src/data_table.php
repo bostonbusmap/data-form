@@ -125,11 +125,11 @@ class DataTable
 
 		// show blue header on top of table. May contain pagination controls
 		if ($this->is_sortable()) {
-			$ret .= "<table class='table-autosort table-stripeclass:shadedbg table-altstripeclass:shadedbg' style='width: 400px;'>";
+			$ret .= '<table class="table-autosort table-stripeclass:shadedbg table-altstripeclass:shadedbg" style="width: 400px;">';
 		}
 		else
 		{
-			$ret .= "<table class='table-stripeclass:shadedbg table-altstripeclass:shadedbg' style='width: 400px;'>";
+			$ret .= '<table class="table-stripeclass:shadedbg table-altstripeclass:shadedbg" style="width: 400px;">';
 		}
 		if ($this->header || $this->pagination_settings) {
 			$ret .= "<caption>";
@@ -198,7 +198,6 @@ class DataTable
 	{
 		$ret = "<thead>";
 		$ret .= "<tr class='standard-table-header'>";
-		// TODO: replace with DOMDocument so we don't have to worry about sanitizing HTML
 
 		// figure out sorting state
 		/** @var string[] $old_sorting_state mapping of column key to 'asc' or 'desc' */
@@ -242,13 +241,13 @@ class DataTable
 			if ($column->get_sortable()) {
 				if ($this->remote) {
 					// draw sorting arrow and set hidden field
-					$ret .= "<th class='column_" . $column_key . "'>";
+					$ret .= '<th class="column_' . htmlspecialchars($column_key) . '">';
 					if (array_key_exists($column_key, $old_sorting_state)) {
 						// set sorting state in form
 						// Note that the code at $this->remote is responsible for reading sorting state
 						// and doing something useful with it (probably incorporating it into SQL somehow)
 						$sorting_name = DataFormState::make_field_name($form_name, DataFormState::get_sorting_state_key($column_key, $this->table_name));
-						$ret .= "<input type='hidden' name='$sorting_name' value='" . $old_sorting_state[$column_key] . "' class='hidden_sorting' />";
+						$ret .= '<input type="hidden" name="' . htmlspecialchars($sorting_name) . '" value="' . htmlspecialchars($old_sorting_state[$column_key]) . '" class="hidden_sorting" />';
 
 						if ($old_sorting_state[$column_key] == DataFormState::sorting_state_asc) {
 							$ret .= "&uarr; ";
@@ -261,13 +260,13 @@ class DataTable
 				else
 				{
 					// let Javascript handle it
-					$ret .= "<th class='column_" . $column_key . " table-sortable:" . $column->get_sortable() . " table-sortable' title='Click to sort'>";
+					$ret .= '<th class="column_' . htmlspecialchars($column_key) . ' table-sortable:' . htmlspecialchars($column->get_sortable()) . ' table-sortable" title="Click to sort">';
 				}
 			}
 			else
 			{
 				// no sorting
-				$ret .= "<th class='column_" . $column_key . "'>";
+				$ret .= '<th class="column_' . htmlspecialchars($column_key) . '">';
 			}
 
 			// If sortable, make header text a link which flips sorting
@@ -288,7 +287,7 @@ class DataTable
 
 				$onclick_obj = new DataTableBehaviorClearSortThenRefresh($sort_string);
 				$onclick = $onclick_obj->action($form_name, $this->remote, $form_method);
-				$ret .= "<a onclick='$onclick'>";
+				$ret .= '<a onclick="' . htmlspecialchars($onclick) . '">';
 			}
 			// display special header cell if specified
 			$ret .= $column->get_display_header($form_name, $column_key);
@@ -323,7 +322,7 @@ class DataTable
 						}
 						$searching_name = DataFormState::make_field_name($form_name,
 							DataFormState::get_searching_state_key($column_key, $this->table_name));
-						$ret .= "<input size='8' name='" . $searching_name . "' value='" . $old_searching_state . "' />";
+						$ret .= '<input size="8" name="' . htmlspecialchars($searching_name) . '" value="' . htmlspecialchars($old_searching_state) . '" />';
 					}
 				}
 				$ret .= "</th>";
@@ -373,7 +372,7 @@ class DataTable
 				}
 			}
 
-			$ret .= "<tr class='$row_class'>";
+			$ret .= '<tr class="' . htmlspecialchars($row_class) . '">';
 
 
 			// We are writing each column in order and only matching it up with data
@@ -381,7 +380,7 @@ class DataTable
 			foreach ($this->columns as $column) {
 				$column_key = $column->get_column_key();
 				$col_css = $column->get_css();
-				$ret .= "<td class='column_$column_key $col_css'>";
+				$ret .= '<td class="column_' . htmlspecialchars($column_key) . " " . htmlspecialchars($col_css) . '">';
 				/** @var DataTableColumn $column */
 				if (array_key_exists($column_key, $row)) {
 					$cell = $row[$column_key];
