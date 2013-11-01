@@ -1,6 +1,6 @@
 <?php
 /**
- * Class to wrap objects which may be selected
+ * Class to wrap objects which may be selected by default
  */
 class Selected {
 	/** @var  object Something representable as a string */
