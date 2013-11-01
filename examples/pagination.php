@@ -48,11 +48,11 @@ function make_form($state) {
 
 	$rows = array();
 	$total_count = 1473;
-	$pagination_settings = new DataTablePaginationSettings(25, $total_count);
+	$settings = DataTableSettingsBuilder::create()->total_rows($total_count)->default_limit(25)->build();
 
 	$limit = $pagination->get_limit();
 	if (is_null($limit)) {
-		$limit = $pagination_settings->get_default_limit();
+		$limit = $settings->get_default_limit();
 	}
 	elseif ($limit === 0) {
 		$limit = $total_count;
@@ -75,7 +75,7 @@ function make_form($state) {
 
 
 	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->remote($this_url)->
-		pagination_settings($pagination_settings)->build();
+		settings($settings)->build();
 	$form = DataFormBuilder::create("primes")->tables(array($table))->build();
 	return $form;
 }

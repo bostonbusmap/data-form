@@ -56,6 +56,9 @@ class DataForm {
 		// form action is set in javascript
 		$ret .= '<form name="' . htmlspecialchars($this->form_name) . '" method="' . htmlspecialchars($this->method) . '">';
 
+		$field_name = DataFormState::make_field_name($this->form_name, DataFormState::exists_key());
+		$ret .= '<input type="hidden" name="' . htmlspecialchars($field_name) . '" value="true" />';
+
 		foreach ($this->forwarded_state as $forwarded_state) {
 			$ret .= self::make_inputs_from_forwarded_state($forwarded_state->get_form_data(), $this->form_name . "[" . DataFormState::forwarded_state_key . "][" . $forwarded_state->get_form_name() . "]");
 		}

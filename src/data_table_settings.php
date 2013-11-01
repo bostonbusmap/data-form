@@ -1,9 +1,8 @@
 <?php
-
 /**
- * Settings supplied by user
+ * Default settings for DataTable pagination, filtering and sorting. Will be overridden by settings in DataFormState if they exist
  */
-class DataTablePaginationSettings {
+class DataTableSettings {
 	/** @var  int */
 	protected $default_limit;
 	/** @var  int */
@@ -13,54 +12,24 @@ class DataTablePaginationSettings {
 	protected $limit_options;
 
 	/**
-	 * @param $default_limit int The default number of rows per page. If 0, show all rows
-	 * @param $total_rows int The total number of rows available
-	 * @param $limit_options string[] Mapping of limit number to text to display for that limit number. Null for default limit options
-	 * @throws Exception
+	 * @var string[] mapping of column_key to sorting direction ('asc' or 'desc')
 	 */
-	public function __construct($default_limit, $total_rows, $limit_options=null) {
-		if (!is_int($default_limit)) {
-			throw new Exception("default_limit must be a number");
-		}
-		$this->default_limit = $default_limit;
-		if (!is_int($total_rows)) {
-			throw new Exception("total_rows must be a number");
-		}
-		$this->total_rows = $total_rows;
-
-		if (is_null($limit_options)) {
-			$limit_options = array(
-				0 => "ALL",
-				10 => "10",
-				25 => "25",
-				50 => "50",
-				100 => "100",
-				500 => "500",
-				1000 => "1000"
-			);
-		}
-		$this->limit_options = $limit_options;
-	}
+	protected $sorting;
 
 	/**
-	 * @return int
+	 * @var string[] mapping of column_key to search phrase
 	 */
-	public function get_default_limit() {
-		return $this->default_limit;
-	}
+	protected $filtering;
 
 	/**
-	 * @return int
+	 * @param $builder DataTableSettingsBuilder
 	 */
-	public function get_total_rows() {
-		return $this->total_rows;
-	}
-
-	/**
-	 * @return string[] Mapping of limit number to text to display for that limit number. Null for default limit options
-	 */
-	public function get_limit_options() {
-		return $this->limit_options;
+	public function __construct($builder) {
+		$this->default_limit = $builder->get_default_limit();
+		$this->total_rows = $builder->get_total_rows();
+		$this->limit_options = $builder->get_limit_options();
+		$this->sorting = $builder->get_sorting();
+		$this->filtering = $builder->get_filtering();
 	}
 
 	/**
@@ -93,9 +62,9 @@ class DataTablePaginationSettings {
 
 		$option_values = array();
 
-		$options = $this->get_limit_options();
+		$options = $this->limit_options;
 
-		$default_pagination_limit = $this->get_default_limit();
+		$default_pagination_limit = $this->default_limit;
 
 		foreach ($options as $limit => $text) {
 			$option_values[] = new DataTableOption($text, $limit, $limit === $default_pagination_limit);
@@ -162,13 +131,13 @@ class DataTablePaginationSettings {
 		}
 
 		if (!$pagination_state || is_null($pagination_state->get_limit())) {
-			$limit = $this->get_default_limit();
+			$limit = $this->default_limit;
 		}
 		else {
 			$limit = $pagination_state->get_limit();
 		}
 
-		$num_rows = $this->get_total_rows();
+		$num_rows = $this->total_rows;
 		if ($limit == 0) {
 			$num_pages = 1;
 		}
@@ -244,58 +213,39 @@ class DataTablePaginationSettings {
 		return $ret;
 	}
 
-}
-
-/**
- * Class to contain pagination state
- */
-class DataTablePaginationState {
-	const limit_key = "_limit";
-	const current_page_key = "_current_page";
-
-	/** @var  int Number of rows per page, or 0 for all rows */
-	protected $limit;
-	/** @var  int The current page (0-indexed) */
-	protected $current_page;
-
 	/**
-	 * @param $array array Array from $_POST with pagination data
+	 * Did user set any of the pagination settings, indicating that they want pagination?
+	 * @return bool
 	 */
-	public function __construct($array) {
-		if (!$array) {
-			$array = array(self::limit_key => null,
-				self::current_page_key => 0);
-		}
-		if (array_key_exists(self::limit_key, $array) && !is_null($array[self::limit_key])) {
-			$this->limit = (int)$array[self::limit_key];
-		}
-		else {
-			$this->limit = null;
-		}
-		if (array_key_exists(self::current_page_key, $array) && $array[self::current_page_key]) {
-			$this->current_page = (int)$array[self::current_page_key];
-		}
-		else
-		{
-			$this->current_page = 0;
-		}
-	}
-
-	/**
-	 * @return int|null
-	 * Number of rows per page, or 0 if all rows. May be null if unset
-	 */
-	public function get_limit()
+	public function uses_pagination()
 	{
-		return $this->limit;
+		// total_rows is the only necessary pagination option, so I'm using it as an
+		// indicator that the user wants pagination
+		return !is_null($this->total_rows);
+	}
+
+	public function get_default_limit()
+	{
+		return $this->default_limit;
+	}
+
+	public function get_total_rows() {
+		return $this->total_rows;
 	}
 
 	/**
-	 * @return int
-	 * The current page (starting from 0)
+	 * @return string[] Map of column_key to either 'asc' or 'desc'
 	 */
-	public function get_current_page()
+	public function get_default_sorting()
 	{
-		return $this->current_page;
+		return $this->sorting;
 	}
+
+	/**
+	 * @return string[] Map of column_key to some piece of text to show by default
+	 */
+	public function get_default_filtering() {
+		return $this->filtering;
+	}
+
 }

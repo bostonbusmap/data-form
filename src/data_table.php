@@ -22,8 +22,10 @@ require_once "data_table_link.php";
 require_once "data_table_option.php";
 require_once "data_table_options_builder.php";
 require_once "data_table_options.php";
-require_once "data_table_pagination.php";
+require_once "data_table_pagination_state.php";
 require_once "data_table_radio.php";
+require_once "data_table_settings_builder.php";
+require_once "data_table_settings.php";
 require_once "data_table_textbox_builder.php";
 require_once "data_table_textbox.php";
 require_once "data_form_state.php";
@@ -67,9 +69,9 @@ class DataTable
 	private $row_classes;
 
 	/**
-	 * @var DataTablePaginationSettings Pagination settings. If null, no pagination should be done
+	 * @var DataTableSettings Settings for data table's pagination, sorting and filtering
 	 */
-	private $pagination_settings;
+	private $settings;
 
 	/**
 	 * @var string HTML to display within header. If null and related items are false, do not display header
@@ -91,7 +93,7 @@ class DataTable
 		$this->rows = $builder->get_rows();
 		$this->remote = $builder->get_remote();
 		$this->row_classes = $builder->get_row_classes();
-		$this->pagination_settings = $builder->get_pagination_settings();
+		$this->settings = $builder->get_settings();
 		$this->header = $builder->get_header();
 		$this->empty_message = $builder->get_empty_message();
 	}
@@ -138,15 +140,15 @@ class DataTable
 		{
 			$ret .= '<table class="table-stripeclass:shadedbg table-altstripeclass:shadedbg" style="width: 400px;">';
 		}
-		if ($this->header || $this->pagination_settings) {
+		if ($this->header || ($this->settings && $this->settings->uses_pagination())) {
 			$ret .= "<caption>";
 
 			if ($this->header) {
 				$ret .= $this->header;
 			}
-			if ($this->pagination_settings)
+			if ($this->settings && $this->settings->uses_pagination())
 			{
-				$ret .= $this->pagination_settings->display_controls($form_name, $form_method, $state,
+				$ret .= $this->settings->display_controls($form_name, $form_method, $state,
 					$this->remote, $this->table_name);
 			}
 			$ret .= "</caption>";
@@ -222,13 +224,8 @@ class DataTable
 			}
 			if (!$old_sorting_state) {
 				// if nothing was previously set in the state, use the default if any
-				foreach ($this->columns as $column) {
-					$column_key = $column->get_column_key();
-
-					if ($column->get_default_sort()) {
-						$old_sorting_state = array($column_key => $column->get_default_sort());
-						break;
-					}
+				if ($this->settings) {
+					$old_sorting_state = $this->settings->get_default_sorting();
 				}
 			}
 		}
@@ -326,6 +323,12 @@ class DataTable
 						else
 						{
 							$old_searching_state = "";
+							if ($this->settings) {
+								$default_filtering = $this->settings->get_default_filtering();
+								if (array_key_exists($column_key, $default_filtering)) {
+									$old_searching_state = $default_filtering[$column_key];
+								}
+							}
 						}
 						$searching_name = DataFormState::make_field_name($form_name,
 							DataFormState::get_searching_state_key($column_key, $this->table_name));

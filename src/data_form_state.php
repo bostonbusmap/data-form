@@ -17,6 +17,8 @@ class DataFormState
 
 	const pagination_key = "_pagination";
 
+	const form_exists = "_form_exists";
+
 	/**
 	 * The piece of $_REQUEST that's relevant to this form
 	 * @var array
@@ -225,6 +227,17 @@ class DataFormState
 	 */
 	public static function only_display_form_key() {
 		return array(self::state_key, self::only_display_form);
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function exists() {
+		return $this->find_item(self::exists_key());
+	}
+
+	public static function exists_key() {
+		return array(self::state_key, self::form_exists);
 	}
 
 	/**

@@ -29,9 +29,9 @@ class DataTableBuilder {
 	 */
 	private $row_classes;
 	/**
-	 * @var DataTablePaginationSettings Pagination settings. If null, no pagination should be done
+	 * @var DataTableSettings Settings for pagination, filtering and sorting. May be null
 	 */
-	private $pagination_settings;
+	private $settings;
 	/**
 	 * @var string HTML shown for header
 	 */
@@ -132,11 +132,11 @@ class DataTableBuilder {
 	}
 
 	/**
-	 * @param $pagination_settings DataTablePaginationSettings  If null, no pagination should be done
+	 * @param $settings DataTableSettings
 	 * @return DataTableBuilder
 	 */
-	public function pagination_settings($pagination_settings) {
-		$this->pagination_settings = $pagination_settings;
+	public function settings($settings) {
+		$this->settings = $settings;
 		return $this;
 	}
 
@@ -212,10 +212,10 @@ class DataTableBuilder {
 	}
 
 	/**
-	 * @return DataTablePaginationSettings  If null, no pagination should be done
+	 * @return DataTableSettings
 	 */
-	public function get_pagination_settings() {
-		return $this->pagination_settings;
+	public function get_settings() {
+		return $this->settings;
 	}
 
 	/**
@@ -259,16 +259,6 @@ class DataTableBuilder {
 				throw new Exception("Each column must be instance of DataTableColumn.");
 			}
 		}
-		$default_sort_column = null;
-		foreach ($this->columns as $column) {
-			/** @var $column DataTableColumn */
-			if ($column->get_default_sort()) {
-				if ($default_sort_column) {
-					throw new Exception('default_sort cannot be set on two columns at the same time');
-				}
-				$default_sort_column = $column->get_column_key();
-			}
-		}
 
 		if (!$this->widgets) {
 			$this->widgets = array();
@@ -296,7 +286,6 @@ class DataTableBuilder {
 		}
 
 		if (!$this->rows) {
-			// TODO: show special message saying there's no data to display
 			$this->rows = array();
 		}
 		if (!is_array($this->rows)) {
@@ -334,12 +323,13 @@ class DataTableBuilder {
 			throw new Exception("header must be a string containing HTML to display above the table");
 		}
 
-		if ($this->pagination_settings && !($this->pagination_settings instanceof DataTablePaginationSettings)) {
-			throw new Exception("pagination_settings must be instance of DataTablePaginationSettings");
+		if ($this->settings && !($this->settings instanceof DataTableSettings)) {
+			throw new Exception("settings must be instance of DataTableSettings");
 		}
 
-		if ($this->pagination_settings && !$this->remote) {
-			throw new Exception("Remote URL must be set for pagination settings to work properly.");
+		if ($this->settings && $this->settings->uses_pagination() && !$this->remote) {
+			// TODO: use DataTableSettings to apply local sorting and filtering defaults
+			throw new Exception("Remote URL must be set for pagination settings to be applied.");
 		}
 
 		if (!$this->empty_message) {

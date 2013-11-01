@@ -80,11 +80,6 @@ class DataTableColumn {
 	protected $css;
 
 	/**
-	 * @var string default sort (Either DataFormState::sorting_state_asc, DataFormState::sorting_state_desc, or null)
-	 */
-	protected $default_sort;
-
-	/**
 	 * @param $builder DataTableColumnBuilder
 	 */
 	public function __construct($builder) {
@@ -95,7 +90,6 @@ class DataTableColumn {
 		$this->display_header_name = $builder->get_display_header_name();
 		$this->column_key = $builder->get_column_key();
 		$this->css = $builder->get_css();
-		$this->default_sort = $builder->get_default_sort();
 	}
 
 	/**
@@ -151,9 +145,5 @@ class DataTableColumn {
 	public function get_css()
 	{
 		return $this->css;
-	}
-
-	public function get_default_sort() {
-		return $this->default_sort;
 	}
 }
