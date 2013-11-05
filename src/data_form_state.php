@@ -66,6 +66,9 @@ class DataFormState
 		if (!$this->form_data) {
 			$this->form_data = array();
 		}
+		if (!is_array($this->form_data)) {
+			throw new Exception("form_data was expected to be an array");
+		}
 
 		if ($this->form_data) {
 			foreach (array(self::sorting_state_key, self::searching_state_key, self::pagination_key) as $key) {
@@ -123,6 +126,9 @@ class DataFormState
 		}
 		if (!is_array($path)) {
 			throw new Exception("path must be an array of strings");
+		}
+		if (!$path) {
+			throw new Exception("path must have at least one string");
 		}
 		$ret = $form_name;
 		foreach ($path as $item) {
