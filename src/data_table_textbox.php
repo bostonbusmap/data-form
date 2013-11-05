@@ -16,8 +16,12 @@ class DataTableTextbox implements IDataTableWidget {
 
 	/**
 	 * @param $builder DataTableTextboxBuilder
+	 * @throws Exception
 	 */
 	public function __construct($builder) {
+		if (!($builder instanceof DataTableTextboxBuilder)) {
+			throw new Exception("builder expected to be instance of DataTableTextboxBuilder");
+		}
 		$this->text = $builder->get_text();
 		$this->name = $builder->get_name();
 		$this->action = $builder->get_form_action();

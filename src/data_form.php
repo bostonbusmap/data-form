@@ -21,8 +21,12 @@ class DataForm {
 
 	/**
 	 * @param $builder DataFormBuilder
+	 * @throws Exception
 	 */
 	public function __construct($builder) {
+		if (!($builder instanceof DataFormBuilder)) {
+			throw new Exception("builder expected to be instance of DataFormBuilder");
+		}
 		$this->tables = $builder->get_tables();
 		$this->form_name = $builder->get_form_name();
 		$this->forwarded_state = $builder->get_forwarded_state();

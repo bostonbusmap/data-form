@@ -10,8 +10,12 @@ class DataTableHidden implements IDataTableWidget {
 
 	/**
 	 * @param $builder DataTableHiddenBuilder
+	 * @throws Exception
 	 */
 	public function __construct($builder) {
+		if (!($builder instanceof DataTableHiddenBuilder)) {
+			throw new Exception("builder expected to be instance of DataTableHiddenBuilder");
+		}
 		$this->value = $builder->get_value();
 		$this->name = $builder->get_name();
 	}

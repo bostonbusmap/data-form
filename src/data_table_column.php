@@ -81,8 +81,12 @@ class DataTableColumn {
 
 	/**
 	 * @param $builder DataTableColumnBuilder
+	 * @throws Exception
 	 */
 	public function __construct($builder) {
+		if (!($builder instanceof DataTableColumnBuilder)) {
+			throw new Exception("builder expected to be instance of DataTableColumnBuilder");
+		}
 		$this->header_formatter = $builder->get_header_formatter();
 		$this->cell_formatter = $builder->get_cell_formatter();
 		$this->sortable = $builder->get_sortable();

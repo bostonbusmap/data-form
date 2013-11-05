@@ -31,6 +31,9 @@ class DataTableButton implements IDataTableWidget {
 	 * @throws Exception
 	 */
 	public function __construct($builder) {
+		if (!($builder instanceof DataTableButtonBuilder)) {
+			throw new Exception("builder expected to be instance of DataTableButtonBuilder");
+		}
 		$this->text = $builder->get_text();
 		$this->type = $builder->get_type();
 		$this->action = $builder->get_form_action();

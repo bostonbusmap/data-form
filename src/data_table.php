@@ -86,6 +86,9 @@ class DataTable
 	 * @throws Exception
 	 */
 	public function __construct($builder) {
+		if (!($builder instanceof DataTableBuilder)) {
+			throw new Exception("builder expected to be instance of DataTableBuilder");
+		}
 		$this->table_name = $builder->get_table_name();
 		$this->widgets = $builder->get_widgets();
 		$this->columns = $builder->get_columns();

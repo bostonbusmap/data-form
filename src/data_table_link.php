@@ -23,8 +23,12 @@ class DataTableLink implements IDataTableWidget {
 
 	/**
 	 * @param $builder DataTableLinkBuilder
+	 * @throws Exception
 	 */
 	public function __construct($builder) {
+		if (!($builder instanceof DataTableLinkBuilder)) {
+			throw new Exception("builder expected to be instance of DataTableLinkBuilder");
+		}
 		$this->link = $builder->get_link();
 		$this->text = $builder->get_text();
 		$this->action = $builder->get_form_action();

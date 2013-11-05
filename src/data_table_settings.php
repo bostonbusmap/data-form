@@ -23,8 +23,12 @@ class DataTableSettings {
 
 	/**
 	 * @param $builder DataTableSettingsBuilder
+	 * @throws Exception
 	 */
 	public function __construct($builder) {
+		if (!($builder instanceof DataTableSettingsBuilder)) {
+			throw new Exception("builder expected to be instance of DataTableSettingsBuilder");
+		}
 		$this->default_limit = $builder->get_default_limit();
 		$this->total_rows = $builder->get_total_rows();
 		$this->limit_options = $builder->get_limit_options();

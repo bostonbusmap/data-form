@@ -22,6 +22,9 @@ class DataTableOptions implements IDataTableWidget {
 	 * @throws Exception
 	 */
 	public function __construct($builder) {
+		if (!($builder instanceof DataTableOptionsBuilder)) {
+			throw new Exception("builder expected to be instance of DataTableOptionsBuilder");
+		}
 		$this->options = $builder->get_options();
 		$this->name = $builder->get_name();
 		$this->form_action = $builder->get_form_action();
