@@ -51,7 +51,17 @@ function get_rows_from_database($res) {
 	return $rows;
 }
 
-function create_table_from_database($sql, $state, $submit_url=null) {
+/**
+ * This creates a default DataTable from some SQL
+ *
+ * @param $sql string SQL to create a table from. This should not already be paginated
+ * @param $state DataFormState The state of the form
+ * @param string $submit_url The URL the form submits to. If $submit_url is
+ * @param string $checkbox_id The column key of a checkbox to display
+ * @return DataTable
+ * @throws Exception
+ */
+function create_table_from_database($sql, $state, $submit_url=null, $checkbox_id=null) {
 	if (!$sql || !is_string($sql)) {
 		throw new Exception("sql must be a string of SQL");
 	}
@@ -60,6 +70,9 @@ function create_table_from_database($sql, $state, $submit_url=null) {
 	}
 	if ($submit_url && !is_string($submit_url)) {
 		throw new Exception("submit must be a URL");
+	}
+	if ($checkbox_id && !is_string($checkbox_id)) {
+		throw new Exception("checkbox_id must be a string");
 	}
 
 	$count_sql = SQLBuilder::create($sql)->state($state)->build_count();
@@ -72,7 +85,15 @@ function create_table_from_database($sql, $state, $submit_url=null) {
 
 	$paginated_res = gfy_db::query($paginated_sql, null, true);
 
-	$columns = create_columns_from_database($paginated_res);
+	$data_columns = create_columns_from_database($paginated_res);
+	if ($checkbox_id) {
+		$checkbox_column = DataTableColumnBuilder::create()->cell_formatter(new DataTableCheckboxCellFormatter())->column_key($checkbox_id)->build();
+		$columns = array_merge(array($checkbox_column), $data_columns);
+	}
+	else
+	{
+		$columns = $data_columns;
+	}
 	$rows = get_rows_from_database($paginated_res);
 
 	$widgets = array();
@@ -86,17 +107,21 @@ function create_table_from_database($sql, $state, $submit_url=null) {
 }
 
 /**
+ * Create a default DataForm from sql. It will use the field names as header names
+ *
  * @param $sql string
  * @param $state DataFormState
+ * @param $submit_url string If this is set, it adds a Submit button submitting the form to this URL
+ * @param $checkbox_id string If this is set, it adds an extra checkbox column at the left for the field name $checkbox_id
  * @return DataForm
  * @throws Exception
  */
-function create_data_form_from_database($sql, $state) {
+function create_data_form_from_database($sql, $state, $submit_url=null, $checkbox_id=null) {
 	if (!$sql || !is_string($sql)) {
 		throw new Exception("sql must be a string of SQL");
 	}
 
-	$table = create_table_from_database($sql, $state);
+	$table = create_table_from_database($sql, $state, $submit_url, $checkbox_id);
 
 	$form = DataFormBuilder::create($state->get_form_name())->remote($_SERVER['REQUEST_URI'])->tables(array($table))->build();
 	return $form;
