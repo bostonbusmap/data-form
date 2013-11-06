@@ -40,6 +40,16 @@ class SQLBuilder {
 	}
 
 	/**
+	 * Same as constructor, allows chaining of method calls
+	 *
+	 * @param $sql string SQL
+	 * @return SQLBuilder
+	 */
+	public static function create($sql) {
+		return new SQLBuilder($sql);
+	}
+
+	/**
 	 * @param $table_name string
 	 * @return SQLBuilder
 	 */
