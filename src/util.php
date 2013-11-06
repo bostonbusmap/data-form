@@ -68,8 +68,10 @@ function create_table_from_database($sql, $state, $submit_url=null) {
 	$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
 	$paginated_sql = SQLBuilder::create($sql)->settings($settings)->state($state)->build();
 
-	$columns = create_columns_from_database($paginated_sql, $state);
-	$rows = get_rows_from_database($paginated_sql, $state);
+	$paginated_res = gfy_db::query($paginated_sql, null, true);
+
+	$columns = create_columns_from_database($paginated_res);
+	$rows = get_rows_from_database($paginated_res);
 
 	$widgets = array();
 	if ($submit_url) {
@@ -77,7 +79,7 @@ function create_table_from_database($sql, $state, $submit_url=null) {
 		$widgets[] = $button;
 	}
 
-	$table = DataTableBuilder::create()->rows($rows)->columns($columns)->widgets($widgets)->build();
+	$table = DataTableBuilder::create()->rows($rows)->columns($columns)->widgets($widgets)->empty_message("No rows in table")->build();
 	return $table;
 }
 
