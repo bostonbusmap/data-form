@@ -73,8 +73,8 @@ function make_form($state) {
 	}
 
 
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->remote($_SERVER["REQUEST_URI"])->settings($settings)->build();
-	$form = DataFormBuilder::create($state->get_form_name())->tables(array($table))->build();
+	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->settings($settings)->build();
+	$form = DataFormBuilder::create($state->get_form_name())->remote($_SERVER["REQUEST_URI"])->tables(array($table))->build();
 	return $form;
 }
 

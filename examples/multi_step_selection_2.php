@@ -56,8 +56,8 @@ function make_form($prev_state, $current_state) {
 		usort($rows, "compare_zip_column_asc");
 	}
 
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->remote($this_url)->build();
-	$form = DataFormBuilder::create("select_zipcodes")->tables(array($table))->
+	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->build();
+	$form = DataFormBuilder::create("select_zipcodes")->remote($this_url)->tables(array($table))->
 		method("GET")->
 		forwarded_state(array($prev_state, $current_state))->build();
 	return $form;

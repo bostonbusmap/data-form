@@ -19,8 +19,6 @@ function compare_zip_column_asc($a, $b) {
  * @return DataTable
  */
 function make_city_table($cities_state, $current_state) {
-	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/multi_step_selection_3.php";
-
 	$columns = array();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Cities")->column_key("city")->build();
 
@@ -39,7 +37,7 @@ function make_city_table($cities_state, $current_state) {
 	}
 
 	$table = DataTableBuilder::create()->table_name("city")->columns($columns)->
-		rows($rows)->remote($this_url)->empty_message("No cities selected!")->build();
+		rows($rows)->empty_message("No cities selected!")->build();
 	return $table;
 }
 
@@ -49,8 +47,6 @@ function make_city_table($cities_state, $current_state) {
  * @return DataTable
  */
 function make_zip_table($zip_state, $current_state) {
-	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/multi_step_selection_3.php";
-
 	$columns = array();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Zip codes")->column_key("zip")->sortable(true)->build();
 
@@ -79,7 +75,7 @@ function make_zip_table($zip_state, $current_state) {
 	}
 
 	$table = DataTableBuilder::create()->table_name($table_name)->columns($columns)->
-		rows($rows)->remote($this_url)->empty_message("No zip codes selected!")->build();
+		rows($rows)->empty_message("No zip codes selected!")->build();
 	return $table;
 }
 
@@ -92,7 +88,7 @@ try {
 	$city_table = make_city_table($city_state, $current_state);
 	$form = DataFormBuilder::create("results")->tables(array($zip_table, $city_table))->
 		method("GET")->
-		forwarded_state(array($current_state, $zip_code_state))->build();
+		forwarded_state(array($current_state, $zip_code_state))->remote($_SERVER['REQUEST_URI'])->build();
 
 	if ($current_state->only_display_form()) {
 		echo $form->display_form($current_state);

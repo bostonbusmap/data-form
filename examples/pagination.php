@@ -74,9 +74,9 @@ function make_form($state) {
 	}
 
 
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->remote($this_url)->
+	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->
 		settings($settings)->build();
-	$form = DataFormBuilder::create("primes")->tables(array($table))->build();
+	$form = DataFormBuilder::create("primes")->tables(array($table))->remote($this_url)->build();
 	return $form;
 }
 

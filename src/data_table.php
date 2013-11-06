@@ -62,9 +62,6 @@ class DataTable
 	/** @var array  */
 	private $rows;
 
-	/** @var string|bool Either false or a URL to send pagination, sorting, or searching requests to */
-	private $remote;
-
 	/**
 	 * @var string[] Mapping of row id to CSS classes. Can be null
 	 */
@@ -96,7 +93,6 @@ class DataTable
 		$this->columns = $builder->get_columns();
 		$this->field_names = $builder->get_field_names();
 		$this->rows = $builder->get_rows();
-		$this->remote = $builder->get_remote();
 		$this->row_classes = $builder->get_row_classes();
 		$this->settings = $builder->get_settings();
 		$this->header = $builder->get_header();
@@ -110,11 +106,12 @@ class DataTable
 	 *
 	 * @param string $form_name
 	 * @param string $form_method Either GET or POST
+	 * @param $remote_url string
 	 * @param DataFormState $state
 	 * @throws Exception
 	 * @return string HTML
 	 */
-	public function display_table($form_name, $form_method, $state=null) {
+	public function display_table($form_name, $form_method, $remote_url, $state = null) {
 		if (!is_string($form_name)) {
 			throw new Exception("form_name must be a string");
 		}
@@ -154,12 +151,12 @@ class DataTable
 			if ($this->settings && $this->settings->uses_pagination())
 			{
 				$ret .= $this->settings->display_controls($form_name, $form_method, $state,
-					$this->remote, $this->table_name);
+					$remote_url, $this->table_name);
 			}
 			$ret .= "</caption>";
 		}
 
-		$ret .= $this->display_table_header($form_name, $form_method, $state);
+		$ret .= $this->display_table_header($form_name, $form_method, $remote_url, $state);
 
 		$ret .= $this->display_table_body($form_name, $form_method, $state);
 		$ret .= "</table>";
@@ -205,10 +202,11 @@ class DataTable
 	/**
 	 * @param $form_name string
 	 * @param $form_method string GET or POST
+	 * @param $remote_url string
 	 * @param $state DataFormState
 	 * @return string HTML
 	 */
-	protected function display_table_header($form_name, $form_method, $state)
+	protected function display_table_header($form_name, $form_method, $remote_url, $state)
 	{
 		$ret = "<thead>";
 		$ret .= "<tr class='standard-table-header'>";
@@ -216,7 +214,7 @@ class DataTable
 		// figure out sorting state
 		/** @var string[] $old_sorting_state mapping of column key to 'asc' or 'desc' */
 		$old_sorting_state = array();
-		if ($this->remote) {
+		if ($remote_url) {
 			foreach ($this->columns as $column) {
 				$column_key = $column->get_column_key();
 
@@ -248,7 +246,7 @@ class DataTable
 			// if a local form, get_sortable may have the string which says what kind of sorting will be done
 			// either 'numeric' or 'alphanumeric'
 			if ($column->get_sortable()) {
-				if ($this->remote) {
+				if ($remote_url) {
 					// draw sorting arrow and set hidden field
 					$ret .= '<th class="column_' . htmlspecialchars($column_key) . '">';
 					if (array_key_exists($column_key, $old_sorting_state)) {
@@ -280,7 +278,7 @@ class DataTable
 
 			// If sortable, make header text a link which flips sorting
 			/** @var DataTableColumn $column */
-			if ($column->get_sortable() && $this->remote) {
+			if ($column->get_sortable() && $remote_url) {
 				// write a link to sort in the opposite direction
 				if (array_key_exists($column_key, $old_sorting_state) &&
 					$old_sorting_state[$column_key] == DataFormState::sorting_state_desc) {
@@ -295,12 +293,12 @@ class DataTable
 				$sort_string = "&" . $sorting_state_name . "=" . $new_sorting_state;
 
 				$onclick_obj = new DataTableBehaviorClearSortThenRefresh($sort_string);
-				$onclick = $onclick_obj->action($form_name, $this->remote, $form_method);
+				$onclick = $onclick_obj->action($form_name, $remote_url, $form_method);
 				$ret .= '<a onclick="' . htmlspecialchars($onclick) . '">';
 			}
 			// display special header cell if specified
 			$ret .= $column->get_display_header($form_name, $column_key);
-			if ($column->get_sortable() && $this->remote) {
+			if ($column->get_sortable() && $remote_url) {
 				$ret .= "</a>";
 			}
 			$ret .= "</th>";
@@ -314,7 +312,7 @@ class DataTable
 				$column_key = $column->get_column_key();
 				$ret .= "<th>";
 				if ($column->get_searchable()) {
-					if (!$this->remote) {
+					if (!$remote_url) {
 						// use javascript to filter via regex
 						$ret .= "<input size='8' onkeyup='Table.filter(this, this)' />";
 					}
@@ -423,5 +421,13 @@ class DataTable
 		}
 		$ret .= "</tbody>";
 		return $ret;
+	}
+
+	/**
+	 * @return DataTableSettings
+	 */
+	public function get_settings()
+	{
+		return $this->settings;
 	}
 }

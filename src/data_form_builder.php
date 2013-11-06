@@ -16,6 +16,11 @@ class DataFormBuilder {
 	/** @var  string CSS class for div */
 	private $div_class;
 
+	/** @var string|bool If this is a string then sorting, searching, and pagination options are sent to this URL
+	 * If false sorting and searching are done locally */
+	private $remote;
+
+
 	public function __construct($form_name) {
 		$this->form_name = $form_name;
 	}
@@ -63,6 +68,21 @@ class DataFormBuilder {
 		$this->div_class = $div_class;
 		return $this;
 	}
+
+	/**
+	 * If this is a string then sorting, searching, and pagination options are sent to this URL
+	 * If false sorting and searching are done locally
+	 *
+	 * @param bool|string $remote
+	 * @return DataFormBuilder
+	 */
+	public function remote($remote)
+	{
+		$this->remote = $remote;
+		return $this;
+	}
+
+
 
 	/**
 	 * @throws Exception
@@ -136,6 +156,21 @@ class DataFormBuilder {
 			throw new Exception("div_class must be a string");
 		}
 
+		if (!$this->remote) {
+			$this->remote = false;
+		}
+		if ($this->remote && !is_string($this->remote)) {
+			throw new Exception("remote must be a string which is the URL the form refreshes from");
+		}
+
+		foreach ($this->tables as $table) {
+			if ($table->get_settings() && $table->get_settings()->uses_pagination() && !$this->remote) {
+				// TODO: use DataTableSettings to apply local sorting and filtering defaults
+				throw new Exception("Remote URL must be set for pagination settings to be applied.");
+			}
+		}
+
+
 		return new DataForm($this);
 	}
 
@@ -158,5 +193,14 @@ class DataFormBuilder {
 
 	public function get_div_class() {
 		return $this->div_class;
+	}
+
+
+	/**
+	 * @return bool|string If this is a string then sorting, searching, and pagination options are sent to this URL
+	 * If false sorting and searching are done locally
+	 */
+	public function get_remote() {
+		return $this->remote;
 	}
 }

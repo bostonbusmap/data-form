@@ -28,8 +28,8 @@ function make_form($state) {
 	}
 
 	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->
-		remote($this_url)->build();
-	$form = DataFormBuilder::create("select_cities")->tables(array($table))->method("GET")->build();
+		build();
+	$form = DataFormBuilder::create($state->get_form_name())->tables(array($table))->remote($this_url)->method("GET")->build();
 	return $form;
 }
 

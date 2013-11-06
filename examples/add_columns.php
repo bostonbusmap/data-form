@@ -58,8 +58,8 @@ function make_form($state) {
 		$widgets[] = DataTableButtonBuilder::create()->name("add_column")->text("Remove Column")->form_action($this_url)->behavior($remove_column_behavior)->build();
 	}
 
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($widgets)->remote($this_url)->build();
-	$form = DataFormBuilder::create($state->get_form_name())->tables(array($table))->build();
+	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($widgets)->build();
+	$form = DataFormBuilder::create($state->get_form_name())->tables(array($table))->remote($this_url)->build();
 	return $form;
 }
 

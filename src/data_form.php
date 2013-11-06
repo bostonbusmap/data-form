@@ -18,6 +18,9 @@ class DataForm {
 
 	/** @var  string CSS class for div */
 	private $div_class;
+	/** @var string|bool Either false or a URL to send pagination, sorting, or searching requests to */
+	private $remote;
+
 
 	/**
 	 * @param $builder DataFormBuilder
@@ -32,6 +35,7 @@ class DataForm {
 		$this->forwarded_state = $builder->get_forwarded_state();
 		$this->method = $builder->get_method();
 		$this->div_class = $builder->get_div_class();
+		$this->remote = $builder->get_remote();
 	}
 
 	/**
@@ -43,6 +47,9 @@ class DataForm {
 	public function display($state=null) {
 		if ($state && !($state instanceof DataFormState)) {
 			throw new Exception("state must be instance of DataFormState");
+		}
+		if (!$state && $this->remote) {
+			throw new Exception("If form is a remote form, state must be specified");
 		}
 
 		$ret =  '<div class="' . htmlspecialchars($this->div_class) . '" id="' . htmlspecialchars($this->form_name) . '">';
@@ -68,7 +75,7 @@ class DataForm {
 		}
 
 		foreach ($this->tables as $table) {
-			$ret .= $table->display_table($this->form_name, $this->method, $state);
+			$ret .= $table->display_table($this->form_name, $this->method, $this->remote, $state);
 		}
 		$ret .= "</form>";
 

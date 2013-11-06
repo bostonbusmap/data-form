@@ -20,10 +20,6 @@ class DataTableBuilder {
 	/** @var array Mapping of row_id => row. row is array of items with either field name keys or index keys */
 	private $rows;
 
-	/** @var string|bool If this is a string then sorting, searching, and pagination options are sent to this URL
-	 * If false sorting and searching are done locally */
-	private $remote;
-
 	/**
 	 * @var string[] Mapping of row id to CSS classes
 	 */
@@ -110,19 +106,6 @@ class DataTableBuilder {
 	}
 
 	/**
-	 * If this is a string then sorting, searching, and pagination options are sent to this URL
-	 * If false sorting and searching are done locally
-	 *
-	 * @param bool|string $remote
-	 * @return DataTableBuilder
-	 */
-	public function remote($remote)
-	{
-		$this->remote = $remote;
-		return $this;
-	}
-
-	/**
 	 * @param $row_classes string[]
 	 * @return DataTableBuilder
 	 */
@@ -191,14 +174,6 @@ class DataTableBuilder {
 	 */
 	public function get_rows() {
 		return $this->rows;
-	}
-
-	/**
-	 * @return bool|string If this is a string then sorting, searching, and pagination options are sent to this URL
-	 * If false sorting and searching are done locally
-	 */
-	public function get_remote() {
-		return $this->remote;
 	}
 
 	/**
@@ -297,13 +272,6 @@ class DataTableBuilder {
 			}
 		}
 
-		if (!$this->remote) {
-			$this->remote = false;
-		}
-		if ($this->remote && !is_string($this->remote)) {
-			throw new Exception("remote must be a string which is the URL the form refreshes from");
-		}
-
 		if (!$this->row_classes) {
 			$this->row_classes = array();
 		}
@@ -325,11 +293,6 @@ class DataTableBuilder {
 
 		if ($this->settings && !($this->settings instanceof DataTableSettings)) {
 			throw new Exception("settings must be instance of DataTableSettings");
-		}
-
-		if ($this->settings && $this->settings->uses_pagination() && !$this->remote) {
-			// TODO: use DataTableSettings to apply local sorting and filtering defaults
-			throw new Exception("Remote URL must be set for pagination settings to be applied.");
 		}
 
 		if (!$this->empty_message) {
