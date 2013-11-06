@@ -57,11 +57,11 @@ function get_rows_from_database($res) {
  * @param $sql string SQL to create a table from. This should not already be paginated
  * @param $state DataFormState The state of the form
  * @param string $submit_url The URL the form submits to. If $submit_url is
- * @param string $checkbox_id The column key of a checkbox to display
+ * @param string $radio_column_key The column key of a radio to display
  * @return DataTable
  * @throws Exception
  */
-function create_table_from_database($sql, $state, $submit_url=null, $checkbox_id=null) {
+function create_table_from_database($sql, $state, $submit_url=null, $radio_column_key=null) {
 	if (!$sql || !is_string($sql)) {
 		throw new Exception("sql must be a string of SQL");
 	}
@@ -71,8 +71,8 @@ function create_table_from_database($sql, $state, $submit_url=null, $checkbox_id
 	if ($submit_url && !is_string($submit_url)) {
 		throw new Exception("submit must be a URL");
 	}
-	if ($checkbox_id && !is_string($checkbox_id)) {
-		throw new Exception("checkbox_id must be a string");
+	if ($radio_column_key && !is_string($radio_column_key)) {
+		throw new Exception("radio_column_key must be a string");
 	}
 
 	$count_sql = SQLBuilder::create($sql)->state($state)->build_count();
@@ -86,8 +86,8 @@ function create_table_from_database($sql, $state, $submit_url=null, $checkbox_id
 	$paginated_res = gfy_db::query($paginated_sql, null, true);
 
 	$data_columns = create_columns_from_database($paginated_res);
-	if ($checkbox_id) {
-		$checkbox_column = DataTableColumnBuilder::create()->cell_formatter(new DataTableCheckboxCellFormatter())->column_key($checkbox_id)->build();
+	if ($radio_column_key) {
+		$checkbox_column = DataTableColumnBuilder::create()->cell_formatter(new DataTableRadioFormatter())->column_key($radio_column_key)->build();
 		$columns = array_merge(array($checkbox_column), $data_columns);
 	}
 	else
@@ -112,16 +112,16 @@ function create_table_from_database($sql, $state, $submit_url=null, $checkbox_id
  * @param $sql string
  * @param $state DataFormState
  * @param $submit_url string If this is set, it adds a Submit button submitting the form to this URL
- * @param $checkbox_id string If this is set, it adds an extra checkbox column at the left for the field name $checkbox_id
+ * @param $radio_column_key string If this is set, it adds an extra radio column at the left for the given field name
  * @return DataForm
  * @throws Exception
  */
-function create_data_form_from_database($sql, $state, $submit_url=null, $checkbox_id=null) {
+function create_data_form_from_database($sql, $state, $submit_url=null, $radio_column_key=null) {
 	if (!$sql || !is_string($sql)) {
 		throw new Exception("sql must be a string of SQL");
 	}
 
-	$table = create_table_from_database($sql, $state, $submit_url, $checkbox_id);
+	$table = create_table_from_database($sql, $state, $submit_url, $radio_column_key);
 
 	$form = DataFormBuilder::create($state->get_form_name())->remote($_SERVER['REQUEST_URI'])->tables(array($table))->build();
 	return $form;

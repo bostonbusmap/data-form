@@ -75,8 +75,28 @@ class BoundedPaginationTreeTransform implements ISQLTreeTransform
 
 		if ($state) {
 			$pagination_state = $state->get_pagination_state($table_name);
-			$current_page = $pagination_state->get_current_page();
-			$limit = $pagination_state->get_limit();
+
+			if (is_null($pagination_state->get_limit())) {
+				if ($settings) {
+					$limit = $settings->get_default_limit();
+				}
+				else
+				{
+					$limit = DataTableSettings::default_limit;
+				}
+			}
+			else
+			{
+				$limit = $pagination_state->get_limit();
+			}
+
+			if (is_null($pagination_state->get_current_page())) {
+				$current_page = 0;
+			}
+			else
+			{
+				$current_page = $pagination_state->get_current_page();
+			}
 
 			$start = $limit * $current_page;
 			$end = $limit * ($current_page + 1);
@@ -140,7 +160,7 @@ class DistinctCountTreeTransform  implements ISQLTreeTransform
 		$tree = $input_tree;
 
 		$count_parser = new PHPSQLParser();
-		$select_count_all = $count_parser->parse("SELECT DISTINCT COUNT(`" . $this->column_key . "`)");
+		$select_count_all = $count_parser->parse("SELECT COUNT(DISTINCT `" . $this->column_key . "`)");
 		$tree["SELECT"] = $select_count_all["SELECT"];
 
 		return $tree;
