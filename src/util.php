@@ -25,7 +25,9 @@ function create_columns_from_database($res) {
 		/** @var string $field_name */
 		$field_name = $field->name;
 
-		$column = DataTableColumnBuilder::create()->display_header_name(ucwords($field_name))->column_key($field_name)->sortable(true)->build();
+		$display_header = ucwords(str_replace("_", " ", $field_name));
+
+		$column = DataTableColumnBuilder::create()->display_header_name($display_header)->column_key($field_name)->sortable(true)->build();
 		$columns[] = $column;
 	}
 
