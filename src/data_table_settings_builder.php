@@ -107,13 +107,16 @@ class DataTableSettingsBuilder
 	public function build()
 	{
 		if (!$this->default_limit) {
-			$this->default_limit = 25;
+			$this->default_limit = DataTableSettings::default_limit;
 		}
 		if (!is_int($this->default_limit)) {
 			throw new Exception("default_limit must be an integer");
 		}
 
-		if (!$this->total_rows && !is_int($this->total_rows)) {
+		if (is_null($this->total_rows)) {
+			 throw new Exception("total_rows was never set");
+		}
+		if (!is_int($this->total_rows)) {
 			throw new Exception("total_rows must be an integer");
 		}
 

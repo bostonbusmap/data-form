@@ -1,5 +1,6 @@
 <?php
 require_once "data_form.php";
+require_once "sql_tree_transform.php";
 require_once FILE_BASE_PATH . "/lib/PHP-SQL-Parser/php-sql-creator.php";
 require_once FILE_BASE_PATH . "/lib/PHP-SQL-Parser/php-sql-parser.php";
 
@@ -22,6 +23,23 @@ class SQLBuilder {
 	protected $settings;
 
 	/**
+	 * @var ISQLTreeTransform
+	 */
+	protected $pagination_transform;
+	/**
+	 * @var ISQLTreeTransform
+	 */
+	protected $filter_transform;
+	/**
+	 * @var ISQLTreeTransform
+	 */
+	protected $sort_transform;
+	/**
+	 * @var ISQLTreeTransform
+	 */
+	protected $count_transform;
+
+	/**
 	 * @param $sql string
 	 * @throws Exception
 	 */
@@ -38,6 +56,7 @@ class SQLBuilder {
 			$this->sql_tree = array();
 		}
 	}
+
 
 	/**
 	 * Same as constructor, allows chaining of method calls
@@ -73,9 +92,39 @@ class SQLBuilder {
 	}
 
 	/**
-	 * @throws Exception
+	 * @param $pagination_transform ISQLTreeTransform
+	 * @return SQLBuilder
 	 */
-	protected function validate_inputs() {
+	public function pagination_transform($pagination_transform) {
+		$this->pagination_transform = $pagination_transform;
+		return $this;
+	}
+	/**
+	 * @param $filter_transform ISQLTreeTransform
+	 * @return SQLBuilder
+	 */
+	public function filter_transform($filter_transform) {
+		$this->filter_transform = $filter_transform;
+		return $this;
+	}
+	/**
+	 * @param $sort_transform ISQLTreeTransform
+	 * @return SQLBuilder
+	 */
+	public function sort_transform($sort_transform) {
+		$this->sort_transform = $sort_transform;
+		return $this;
+	}
+	/**
+	 * @param $count_transform ISQLTreeTransform
+	 * @return SQLBuilder
+	 */
+	public function count_transform($count_transform) {
+		$this->count_transform = $count_transform;
+		return $this;
+	}
+
+	protected function validate_input() {
 		if (!$this->table_name) {
 			$this->table_name = "";
 		}
@@ -87,30 +136,48 @@ class SQLBuilder {
 			throw new Exception("state must be instance of DataFormState");
 		}
 
-		if ($this->settings &&
-			!($this->settings instanceof DataTableSettings)) {
+		if ($this->settings && !($this->settings instanceof DataTableSettings)) {
 			throw new Exception("settings must be DataTableSettings");
 		}
 
 		if (!is_array($this->sql_tree)) {
-			throw new Exception("parse() must be called before calling build() or build_count()");
+			throw new Exception("sql_tree has not been defined");
 		}
 		if (!array_key_exists("SELECT", $this->sql_tree)) {
 			throw new Exception("SQL statement must be a SELECT statement");
 		}
 		if (array_key_exists("LIMIT", $this->sql_tree) && $this->settings && $this->settings->uses_pagination()) {
-			throw new Exception("The LIMIT clause is added automatically when sorting so it shouldn't be present in statement yet");
+			throw new Exception("The LIMIT clause is added automatically when paginating so it shouldn't be present in statement yet");
 		}
-	}
-	/**
-	 * @return string SQL which counts the rows
-	 */
-	public function build_count() {
-		$this->validate_inputs();
 
-		$tree = $this->create_sql(true);
-		$creator = new PHPSQLCreator();
-		return $creator->create($tree);
+		if (!$this->pagination_transform) {
+			$this->pagination_transform = new LimitPaginationTreeTransform();
+		}
+		if (!($this->pagination_transform instanceof ISQLTreeTransform)) {
+			throw new Exception("Pagination transform must be instance of ISQLTreeFilter");
+		}
+
+		if (!$this->count_transform) {
+			$this->count_transform = new CountTreeTransform();
+		}
+		if (!($this->count_transform instanceof ISQLTreeTransform)) {
+			throw new Exception("Count transform must be instance of ISQLTreeFilter");
+		}
+
+		if (!$this->sort_transform) {
+			$this->sort_transform = new SortTreeTransform();
+		}
+		if (!($this->sort_transform instanceof ISQLTreeTransform)) {
+			throw new Exception("Sort transform must be instance of ISQLTreeFilter");
+		}
+
+		if (!$this->filter_transform) {
+			$this->filter_transform = new FilterTreeTransform();
+		}
+		if (!($this->filter_transform instanceof ISQLTreeTransform)) {
+			throw new Exception("Filter transform must be instance of ISQLTreeFilter");
+		}
+
 	}
 
 	/**
@@ -120,191 +187,47 @@ class SQLBuilder {
 	 * @throws Exception
 	 */
 	public function build() {
-		$this->validate_inputs();
+		$this->validate_input();
 
-		$tree = $this->create_sql(false);
+		$transforms = array($this->filter_transform, $this->sort_transform, $this->pagination_transform);
+		$altered_tree = $this->apply_transforms($this->sql_tree, $transforms);
+
 		$creator = new PHPSQLCreator();
-		return $creator->create($tree);
+		return $creator->create($altered_tree);
+	}
+
+	public function build_count() {
+		$this->validate_input();
+
+		$transforms = array($this->count_transform);
+		$altered_tree = $this->apply_transforms($this->sql_tree, $transforms);
+
+		$creator = new PHPSQLCreator();
+		return $creator->create($altered_tree);
 	}
 
 	/**
-	 * Create ORDER BY portion of SQL
-	 *
-	 * @param $input_tree array SQL tree
-	 * @param $state DataFormState
-	 * @param $table_name string
-	 * @return array Modified SQL tree
+	 * @param $tree array
+	 * @param $transforms ISQLTreeTransform[]
+	 * @return array
 	 * @throws Exception
 	 */
-	protected static function create_orderby($input_tree, $state, $table_name) {
-		$tree = $input_tree;
-
-		if ($state) {
-			if ($table_name) {
-				$sorting_data = $state->find_item(array(DataFormState::state_key, $table_name, DataFormState::sorting_state_key));
-			}
-			else
-			{
-				$sorting_data = $state->find_item(array(DataFormState::state_key, DataFormState::sorting_state_key));
-			}
-			if (is_array($sorting_data)) {
-				// remove any ORDER clause already present
-				$tree["ORDER"] = array();
-
-				foreach ($sorting_data as $column_key => $value) {
-					if (is_string($value)) {
-						if ($value == DataFormState::sorting_state_desc ||
-							$value == DataFormState::sorting_state_asc) {
-							// create new ORDER clause
-							$tree["ORDER"][] = array("expr_type" => "colref",
-													 "base_expr" => $column_key,
-													 "subtree" => false,
-													 "direction" => strtoupper($value));
-						}
-						elseif ($value)
-						{
-							throw new Exception("Unexpected sorting value received: '$value'");
-						}
-					}
-					else
-					{
-						throw new Exception("sorting value should be a string");
-					}
-				}
-			}
+	protected function apply_transforms($tree, $transforms) {
+		if (!is_array($transforms)) {
+			throw new Exception("Expected an array of transforms");
 		}
-		return $tree;
-	}
-
-	/**
-	 * Create SQL. Assumes validation of inputs is done
-	 *
-	 * @param $count_only bool
-	 * @return array SQL tree
-	 */
-	protected function create_sql($count_only) {
-		$tree = $this->sql_tree;
-		// note that this tree is an array which are copy-on-write in PHP
-		// so the original will not be modified
-
-		// replace SELECT arguments with COUNT(*)
-		if ($count_only) {
-			$count_parser = new PHPSQLParser();
-			$select_count_all = $count_parser->parse("SELECT COUNT(*)");
-			$tree["SELECT"] = $select_count_all["SELECT"];
+		if (!is_array($tree)) {
+			throw new Exception("tree must be an array");
 		}
 
-		$filtered_tree = self::create_filters($tree, $this->state, $this->table_name);
-
-		if ($count_only) {
-			return $filtered_tree;
-		}
-		else
-		{
-			$sorted_tree = self::create_orderby($filtered_tree, $this->state, $this->table_name);
-
-			if ($this->settings && $this->settings->uses_pagination()) {
-				$pagination_tree = self::create_pagination($sorted_tree, $this->settings, $this->state, $this->table_name);
-				return $pagination_tree;
+		foreach ($transforms as $transform) {
+			if (!($transform instanceof ISQLTreeTransform)) {
+				throw new Exception("Expected transform to be instance of ISQLTreeTransform");
 			}
-			else
-			{
-				return $sorted_tree;
-			}
-		}
-	}
-
-	/**
-	 * Add WHERE clauses for filters
-	 * @param $input_tree array input tree
-	 * @param $state DataFormState
-	 * @param $table_name string
-	 * @throws Exception
-	 * @return array Modified tree
-	 */
-	protected static function create_filters($input_tree, $state, $table_name) {
-		$tree = $input_tree;
-
-		$subtrees_to_add = array();
-
-		if ($state) {
-			if ($table_name) {
-				$searching_state = $state->find_item(array(DataFormState::state_key, $table_name, DataFormState::searching_state_key));
-			}
-			else
-			{
-				$searching_state = $state->find_item(array(DataFormState::state_key, DataFormState::searching_state_key));
-			}
-			if (is_array($searching_state)) {
-				foreach ($searching_state as $key => $value) {
-					if (is_string($value)) {
-						$escaped_value = str_replace("'", "''", $value);
-						// TODO: escape $key, but I don't know if $key will contain table name too
-						$phrase = " $key LIKE '%$escaped_value%' ";
-						$parser = new PHPSQLParser();
-						$subtrees_to_add[] = $parser->parse($phrase);
-
-					}
-					else
-					{
-						throw new Exception("sorting value should be a string");
-					}
-				}
-			}
+			/** @var ISQLTreeTransform $transform */
+			$tree = $transform->alter($tree, $this->state, $this->settings, $this->table_name);
 		}
 
-		if ($subtrees_to_add) {
-			if (!array_key_exists("WHERE", $tree)) {
-				$tree["WHERE"] = array();
-			}
-			if ($tree["WHERE"]) {
-				// add AND
-				$tree["WHERE"][] = array("expr_type" => "operator",
-										 "base_expr" => "and",
-										 "sub_tree" => false);
-			}
-			foreach ($subtrees_to_add as $subtree) {
-				$tree["WHERE"][] = $subtree;
-			}
-		}
-		return $tree;
-	}
-
-	/**
-	 * Add LIMIT and OFFSET clauses given pagination state and settings
-	 *
-	 * @param $input_tree array
-	 * @param $settings DataTableSettings
-	 * @param $state DataFormState
-	 * @param $table_name string
-	 * @return array SQL tree
-	 */
-	protected static function create_pagination($input_tree, $settings, $state, $table_name)
-	{
-		$tree = $input_tree;
-		if ($state) {
-			$pagination_state = $state->get_pagination_state($table_name);
-
-			if (is_null($pagination_state->get_limit())) {
-				$limit = $settings->get_default_limit();
-			}
-			else
-			{
-				$limit = $pagination_state->get_limit();
-			}
-
-			if (is_null($pagination_state->get_current_page())) {
-				$current_page = 0;
-			}
-			else
-			{
-				$current_page = $pagination_state->get_current_page();
-			}
-
-			$offset = $current_page * $limit;
-			$tree["LIMIT"] = array("offset" => $offset,
-								   "rowcount" => $limit);
-		}
 		return $tree;
 	}
 }

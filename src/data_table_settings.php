@@ -3,6 +3,8 @@
  * Default settings for DataTable pagination, filtering and sorting. Will be overridden by settings in DataFormState if they exist
  */
 class DataTableSettings {
+	const default_limit = 25;
+
 	/** @var  int */
 	protected $default_limit;
 	/** @var  int */
