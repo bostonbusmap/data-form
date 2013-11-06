@@ -31,6 +31,8 @@ require_once "data_table_textbox.php";
 require_once "data_form_state.php";
 require_once "data_table_widget.php";
 require_once "selected.php";
+require_once "sql_builder.php";
+require_once "util.php";
 
 /**
  * This displays a table of data which is also a form.
