@@ -189,45 +189,28 @@ class SQLBuilder {
 	public function build() {
 		$this->validate_input();
 
-		$transforms = array($this->filter_transform, $this->sort_transform, $this->pagination_transform);
-		$altered_tree = $this->apply_transforms($this->sql_tree, $transforms);
+		$tree = $this->sql_tree;
+
+		$tree = $this->filter_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+		$tree = $this->sort_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+		$tree = $this->pagination_transform->alter($tree, $this->state, $this->settings, $this->table_name);
 
 		$creator = new PHPSQLCreator();
-		return $creator->create($altered_tree);
-	}
-
-	public function build_count() {
-		$this->validate_input();
-
-		$transforms = array($this->count_transform);
-		$altered_tree = $this->apply_transforms($this->sql_tree, $transforms);
-
-		$creator = new PHPSQLCreator();
-		return $creator->create($altered_tree);
+		return $creator->create($tree);
 	}
 
 	/**
-	 * @param $tree array
-	 * @param $transforms ISQLTreeTransform[]
-	 * @return array
-	 * @throws Exception
+	 * Create SQL for counting the number of rows. This changes the SQL to 'SELECT COUNT(*) FROM ...'
+	 * @return string SQL
 	 */
-	protected function apply_transforms($tree, $transforms) {
-		if (!is_array($transforms)) {
-			throw new Exception("Expected an array of transforms");
-		}
-		if (!is_array($tree)) {
-			throw new Exception("tree must be an array");
-		}
+	public function build_count() {
+		$this->validate_input();
 
-		foreach ($transforms as $transform) {
-			if (!($transform instanceof ISQLTreeTransform)) {
-				throw new Exception("Expected transform to be instance of ISQLTreeTransform");
-			}
-			/** @var ISQLTreeTransform $transform */
-			$tree = $transform->alter($tree, $this->state, $this->settings, $this->table_name);
-		}
+		$tree = $this->sql_tree;
 
-		return $tree;
+		$tree = $this->count_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+
+		$creator = new PHPSQLCreator();
+		return $creator->create($tree);
 	}
 }

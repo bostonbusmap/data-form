@@ -56,8 +56,97 @@ class LimitPaginationTreeTransform implements ISQLTreeTransform
 		return $tree;
 	}
 }
-class CountTreeTransform  implements ISQLTreeTransform
+class BoundedPaginationTreeTransform implements ISQLTreeTransform
 {
+	/** @var  string */
+	protected $column_key;
+
+	public function __construct($column_key) {
+		if (!$column_key || !is_string($column_key)) {
+			throw new Exception("expected column_key to be a string");
+		}
+		$this->column_key = $column_key;
+	}
+
+	function alter($input_tree, $state, $settings, $table_name)
+	{
+		$tree = $input_tree;
+
+
+		if ($state) {
+			$pagination_state = $state->get_pagination_state($table_name);
+			$current_page = $pagination_state->get_current_page();
+			$limit = $pagination_state->get_limit();
+
+			$start = $limit * $current_page;
+			$end = $limit * ($current_page + 1);
+
+			$tree = self::add_where_clause($tree, $this->column_key . " >= " . $start);
+			$tree = self::add_where_clause($tree, $this->column_key . " < " . $end);
+		}
+
+		return $tree;
+	}
+
+	/**
+	 * @param $tree array
+	 * @param $clause string (Not escaped!)
+	 * @return array SQL tree
+	 * @throws Exception
+	 */
+	public static function add_where_clause($tree, $clause) {
+		$phrase = "SELECT * FROM xyz WHERE $clause ";
+		$parser = new PHPSQLParser();
+		$where_clause = $parser->parse($phrase);
+		if (!$where_clause) {
+			throw new Exception("Error parsing SQL phrase");
+		}
+
+		if (!array_key_exists("WHERE", $tree)) {
+			$tree["WHERE"] = array();
+		}
+		if (!array_key_exists("WHERE", $where_clause)) {
+			throw new Exception("SQL clause is lacking WHERE piece");
+		}
+		if ($tree["WHERE"]) {
+			// add AND
+			$tree["WHERE"][] = array("expr_type" => "operator",
+				"base_expr" => "and",
+				"sub_tree" => false);
+		}
+		foreach ($where_clause["WHERE"] as $where_piece) {
+			$tree["WHERE"][] = $where_piece;
+		}
+		return $tree;
+	}
+}
+class DistinctCountTreeTransform  implements ISQLTreeTransform
+{
+	/** @var  string */
+	protected $column_key;
+
+	public function __construct($column_key) {
+		if (!$column_key || !is_string($column_key)) {
+			throw new Exception("expected column_key to be a string");
+		}
+		if (strpos($column_key, "`") !== false) {
+			throw new Exception("Found backtick in column key");
+		}
+		$this->column_key = $column_key;
+	}
+
+	function alter($input_tree, $state, $settings, $table_name)
+	{
+		$tree = $input_tree;
+
+		$count_parser = new PHPSQLParser();
+		$select_count_all = $count_parser->parse("SELECT DISTINCT COUNT(`" . $this->column_key . "`)");
+		$tree["SELECT"] = $select_count_all["SELECT"];
+
+		return $tree;
+	}
+}
+class CountTreeTransform implements ISQLTreeTransform {
 	function alter($input_tree, $state, $settings, $table_name)
 	{
 		$tree = $input_tree;
@@ -69,7 +158,6 @@ class CountTreeTransform  implements ISQLTreeTransform
 		return $tree;
 	}
 }
-
 /**
  * Create ORDER BY portion of SQL
  */
@@ -126,7 +214,6 @@ class FilterTreeTransform  implements ISQLTreeTransform
 	{
 		$tree = $input_tree;
 
-		$subtrees_to_add = array();
 
 		if ($state) {
 			if ($table_name) {
@@ -142,9 +229,8 @@ class FilterTreeTransform  implements ISQLTreeTransform
 						$escaped_value = str_replace("'", "''", $value);
 						// TODO: escape $key, but I don't know if $key will contain table name too
 						$phrase = " $key LIKE '%$escaped_value%' ";
-						$parser = new PHPSQLParser();
-						$subtrees_to_add[] = $parser->parse($phrase);
 
+						$tree = BoundedPaginationTreeTransform::add_where_clause($tree, $phrase);
 					}
 					else
 					{
@@ -154,20 +240,6 @@ class FilterTreeTransform  implements ISQLTreeTransform
 			}
 		}
 
-		if ($subtrees_to_add) {
-			if (!array_key_exists("WHERE", $tree)) {
-				$tree["WHERE"] = array();
-			}
-			if ($tree["WHERE"]) {
-				// add AND
-				$tree["WHERE"][] = array("expr_type" => "operator",
-					"base_expr" => "and",
-					"sub_tree" => false);
-			}
-			foreach ($subtrees_to_add as $subtree) {
-				$tree["WHERE"][] = $subtree;
-			}
-		}
 		return $tree;
 	}
 }

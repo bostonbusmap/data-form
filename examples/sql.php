@@ -64,6 +64,7 @@ function make_form($state) {
 
 	$columns = array();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Date created")->column_key("search_date")->sortable(true)->build();
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Search name")->column_key("search_name")->searchable(true)->build();
 
 	$rows = array();
 	$query = $sql_builder->build();
