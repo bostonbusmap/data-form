@@ -55,7 +55,7 @@ class DataTableSettings {
 			$builder->filter_by($key, $value);
 		}
 
-		return $builder->build();
+		return $builder;
 	}
 
 	/**
