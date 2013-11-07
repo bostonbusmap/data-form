@@ -113,10 +113,7 @@ class DataTableSettingsBuilder
 			throw new Exception("default_limit must be an integer");
 		}
 
-		if (is_null($this->total_rows)) {
-			 throw new Exception("total_rows was never set");
-		}
-		if (!is_int($this->total_rows)) {
+		if (!is_null($this->total_rows) && !is_int($this->total_rows)) {
 			throw new Exception("total_rows must be an integer");
 		}
 
