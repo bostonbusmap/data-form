@@ -36,6 +36,16 @@ class LimitPaginationTreeTransform implements ISQLTreeTransform
 					$limit = DataTableSettings::default_limit;
 				}
 			}
+			elseif ($pagination_state->get_limit() == 0) {
+				// all rows
+				if ($settings && is_int($settings->get_total_rows())) {
+					$limit = $settings->get_total_rows();
+				}
+				else
+				{
+					$limit = DataTableSettings::default_limit;
+				}
+			}
 			else
 			{
 				$limit = $pagination_state->get_limit();
@@ -79,6 +89,16 @@ class BoundedPaginationTreeTransform implements ISQLTreeTransform
 			if (is_null($pagination_state->get_limit())) {
 				if ($settings) {
 					$limit = $settings->get_default_limit();
+				}
+				else
+				{
+					$limit = DataTableSettings::default_limit;
+				}
+			}
+			elseif ($pagination_state->get_limit() == 0) {
+				// all rows
+				if ($settings && is_int($settings->get_total_rows())) {
+					$limit = $settings->get_total_rows();
 				}
 				else
 				{
