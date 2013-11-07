@@ -39,6 +39,26 @@ class DataTableSettings {
 	}
 
 	/**
+	 * Creates a DataTableSettingsBuilder from the contents of this class, so the user can
+	 * modify it and create a copy
+	 *
+	 * @return DataTableSettingsBuilder
+	 */
+	public function make_builder() {
+		$builder = DataTableSettingsBuilder::create()->default_limit($this->default_limit)->
+			total_rows($this->total_rows)->
+			limit_options($this->limit_options);
+		foreach ($this->sorting as $key => $value) {
+			$builder->sort_by($key, $value);
+		}
+		foreach ($this->filtering as $key => $value) {
+			$builder->filter_by($key, $value);
+		}
+
+		return $builder->build();
+	}
+
+	/**
 	 * @param string $form_name
 	 * @param string $form_method GET or POST
 	 * @param DataFormState $state
