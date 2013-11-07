@@ -102,7 +102,7 @@ function create_table_from_database($sql, $state, $submit_url=null, $radio_colum
 		$widgets[] = $button;
 	}
 
-	$table = DataTableBuilder::create()->rows($rows)->columns($columns)->widgets($widgets)->empty_message("No rows in table")->build();
+	$table = DataTableBuilder::create()->rows($rows)->columns($columns)->settings($settings)->widgets($widgets)->empty_message("No rows in table")->build();
 	return $table;
 }
 
