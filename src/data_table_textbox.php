@@ -59,7 +59,7 @@ class DataTableTextbox implements IDataTableWidget {
 			$onchange = "";
 		}
 
-		if ($name_array && $state) {
+		if ($name_array && $state && !is_null($state->find_item($name_array))) {
 			$text = $state->find_item($name_array);
 		}
 		else
