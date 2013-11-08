@@ -27,13 +27,14 @@ class DefaultHeaderFormatter implements IDataTableHeaderFormatter {
 	 * Formats a header for a DataTableColumn
 	 *
 	 * @param string $form_name Name of HTML form
-	 * @param string $column_header Column key
-	 * @param string $column_display_header Text to display
+	 * @param string $column_key Column key
+	 * @param string $header_data Text to display
+	 * @param DataFormState $state
 	 * @return string HTML formatted column data
 	 */
-	public function format($form_name, $column_header, $column_display_header)
+	public function format($form_name, $column_key, $header_data, $state)
 	{
-		return "<strong>" . $column_display_header . "</strong>";
+		return "<strong>" . $header_data . "</strong>";
 	}
 }
 
@@ -65,7 +66,7 @@ class DataTableColumn {
 	 */
 	protected $searchable;
 	/**
-	 * @var string Column header meant to be displayed
+	 * @var object Column header data to be displayed
 	 */
 	protected $display_header_name;
 
@@ -100,11 +101,12 @@ class DataTableColumn {
 	 * Returns HTML formatted column header
 	 *
 	 * @param string $form_name Name of HTML form
-	 * @param string $column_header Column key
+	 * @param $column_key string Column key
+	 * @param $state DataFormState State of form
 	 * @return string
 	 */
-	public function get_display_header($form_name, $column_header) {
-		return $this->header_formatter->format($form_name, $column_header, $this->display_header_name);
+	public function get_display_header($form_name, $column_key, $state) {
+		return $this->header_formatter->format($form_name, $column_key, $this->display_header_name, $state);
 	}
 
 	/**

@@ -92,3 +92,14 @@ class DataTableTextboxCellFormatter implements IDataTableCellFormatter {
 		return DataTableTextbox::display_textbox($form_name, array($column_header, $rowid), "", "POST", null, $column_data, $state);
 	}
 }
+
+/**
+ * Be careful not to use this at the same time as the textbox cell formatter on the same column
+ * since they will both use the same name and overwrite each other.
+ */
+class DataTableTextboxHeaderFormatter implements IDataTableHeaderFormatter {
+	public function format($form_name, $column_key, $header_data, $state)
+	{
+		return DataTableTextbox::display_textbox($form_name, array($column_key), "", "POST", null, $header_data, $state);
+	}
+}

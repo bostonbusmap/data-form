@@ -42,14 +42,15 @@ class DataTableCheckboxHeaderFormatter implements IDataTableHeaderFormatter {
 	 * Displays a checkbox which selects all other checkboxes
 	 *
 	 * @param string $form_name Name of HTML form
-	 * @param string $column_header Column key
-	 * @param string $column_display_header Unused
+	 * @param string $column_key Column key
+	 * @param string $header_data Unused
+	 * @param DataFormState $state
 	 * @return string HTML formatted column data
 	 */
-	public function format($form_name, $column_header, $column_display_header)
+	public function format($form_name, $column_key, $header_data, $state)
 	{
 		// this selects or clears all other checkboxes in column
-		$onclick = '$(this).parents("form").find(' . json_encode('td.column_' . $column_header . ' :checkbox') . ').prop("checked", this.checked)';
+		$onclick = '$(this).parents("form").find(' . json_encode('td.column_' . $column_key . ' :checkbox') . ').prop("checked", this.checked)';
 		$ret = '<input type="checkbox" onclick="' . htmlspecialchars($onclick) . '" />';
 		return $ret;
 	}

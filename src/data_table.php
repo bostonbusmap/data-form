@@ -297,7 +297,7 @@ class DataTable
 				$ret .= '<a onclick="' . htmlspecialchars($onclick) . '">';
 			}
 			// display special header cell if specified
-			$ret .= $column->get_display_header($form_name, $column_key);
+			$ret .= $column->get_display_header($form_name, $column_key, $state);
 			if ($column->get_sortable() && $remote_url) {
 				$ret .= "</a>";
 			}
