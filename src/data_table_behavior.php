@@ -16,12 +16,18 @@ class DataTableBehaviorNone implements IDataTableBehavior {
 }
 class DataTableBehaviorSubmitNewWindow implements IDataTableBehavior {
 	function action($form_name, $form_action, $form_method) {
-		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parent("form").attr("target", "_blank");';
+		if (!$form_action) {
+			throw new Exception("form_action is empty");
+		}
+		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parent("form").attr("target", "_blank");$(this).parent("form").submit();';
 	}
 }
 class DataTableBehaviorSubmit implements IDataTableBehavior {
 	function action($form_name, $form_action, $form_method) {
-		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');';
+		if (!$form_action) {
+			throw new Exception("form_action is empty");
+		}
+		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parent("form").submit();';
 	}
 }
 class DataTableBehaviorRefresh implements IDataTableBehavior {

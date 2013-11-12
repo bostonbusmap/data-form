@@ -4,14 +4,12 @@
  * Use DataTableLinkFormatter as an option for the DataTableColumn to display the links
  */
 class DataTableLink implements IDataTableWidget {
-	/** @var  string */
+	/**
+	 * @var string Note that this doubles as the form action if a behavior is used on the link
+	 */
 	protected $link;
 	/** @var  string */
 	protected $text;
-	/**
-	 * @var string URL
-	 */
-	protected $action;
 	/**
 	 * @var IDataTableBehavior
 	 */
@@ -31,7 +29,6 @@ class DataTableLink implements IDataTableWidget {
 		}
 		$this->link = $builder->get_link();
 		$this->text = $builder->get_text();
-		$this->action = $builder->get_form_action();
 		$this->behavior = $builder->get_behavior();
 		$this->placement = $builder->get_placement();
 	}
@@ -49,7 +46,7 @@ class DataTableLink implements IDataTableWidget {
 		$link = $this->link;
 		$text = $this->text;
 		if ($this->behavior) {
-			$onclick = $this->behavior->action($form_name, $this->action, $form_method);
+			$onclick = $this->behavior->action($form_name, $this->link, $form_method);
 		}
 		else
 		{

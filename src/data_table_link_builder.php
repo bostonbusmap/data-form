@@ -3,13 +3,11 @@ class DataTableLinkBuilder {
 	/** @var string */
 	protected $text;
 	/**
-	 * @var string
+	 * @var string Note that this is also where the form is submitted if the behavior is set accordingly
 	 */
 	protected $link;
 	/** @var  string Name of form element */
 	protected $name;
-	/** @var  string */
-	protected $form_action;
 	/** @var  IDataTableBehavior */
 	protected $behavior;
 	/** @var  string */
@@ -46,15 +44,6 @@ class DataTableLinkBuilder {
 	 */
 	public function name($name) {
 		$this->name = $name;
-		return $this;
-	}
-
-	/**
-	 * @param $form_action string
-	 * @return DataTableLinkBuilder
-	 */
-	public function form_action($form_action) {
-		$this->form_action = $form_action;
 		return $this;
 	}
 
@@ -98,13 +87,6 @@ class DataTableLinkBuilder {
 	}
 
 	/**
-	 * @return string
-	 */
-	public function get_form_action() {
-		return $this->form_action;
-	}
-
-	/**
 	 * @return IDataTableBehavior
 	 */
 	public function get_behavior() {
@@ -144,9 +126,6 @@ class DataTableLinkBuilder {
 			throw new Exception("type must be a string");
 		}
 
-		if ($this->form_action && !is_string($this->form_action)) {
-			throw new Exception("form_action must be a string");
-		}
 		if ($this->behavior && !($this->behavior instanceof IDataTableBehavior)) {
 			throw new Exception("change_behavior must be instance of IDataTableBehavior");
 		}
