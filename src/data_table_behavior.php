@@ -19,7 +19,7 @@ class DataTableBehaviorSubmitNewWindow implements IDataTableBehavior {
 		if (!$form_action) {
 			throw new Exception("form_action is empty");
 		}
-		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parent("form").attr("target", "_blank");$(this).parent("form").submit();';
+		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parent("form").attr("target", "_blank");$(this).parent("form").submit();return false;';
 	}
 }
 class DataTableBehaviorSubmit implements IDataTableBehavior {
@@ -27,7 +27,7 @@ class DataTableBehaviorSubmit implements IDataTableBehavior {
 		if (!$form_action) {
 			throw new Exception("form_action is empty");
 		}
-		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parent("form").submit();';
+		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parent("form").submit();return false;';
 	}
 }
 class DataTableBehaviorRefresh implements IDataTableBehavior {
