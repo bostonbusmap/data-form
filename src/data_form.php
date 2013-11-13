@@ -62,6 +62,9 @@ class DataForm {
 		if ($state && !($state instanceof DataFormState)) {
 			throw new Exception("state must be instance of DataFormState");
 		}
+		if (!$state && $this->remote) {
+			throw new Exception("If form is a remote form, state must be specified");
+		}
 		$ret = "";
 
 		// form action is set in javascript
