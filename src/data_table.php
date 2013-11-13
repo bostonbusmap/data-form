@@ -60,7 +60,7 @@ class DataTable
 	private $columns;
 	/** @var \string[]  */
 	private $field_names;
-	/** @var array  */
+	/** @var array|Traversable  */
 	private $rows;
 
 	/**
