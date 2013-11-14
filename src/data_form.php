@@ -59,7 +59,6 @@ class DataForm {
 		}
 
 		$ret =  '<div class="' . htmlspecialchars($this->div_class) . '" id="' . htmlspecialchars($this->form_name) . '">';
-		$ret .= '<div id="' . htmlspecialchars($this->form_name . "_flash") . '"></div>';
 		$ret .=  $this->display_form($state);
 		$ret .= '</div>';
 		return $ret;
@@ -73,6 +72,9 @@ class DataForm {
 			throw new Exception("If form is a remote form, state must be specified");
 		}
 		$ret = "";
+
+		// flash space for messages
+		$ret .= '<div id="' . htmlspecialchars($this->form_name . "_flash") . '"></div>';
 
 		// form action is set in javascript
 		$ret .= '<form name="' . htmlspecialchars($this->form_name) . '" method="' . htmlspecialchars($this->method) . '">';
