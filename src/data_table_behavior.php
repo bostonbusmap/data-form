@@ -19,7 +19,7 @@ class DataTableBehaviorSubmitNewWindow implements IDataTableBehavior {
 		if (!$form_action) {
 			throw new Exception("form_action is empty");
 		}
-		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parents("form").attr("target", "_blank");$(this).parents("form").submit();return false;';
+		return 'var $form=$(this).parents("form"); $form.attr("action", ' . json_encode($form_action) . '); $form.attr("target", "_blank");$form.submit();return false;';
 	}
 }
 class DataTableBehaviorSubmit implements IDataTableBehavior {
@@ -27,7 +27,7 @@ class DataTableBehaviorSubmit implements IDataTableBehavior {
 		if (!$form_action) {
 			throw new Exception("form_action is empty");
 		}
-		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parents("form").submit();return false;';
+		return '$form=$(this).parents("form"); $form.attr("action", ' . json_encode($form_action) . ');$form.submit();return false;';
 	}
 }
 class DataTableBehaviorSubmitAndValidate implements IDataTableBehavior {
@@ -54,14 +54,14 @@ class DataTableBehaviorSubmitAndValidate implements IDataTableBehavior {
 		// first submit data with validation parameter to validation url
 		// If a non-empty result is received (which would be errors), put it in flash div,
 		// else do the submit
-		return '$.' . $method . '(' . json_encode($this->validation_url) . ','.
-			' $(this).parents("form").serialize()  + ' .
+		return 'var $form=$(this).parents("form"); $.' . $method . '(' . json_encode($this->validation_url) . ','.
+			' $form.serialize()  + ' .
 			json_encode($params) .
 			', function(data, textStatus, jqXHR) { ' .
-			'if (data) { $(' . json_encode("#" . $flash_name) . ').html(data); } else { ' .
-			'$(this).parents("form").attr("action", ' .
+			'if (data) { $(' . json_encode("#" . $flash_name) . ').html(data); } else {' .
+			'$form.attr("action", ' .
 			json_encode($form_action) .
-			');$(this).parents("form").submit();' .
+			');$form.submit();' .
 			'}}); return false;';
 	}
 }
@@ -94,8 +94,11 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 		// to submit the form as AJAX we need to serialize the form to json and put it in the parameter string
 		// the second part of this takes that result and puts it in the div with the same name as the form
 		// ie, replace the form with a refreshed copy
-		return '$.' . $method . '(' . json_encode($form_action) . ', $(this).parents("form").serialize()  + ' . json_encode($params) .
-			', function(data, textStatus, jqXHR) { $(' . json_encode("#" . $form_name) . ').html(data);});return false;';
+		return 'var $form=$(this).parents("form"); $.' . $method . '(' . json_encode($form_action) .
+			', $form.serialize()  + ' . json_encode($params) .
+			', function(data, textStatus, jqXHR) { $(' .
+			json_encode("#" . $form_name) .
+			').html(data);});return false;';
 	}
 }
 class DataTableBehaviorClearSortThenRefresh implements IDataTableBehavior {
