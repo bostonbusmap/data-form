@@ -24,13 +24,13 @@ function compare_result_column_asc($a, $b) {
  * @return DataForm
  */
 function make_form($state) {
-	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/live.php";
+	$this_url = $_SERVER['REQUEST_URI'];
 
 	$columns = array();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Numbers")->column_key("number")->build();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Result")->column_key("result")->sortable(true)->build();
 
-	$multiplier = $state->find_item(array("multiplier"));
+	$multiplier = $state->find_item(array("factor"));
 	if (is_null($multiplier)) {
 		$multiplier = 4;
 	}
@@ -66,10 +66,10 @@ function make_form($state) {
 	$options[] = new DataTableOption("5", "5");
 
 
-	$buttons[] = DataTableOptionsBuilder::create()->options($options)->name("multiplier")->form_action($this_url)->behavior(new DataTableBehaviorRefresh())->build();
+	$buttons[] = DataTableOptionsBuilder::create()->options($options)->name("factor")->form_action($this_url)->behavior(new DataTableBehaviorRefresh())->build();
 
 	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->build();
-	$form = DataFormBuilder::create("multiplication")->tables(array($table))->remote($this_url)->build();
+	$form = DataFormBuilder::create($state->get_form_name())->tables(array($table))->remote($this_url)->build();
 	return $form;
 }
 
