@@ -21,6 +21,11 @@ class DataForm {
 	/** @var string|bool Either false or a URL to send pagination, sorting, or searching requests to */
 	private $remote;
 
+	/**
+	 * @var IValidatorRule[]
+	 */
+	private $validator_rules;
+
 
 	/**
 	 * @param $builder DataFormBuilder
@@ -36,6 +41,7 @@ class DataForm {
 		$this->method = $builder->get_method();
 		$this->div_class = $builder->get_div_class();
 		$this->remote = $builder->get_remote();
+		$this->validator_rules = $builder->get_validator_rules();
 	}
 
 	/**
@@ -53,6 +59,7 @@ class DataForm {
 		}
 
 		$ret =  '<div class="' . htmlspecialchars($this->div_class) . '" id="' . htmlspecialchars($this->form_name) . '">';
+		$ret .= '<div id="' . htmlspecialchars($this->form_name . "_flash") . '"></div>';
 		$ret .=  $this->display_form($state);
 		$ret .= '</div>';
 		return $ret;
@@ -96,16 +103,25 @@ class DataForm {
 	 */
 	private static function make_inputs_from_forwarded_state($obj, $base)
 	{
-		if (!$base) {
-			throw new Exception("base must not be empty");
-		}
 		if (!is_string($base)) {
 			throw new Exception("base must be a string");
+		}
+		if (trim($base) === "") {
+			throw new Exception("base must not be empty");
 		}
 
 		if (is_array($obj)) {
 			$ret = "";
 			foreach ($obj as $k => $v) {
+				if (!is_string($k)) {
+					throw new Exception("keys in obj must be strings");
+				}
+				if (trim($k) === "") {
+					throw new Exception("keys in obj must not be empty");
+				}
+				if (strpos($k, "[") !== false || strpos($k, "]") !== false) {
+					throw new Exception("square brackets not permitted in keys");
+				}
 				$ret .= self::make_inputs_from_forwarded_state($obj[$k], $base . "[" . $k . "]");
 			}
 		}
@@ -114,6 +130,27 @@ class DataForm {
 			$ret = '<input type="hidden" name="' . htmlspecialchars($base) . '" value="' . htmlspecialchars($obj) . '" />';
 		}
 		return $ret;
+	}
+
+	/**
+	 * @param $state DataFormState
+	 * @return string HTML with validation errors. Must be an empty string if no errors found
+	 * @throws Exception
+	 */
+	public function validate($state)
+	{
+		if (!$state || !($state instanceof DataFormState)) {
+			throw new Exception("state must exist and be of type DataFormState");
+		}
+		$errors = array();
+		foreach ($this->validator_rules as $rule) {
+			$error = $rule->validate($this, $state);
+			if ($error) {
+				// TODO: css class
+				$errors[] = '<span style="color: red;">' . htmlspecialchars($error) . "</span>";
+			}
+		}
+		return join("<br />", $errors);
 	}
 
 }

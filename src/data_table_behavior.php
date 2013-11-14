@@ -19,7 +19,7 @@ class DataTableBehaviorSubmitNewWindow implements IDataTableBehavior {
 		if (!$form_action) {
 			throw new Exception("form_action is empty");
 		}
-		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parent("form").attr("target", "_blank");$(this).parent("form").submit();return false;';
+		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parents("form").attr("target", "_blank");$(this).parents("form").submit();return false;';
 	}
 }
 class DataTableBehaviorSubmit implements IDataTableBehavior {
@@ -27,7 +27,42 @@ class DataTableBehaviorSubmit implements IDataTableBehavior {
 		if (!$form_action) {
 			throw new Exception("form_action is empty");
 		}
-		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parent("form").submit();return false;';
+		return '$(this).parents("form").attr("action", ' . json_encode($form_action) . ');$(this).parents("form").submit();return false;';
+	}
+}
+class DataTableBehaviorSubmitAndValidate implements IDataTableBehavior {
+	/** @var  string */
+	protected $validation_url;
+	public function __construct($validation_url) {
+		if (!$validation_url || !is_string($validation_url)) {
+			throw new Exception("validation_url must be a non-empty string");
+		}
+		$this->validation_url = $validation_url;
+	}
+
+	function action($form_name, $form_action, $form_method)
+	{
+		$validate_name = DataFormState::make_field_name($form_name, DataFormState::only_validate_key());
+		$params = "&" . $validate_name . "=true";
+
+		$method = strtolower($form_method);
+		if ($method != "post" && $method != "get") {
+			throw new Exception("Unknown method '$method'");
+		}
+		$flash_name = $form_name . "_flash";
+
+		// first submit data with validation parameter to validation url
+		// If a non-empty result is received (which would be errors), put it in flash div,
+		// else do the submit
+		return '$.' . $method . '(' . json_encode($this->validation_url) . ','.
+			' $(this).parents("form").serialize()  + ' .
+			json_encode($params) .
+			', function(data, textStatus, jqXHR) { ' .
+			'if (data) { $(' . json_encode("#" . $flash_name) . ').html(data); } else { ' .
+			'$(this).parents("form").attr("action", ' .
+			json_encode($form_action) .
+			');$(this).parents("form").submit();' .
+			'}}); return false;';
 	}
 }
 class DataTableBehaviorRefresh implements IDataTableBehavior {
@@ -56,7 +91,11 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 			throw new Exception("Unknown method '$method'");
 		}
 
-		return '$.' . $method . '(' . json_encode($form_action) . ', $(this).parents("form").serialize()  + ' . json_encode($params) . ', function(data, textStatus, jqXHR) { $(' . json_encode("#" . $form_name) . ').html(data);});return false;';
+		// to submit the form as AJAX we need to serialize the form to json and put it in the parameter string
+		// the second part of this takes that result and puts it in the div with the same name as the form
+		// ie, replace the form with a refreshed copy
+		return '$.' . $method . '(' . json_encode($form_action) . ', $(this).parents("form").serialize()  + ' . json_encode($params) .
+			', function(data, textStatus, jqXHR) { $(' . json_encode("#" . $form_name) . ').html(data);});return false;';
 	}
 }
 class DataTableBehaviorClearSortThenRefresh implements IDataTableBehavior {

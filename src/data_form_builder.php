@@ -20,6 +20,9 @@ class DataFormBuilder {
 	 * If false sorting and searching are done locally */
 	private $remote;
 
+	/** @var IValidatorRule[] */
+	private $validator_rules;
+
 
 	public function __construct($form_name) {
 		$this->form_name = $form_name;
@@ -82,6 +85,11 @@ class DataFormBuilder {
 		return $this;
 	}
 
+	public function validator_rules($validator_rules) {
+		$this->validator_rules = $validator_rules;
+		return $this;
+	}
+
 
 
 	/**
@@ -89,11 +97,11 @@ class DataFormBuilder {
 	 * @return DataForm
 	 */
 	public function build() {
-		if (!$this->form_name) {
-			throw new Exception("form_name is blank");
-		}
 		if (!is_string($this->form_name)) {
 			throw new Exception("form_name must be a string");
+		}
+		if (trim($this->form_name) === "") {
+			throw new Exception("form_name is blank");
 		}
 		if (strpos($this->form_name, ".") !== false ||
 			strpos($this->form_name, " ") !== false ||
@@ -101,7 +109,7 @@ class DataFormBuilder {
 			throw new Exception("Illegal character in form_name");
 		}
 
-		if (!$this->forwarded_state) {
+		if (is_null($this->forwarded_state)) {
 			$this->forwarded_state = array();
 		}
 		if (!is_array($this->forwarded_state)) {
@@ -113,7 +121,7 @@ class DataFormBuilder {
 			}
 		}
 
-		if (!$this->method) {
+		if (is_null($this->method)) {
 			$this->method = "POST";
 		}
 		if (!is_string($this->method)) {
@@ -123,7 +131,7 @@ class DataFormBuilder {
 			throw new Exception("method must be GET or POST");
 		}
 
-		if (!$this->tables) {
+		if (is_null($this->tables)) {
 			$this->tables = array();
 		}
 		if (!is_array($this->tables)) {
@@ -139,7 +147,10 @@ class DataFormBuilder {
 			foreach ($this->tables as $table) {
 				/** @var $table DataTable */
 				$table_name = $table->get_table_name();
-				if (!$table_name) {
+				if (!is_string($table_name)) {
+					throw new Exception("table names must be strings");
+				}
+				if (trim($table_name) === "") {
 					throw new Exception("Each table must have a name if there is more than one in a form");
 				}
 				if (in_array($table_name, $names)) {
@@ -149,14 +160,15 @@ class DataFormBuilder {
 			}
 		}
 
-		if (!$this->div_class) {
+		if (is_null($this->div_class)) {
 			$this->div_class = "";
 		}
 		if (!is_string($this->div_class)) {
 			throw new Exception("div_class must be a string");
 		}
 
-		if (!$this->remote) {
+		if ($this->remote === false || $this->remote === null ||
+			(is_string($this->remote) && trim($this->remote) === "")) {
 			$this->remote = false;
 		}
 		if ($this->remote && !is_string($this->remote)) {
@@ -170,6 +182,14 @@ class DataFormBuilder {
 			}
 		}
 
+		if (!$this->validator_rules) {
+			$this->validator_rules = array();
+		}
+		foreach ($this->validator_rules as $rule) {
+			if (!$rule || !($rule instanceof IValidatorRule)) {
+				throw new Exception("Validator rules must be of type IValidatorRule");
+			}
+		}
 
 		return new DataForm($this);
 	}
@@ -202,5 +222,12 @@ class DataFormBuilder {
 	 */
 	public function get_remote() {
 		return $this->remote;
+	}
+
+	/**
+	 * @return IValidatorRule[]
+	 */
+	public function get_validator_rules() {
+		return $this->validator_rules;
 	}
 }

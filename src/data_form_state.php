@@ -19,6 +19,8 @@ class DataFormState
 
 	const form_exists = "_form_exists";
 
+	const only_validate_key = "_validate";
+
 	/**
 	 * The piece of $_REQUEST that's relevant to this form
 	 * @var array
@@ -39,7 +41,7 @@ class DataFormState
 	public function __construct($form_name, $post, $source_state=null)
 	{
 		$this->form_name = $form_name;
-		if (!$form_name || !is_string($form_name)) {
+		if (!is_string($form_name) || trim($form_name) === "") {
 			throw new Exception("form_name must not be blank and must be a string");
 		}
 
@@ -63,7 +65,7 @@ class DataFormState
 		}
 		$this->form_data = $form_data;
 
-		if (!$this->form_data) {
+		if (is_null($this->form_data)) {
 			$this->form_data = array();
 		}
 		if (!is_array($this->form_data)) {
@@ -98,7 +100,10 @@ class DataFormState
 			if (!is_string($key)) {
 				throw new Exception("Each item in path must be a string");
 			}
-			if (!$current) {
+			if (trim($key) === "") {
+				throw new Exception("Each item in path must exist");
+			}
+			if (!is_array($current)) {
 				return null;
 			}
 			elseif (array_key_exists($key, $current)) {
@@ -121,7 +126,7 @@ class DataFormState
 	 * @throws Exception
 	 */
 	public static function make_field_name($form_name, $path) {
-		if (!$form_name || !is_string($form_name)) {
+		if (!is_string($form_name) || trim($form_name) === "") {
 			throw new Exception("form_name must be a non-empty string");
 		}
 		if (!is_array($path)) {
@@ -134,6 +139,9 @@ class DataFormState
 		foreach ($path as $item) {
 			if (!is_string($item)) {
 				throw new Exception("Each item in path must be a string");
+			}
+			if (trim($item) === "") {
+				throw new Exception("Each item in path must not be empty");
 			}
 			if (strpos($item, "[") !== false || strpos($item, "]") !== false) {
 				throw new Exception("Cannot use square bracket within item name");
@@ -233,6 +241,20 @@ class DataFormState
 	 */
 	public static function only_display_form_key() {
 		return array(self::state_key, self::only_display_form);
+	}
+
+	/**
+	 * @return bool Is client only looking to validate the form, not submit it?
+	 */
+	public function only_validate() {
+		return $this->find_item(self::only_validate_key());
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public static function only_validate_key() {
+		return array(self::state_key, self::only_validate_key);
 	}
 
 	/**

@@ -34,6 +34,7 @@ require_once "data_table_widget.php";
 require_once "selected.php";
 require_once "sql_builder.php";
 require_once "util.php";
+require_once "validator_rule.php";
 
 /**
  * This displays a table of data which is also a form.
