@@ -46,6 +46,9 @@ class DataFormBuilder {
 	}
 
 	/**
+	 * A list of states from previous pages which you want to keep when submitting to the next page
+	 * or refreshing from this one.
+	 * 
 	 * @param $forwarded_state DataFormState[]
 	 * @return DataFormBuilder
 	 */
