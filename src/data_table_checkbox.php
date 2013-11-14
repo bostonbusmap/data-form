@@ -19,7 +19,7 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 	{
 		if ($state && is_array($state->find_item(array($column_header)))) {
 			$checked_items = $state->find_item(array($column_header));
-			$checked = (in_array($rowid, $checked_items) ? "checked" : "");
+			$checked = (in_array($column_data, $checked_items) ? "checked" : "");
 		}
 		else
 		{
