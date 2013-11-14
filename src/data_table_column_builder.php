@@ -132,7 +132,7 @@ class DataTableColumnBuilder {
 	 * @throws Exception
 	 */
 	public function build() {
-		if (!$this->header_formatter) {
+		if (is_null($this->header_formatter)) {
 			$this->header_formatter = new DefaultHeaderFormatter();
 		}
 		if (!($this->header_formatter instanceof IDataTableHeaderFormatter))
@@ -140,11 +140,15 @@ class DataTableColumnBuilder {
 			throw new Exception("header_formatter must be instance of IDataTableHeaderFormatter");
 		}
 
-		if (!$this->cell_formatter) {
+		if (is_null($this->cell_formatter)) {
 			$this->cell_formatter = new DefaultCellFormatter();
 		}
 		if (!($this->cell_formatter instanceof IDataTableCellFormatter)) {
 			throw new Exception("cell_formatter must be instance of IDataTableHeaderFormatter");
+		}
+
+		if (is_null($this->sortable)) {
+			$this->sortable = false;
 		}
 		if ($this->sortable === true) {
 			$this->sortable = "numeric";
@@ -152,27 +156,30 @@ class DataTableColumnBuilder {
 		if ($this->sortable && !is_string($this->sortable)) {
 			throw new Exception("If sortable is true, it must be a string which is the CSS class for how it's sorted (for example, numeric)");
 		}
+		if (!$this->sortable && !is_bool($this->sortable)) {
+			throw new Exception("If sortable is false, it must be a bool");
+		}
 
-		if (!$this->searchable) {
+		if (is_null($this->searchable)) {
 			$this->searchable = false;
 		}
 		if (!is_bool($this->searchable)) {
 			throw new Exception("searchable must be a bool");
 		}
 
-		if (!$this->column_key) {
+		if (is_null($this->column_key)) {
 			$this->column_key = "";
 		}
 		if (!is_string($this->column_key)) {
 			throw new Exception("column_key must be a string");
 		}
-		if (!$this->display_header_name) {
+		if (is_null($this->display_header_name)) {
 			$this->display_header_name = "";
 		}
 		if (!is_string($this->display_header_name)) {
 			throw new Exception("display_header_name must be a string");
 		}
-		if (!$this->css) {
+		if (is_null($this->css)) {
 			$this->css = "";
 		}
 		if (!is_string($this->css)) {

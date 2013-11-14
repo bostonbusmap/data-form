@@ -62,7 +62,7 @@ function get_rows_from_database($res) {
  * @throws Exception
  */
 function create_table_from_database($sql, $state, $submit_url=null, $radio_column_key=null) {
-	if (!$sql || !is_string($sql)) {
+	if (!is_string($sql) || trim($sql) === "") {
 		throw new Exception("sql must be a string of SQL");
 	}
 	if (!$state || !($state instanceof DataFormState)) {
@@ -117,7 +117,7 @@ function create_table_from_database($sql, $state, $submit_url=null, $radio_colum
  * @throws Exception
  */
 function create_data_form_from_database($sql, $state, $submit_url=null, $radio_column_key=null) {
-	if (!$sql || !is_string($sql)) {
+	if (!is_string($sql) || trim($sql) === "") {
 		throw new Exception("sql must be a string of SQL");
 	}
 

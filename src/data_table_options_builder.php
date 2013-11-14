@@ -105,14 +105,14 @@ class DataTableOptionsBuilder {
 	 * @throws Exception
 	 */
 	public function build() {
-		if (!$this->name) {
+		if (is_null($this->name)) {
 			$this->name = "";
 		}
 		if (!is_string($this->name)) {
 			throw new Exception("name must be a string");
 		}
 
-		if (!$this->options) {
+		if (is_null($this->options)) {
 			$this->options = array();
 		}
 		if (!is_array($this->options)) {
@@ -130,7 +130,7 @@ class DataTableOptionsBuilder {
 		if ($this->behavior && !($this->behavior instanceof IDataTableBehavior)) {
 			throw new Exception("change_behavior must be instance of IDataTableBehavior");
 		}
-		if (!$this->placement) {
+		if (is_null($this->placement)) {
 			$this->placement = IDataTableWidget::placement_top;
 		}
 		if ($this->placement != IDataTableWidget::placement_top && $this->placement != IDataTableWidget::placement_bottom) {

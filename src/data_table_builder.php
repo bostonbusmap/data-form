@@ -216,14 +216,14 @@ class DataTableBuilder {
 	public function build() {
 		// if unspecified, set options here
 
-		if (!$this->table_name) {
+		if (is_null($this->table_name)) {
 			$this->table_name = "";
 		}
 		if (!is_string($this->table_name)) {
 			throw new Exception("table_name must be a string");
 		}
 
-		if (!$this->columns) {
+		if (is_null($this->columns)) {
 			throw new Exception("columns must have at least one column");
 		}
 		if (!is_array($this->columns)) {
@@ -235,7 +235,7 @@ class DataTableBuilder {
 			}
 		}
 
-		if (!$this->widgets) {
+		if (is_null($this->widgets)) {
 			$this->widgets = array();
 		}
 		if (!is_array($this->widgets)) {
@@ -247,7 +247,7 @@ class DataTableBuilder {
 			}
 		}
 
-		if (!$this->field_names) {
+		if (is_null($this->field_names)) {
 			// make sure this is an array
 			$this->field_names = array();
 		}
@@ -272,7 +272,7 @@ class DataTableBuilder {
 			}
 		}
 
-		if (!$this->row_classes) {
+		if (is_null($this->row_classes)) {
 			$this->row_classes = array();
 		}
 		if (!is_array($this->row_classes)) {
@@ -284,7 +284,7 @@ class DataTableBuilder {
 			}
 		}
 
-		if (!$this->header) {
+		if (is_null($this->header)) {
 			$this->header = "";
 		}
 		if (!is_string($this->header)) {
@@ -295,7 +295,7 @@ class DataTableBuilder {
 			throw new Exception("settings must be instance of DataTableSettings");
 		}
 
-		if (!$this->empty_message) {
+		if (is_null($this->empty_message)) {
 			$this->empty_message = "";
 		}
 		if (!is_string($this->empty_message)) {

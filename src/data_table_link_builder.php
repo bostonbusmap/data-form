@@ -105,21 +105,21 @@ class DataTableLinkBuilder {
 	 * @throws Exception
 	 */
 	public function build() {
-		if (!$this->name) {
+		if (is_null($this->name)) {
 			$this->name = "";
 		}
 		if (!is_string($this->name)) {
 			throw new Exception("name must be a string");
 		}
 
-		if (!$this->text) {
+		if (is_null($this->text)) {
 			$this->text = "";
 		}
 		if (!is_string($this->text)) {
 			throw new Exception("text must be a string");
 		}
 
-		if (!$this->link) {
+		if (is_null($this->link)) {
 			$this->link = "";
 		}
 		if (!is_string($this->link)) {
@@ -129,7 +129,7 @@ class DataTableLinkBuilder {
 		if ($this->behavior && !($this->behavior instanceof IDataTableBehavior)) {
 			throw new Exception("change_behavior must be instance of IDataTableBehavior");
 		}
-		if (!$this->placement) {
+		if (is_null($this->placement)) {
 			$this->placement = IDataTableWidget::placement_top;
 		}
 		if ($this->placement != IDataTableWidget::placement_top && $this->placement != IDataTableWidget::placement_bottom) {

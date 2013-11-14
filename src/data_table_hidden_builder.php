@@ -49,14 +49,14 @@ class DataTableHiddenBuilder {
 	 * @throws Exception
 	 */
 	public function build() {
-		if (!$this->name) {
+		if (is_null($this->name)) {
 			throw new Exception("name is missing");
 		}
 		if (!is_string($this->name)) {
 			throw new Exception("name must be a string");
 		}
 
-		if (!$this->value) {
+		if (is_null($this->value)) {
 			$this->value = "";
 		}
 		if (!is_string($this->value)) {

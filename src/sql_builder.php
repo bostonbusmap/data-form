@@ -125,7 +125,7 @@ class SQLBuilder {
 	}
 
 	protected function validate_input() {
-		if (!$this->table_name) {
+		if (is_null($this->table_name)) {
 			$this->table_name = "";
 		}
 		if (!is_string($this->table_name)) {
@@ -150,28 +150,28 @@ class SQLBuilder {
 			throw new Exception("The LIMIT clause is added automatically when paginating so it shouldn't be present in statement yet");
 		}
 
-		if (!$this->pagination_transform) {
+		if (is_null($this->pagination_transform)) {
 			$this->pagination_transform = new LimitPaginationTreeTransform();
 		}
 		if (!($this->pagination_transform instanceof ISQLTreeTransform)) {
 			throw new Exception("Pagination transform must be instance of ISQLTreeFilter");
 		}
 
-		if (!$this->count_transform) {
+		if (is_null($this->count_transform)) {
 			$this->count_transform = new CountTreeTransform();
 		}
 		if (!($this->count_transform instanceof ISQLTreeTransform)) {
 			throw new Exception("Count transform must be instance of ISQLTreeFilter");
 		}
 
-		if (!$this->sort_transform) {
+		if (is_null($this->sort_transform)) {
 			$this->sort_transform = new SortTreeTransform();
 		}
 		if (!($this->sort_transform instanceof ISQLTreeTransform)) {
 			throw new Exception("Sort transform must be instance of ISQLTreeFilter");
 		}
 
-		if (!$this->filter_transform) {
+		if (is_null($this->filter_transform)) {
 			$this->filter_transform = new FilterTreeTransform();
 		}
 		if (!($this->filter_transform instanceof ISQLTreeTransform)) {

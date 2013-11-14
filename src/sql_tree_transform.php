@@ -72,7 +72,7 @@ class BoundedPaginationTreeTransform implements ISQLTreeTransform
 	protected $column_key;
 
 	public function __construct($column_key) {
-		if (!$column_key || !is_string($column_key)) {
+		if (!is_string($column_key) || trim($column_key) === "") {
 			throw new Exception("expected column_key to be a string");
 		}
 		$this->column_key = $column_key;
@@ -166,7 +166,7 @@ class DistinctCountTreeTransform  implements ISQLTreeTransform
 	protected $column_key;
 
 	public function __construct($column_key) {
-		if (!$column_key || !is_string($column_key)) {
+		if (!is_string($column_key) || trim($column_key) === "") {
 			throw new Exception("expected column_key to be a string");
 		}
 		if (strpos($column_key, "`") !== false) {

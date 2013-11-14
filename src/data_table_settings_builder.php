@@ -106,7 +106,7 @@ class DataTableSettingsBuilder
 
 	public function build()
 	{
-		if (!$this->default_limit) {
+		if (is_null($this->default_limit)) {
 			$this->default_limit = DataTableSettings::default_limit;
 		}
 		if (!is_int($this->default_limit)) {
@@ -117,7 +117,7 @@ class DataTableSettingsBuilder
 			throw new Exception("total_rows must be an integer");
 		}
 
-		if (!$this->limit_options) {
+		if (is_null($this->limit_options)) {
 			$this->limit_options = array(
 				0 => "ALL",
 				10 => "10",
@@ -139,14 +139,14 @@ class DataTableSettingsBuilder
 		}
 
 		// user shouldn't be able to change sorting from an array, but just in case
-		if (!$this->sorting) {
+		if (is_null($this->sorting)) {
 			$this->sorting = array();
 		}
 		if (!is_array($this->sorting)) {
 			throw new Exception("sorting must be an array");
 		}
 		foreach ($this->sorting as $k => $v) {
-			if (!$k || !is_string($k)) {
+			if (!is_string($k) || trim($k) === "") {
 				throw new Exception("Each column_key in sorting must be a string and must exist");
 			}
 			if ($v != DataFormState::sorting_state_asc && $v != DataFormState::sorting_state_desc) {
@@ -162,7 +162,7 @@ class DataTableSettingsBuilder
 			throw new Exception("filtering must be an array");
 		}
 		foreach ($this->filtering as $k => $v) {
-			if (!$k || !is_string($k)) {
+			if (!is_string($k) || trim($k) === "") {
 				throw new Exception("Each column_key in filtering must be a string and must exist");
 			}
 			if (!is_string($v)) {
