@@ -146,6 +146,7 @@ class DataTableSettings {
 		}
 
 		// number of nearby pages to show
+		// TODO: make this a parameter
 		$window = 5;
 
 		if ($pagination_state) {
