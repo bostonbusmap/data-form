@@ -189,13 +189,11 @@ class DistinctCountTreeTransform  implements ISQLTreeTransform
 class CountTreeTransform implements ISQLTreeTransform {
 	function alter($input_tree, $state, $settings, $table_name)
 	{
-		$tree = $input_tree;
-
 		$count_parser = new PHPSQLParser();
-		$select_count_all = $count_parser->parse("SELECT COUNT(*)");
-		$tree["SELECT"] = $select_count_all["SELECT"];
+		$select_count_all = $count_parser->parse("SELECT COUNT(*) FROM (SELECT 3, 4, 5) as t");
+		$select_count_all["FROM"][0]["sub_tree"] = $input_tree;
 
-		return $tree;
+		return $select_count_all;
 	}
 }
 /**
