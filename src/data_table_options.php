@@ -68,7 +68,7 @@ class DataTableOptions implements IDataTableWidget {
 	 * @param $form_method string GET or POST
 	 * @param $behavior IDataTableBehavior
 	 * @param $options DataTableOption[]
-	 * @param $label
+	 * @param $label string
 	 * @param $state DataFormState
 	 * @throws Exception
 	 * @return string
@@ -96,7 +96,7 @@ class DataTableOptions implements IDataTableWidget {
 				$ret .= '<label for="' . htmlspecialchars($qualified_name) . '">' . $label . '</label>';
 			}
 
-			$ret .= '<select name="' . htmlspecialchars($qualified_name) . '" onchange="' . htmlspecialchars($onchange) . '">';
+			$ret .= '<select id="' . htmlspecialchars($qualified_name) . '" name="' . htmlspecialchars($qualified_name) . '" onchange="' . htmlspecialchars($onchange) . '">';
 		}
 		else
 		{

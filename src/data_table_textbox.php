@@ -13,6 +13,8 @@ class DataTableTextbox implements IDataTableWidget {
 	protected $submit_behavior;
 	/** @var string either 'top' or 'bottom' */
 	protected $placement;
+	/** @var string HTML for label. May be blank if no label */
+	protected $label;
 
 	/**
 	 * @param $builder DataTableTextboxBuilder
@@ -27,12 +29,12 @@ class DataTableTextbox implements IDataTableWidget {
 		$this->action = $builder->get_form_action();
 		$this->submit_behavior = $builder->get_behavior();
 		$this->placement = $builder->get_placement();
-
+		$this->label = $builder->get_label();
 	}
 
 	public function display($form_name, $form_method, $state)
 	{
-		return self::display_textbox($form_name, array($this->name), $this->action, $form_method, $this->submit_behavior, $this->text, $state);
+		return self::display_textbox($form_name, array($this->name), $this->action, $form_method, $this->submit_behavior, $this->text, $this->label, $state);
 	}
 
 	public function get_placement()
@@ -47,10 +49,13 @@ class DataTableTextbox implements IDataTableWidget {
 	 * @param $form_method string GET or POST
 	 * @param $behavior IDataTableBehavior
 	 * @param $default_text string
+	 * @param $label string
 	 * @param $state DataFormState
 	 * @return string
 	 */
-	public static function display_textbox($form_name, $name_array, $action, $form_method, $behavior, $default_text, $state=null) {
+	public static function display_textbox($form_name, $name_array, $action, $form_method, $behavior, $default_text, $label, $state = null) {
+		$ret = "";
+
 		if ($action && $behavior) {
 			$onchange = $behavior->action($form_name, $action, $form_method);
 		}
@@ -74,11 +79,15 @@ class DataTableTextbox implements IDataTableWidget {
 				$qualified_name .= "[" . $name . "]";
 			}
 
-			$ret = '<input type="text" name="' . htmlspecialchars($qualified_name) . '" onsubmit="' . htmlspecialchars($onchange) . '" value="' . htmlspecialchars($text) . '" />';
+			if ($label !== null && $label !== "") {
+				$ret .= '<label for="' . htmlspecialchars($qualified_name) . '">' . $label . '</label>';
+			}
+
+			$ret .= '<input type="text" id="' . htmlspecialchars($qualified_name) . '" name="' . htmlspecialchars($qualified_name) . '" onsubmit="' . htmlspecialchars($onchange) . '" value="' . htmlspecialchars($text) . '" />';
 		}
 		else
 		{
-			$ret = '<input type="text" onsubmit="' . htmlspecialchars($onchange) . '" value="' . htmlspecialchars($text) . '" />';
+			$ret .= '<input type="text" onsubmit="' . htmlspecialchars($onchange) . '" value="' . htmlspecialchars($text) . '" />';
 		}
 
 		$ret .= "</select>";
@@ -89,7 +98,7 @@ class DataTableTextbox implements IDataTableWidget {
 class DataTableTextboxCellFormatter implements IDataTableCellFormatter {
 	public function format($form_name, $column_header, $column_data, $rowid, $state)
 	{
-		return DataTableTextbox::display_textbox($form_name, array($column_header, $rowid), "", "POST", null, $column_data, $state);
+		return DataTableTextbox::display_textbox($form_name, array($column_header, $rowid), "", "POST", null, $column_data, "", $state);
 	}
 }
 
@@ -100,6 +109,6 @@ class DataTableTextboxCellFormatter implements IDataTableCellFormatter {
 class DataTableTextboxHeaderFormatter implements IDataTableHeaderFormatter {
 	public function format($form_name, $column_key, $header_data, $state)
 	{
-		return DataTableTextbox::display_textbox($form_name, array($column_key), "", "POST", null, $header_data, $state);
+		return DataTableTextbox::display_textbox($form_name, array($column_key), "", "POST", null, $header_data, "", $state);
 	}
 }
