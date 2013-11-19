@@ -208,6 +208,7 @@ class SQLBuilder {
 
 		$tree = $this->sql_tree;
 
+		$tree = $this->filter_transform->alter($tree, $this->state, $this->settings, $this->table_name);
 		$tree = $this->count_transform->alter($tree, $this->state, $this->settings, $this->table_name);
 
 		$creator = new PHPSQLCreator();
