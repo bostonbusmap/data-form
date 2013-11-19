@@ -92,7 +92,7 @@ class DataTableOptions implements IDataTableWidget {
 				$qualified_name .= "[" . $name . "]";
 			}
 
-			if ($label) {
+			if ($label !== null && $label !== "") {
 				$ret .= '<label for="' . htmlspecialchars($qualified_name) . '">' . $label . '</label>';
 			}
 
