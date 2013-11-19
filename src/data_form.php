@@ -115,8 +115,8 @@ class DataForm {
 		if (is_array($obj)) {
 			$ret = "";
 			foreach ($obj as $k => $v) {
-				if (!is_string($k)) {
-					throw new Exception("keys in obj must be strings");
+				if (!is_string($k) && !is_int($k)) {
+					throw new Exception("keys in obj must be strings or integers");
 				}
 				if (trim($k) === "") {
 					throw new Exception("keys in obj must not be empty");
