@@ -62,7 +62,7 @@ class DataTableButton implements IDataTableWidget {
 	public static function display_button($form_name, $name_array, $action, $form_method, $behavior, $text, $type, $label, $state = null) {
 		$ret = "";
 
-		if ($action && $behavior) {
+		if ($behavior) {
 			$onchange = $behavior->action($form_name, $action, $form_method);
 		}
 		else

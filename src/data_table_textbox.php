@@ -56,7 +56,7 @@ class DataTableTextbox implements IDataTableWidget {
 	public static function display_textbox($form_name, $name_array, $action, $form_method, $behavior, $default_text, $label, $state = null) {
 		$ret = "";
 
-		if ($action && $behavior) {
+		if ($behavior) {
 			$onchange = $behavior->action($form_name, $action, $form_method);
 		}
 		else

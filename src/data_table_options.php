@@ -76,7 +76,7 @@ class DataTableOptions implements IDataTableWidget {
 	public static function display_options($form_name, $name_array, $action, $form_method, $behavior, $options, $label, $state = null) {
 		$ret = "";
 
-		if ($action && $behavior) {
+		if ($behavior) {
 			$onchange = $behavior->action($form_name, $action, $form_method);
 		}
 		else
