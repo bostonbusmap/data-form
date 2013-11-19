@@ -15,6 +15,10 @@ class DataTableButtonBuilder {
 	protected $behavior;
 	/** @var  string */
 	protected $placement;
+	/**
+	 * @var string
+	 */
+	protected $label;
 
 	/**
 	 * @return DataTableButtonBuilder
@@ -78,6 +82,15 @@ class DataTableButtonBuilder {
 	}
 
 	/**
+	 * @param $label string
+	 * @return DataTableButtonBuilder
+	 */
+	public function label($label) {
+		$this->label = $label;
+		return $this;
+	}
+
+	/**
 	 * @return string
 	 */
 	public function get_type() {
@@ -120,6 +133,13 @@ class DataTableButtonBuilder {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function get_label() {
+		return $this->label;
+	}
+
+	/**
 	 * @return DataTableButton
 	 * @throws Exception
 	 */
@@ -156,6 +176,9 @@ class DataTableButtonBuilder {
 		}
 		if ($this->placement != IDataTableWidget::placement_top && $this->placement != IDataTableWidget::placement_bottom) {
 			throw new Exception("placement must be 'top' or 'bottom'");
+		}
+		if (!is_null($this->label) && !is_string($this->label)) {
+			throw new Exception("label must be a string or null");
 		}
 
 		return new DataTableButton($this);

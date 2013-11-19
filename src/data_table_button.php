@@ -25,6 +25,10 @@ class DataTableButton implements IDataTableWidget {
 	 * @var string
 	 */
 	private $placement;
+	/**
+	 * @var string HTML for label
+	 */
+	private $label;
 
 	/**
 	 * @param $builder DataTableButtonBuilder
@@ -40,21 +44,60 @@ class DataTableButton implements IDataTableWidget {
 		$this->behavior = $builder->get_behavior();
 		$this->name = $builder->get_name();
 		$this->placement = $builder->get_placement();
+		$this->label = $builder->get_label();
+	}
+
+	/**
+	 * @param $form_name string
+	 * @param $name_array string[] Name for button. Each item will be surrounded by square brackets and concatenated
+	 * @param $action string
+	 * @param $form_method string GET or POST
+	 * @param $behavior IDataTableBehavior
+	 * @param $text string
+	 * @param $type string Type of button (currently either 'submit' or 'reset')
+	 * @param $label string
+	 * @param $state DataFormState
+	 * @return string
+	 */
+	public static function display_button($form_name, $name_array, $action, $form_method, $behavior, $text, $type, $label, $state = null) {
+		$ret = "";
+
+		if ($action && $behavior) {
+			$onchange = $behavior->action($form_name, $action, $form_method);
+		}
+		else
+		{
+			$onchange = "";
+		}
+
+		if ($name_array) {
+			$qualified_name = $form_name;
+			foreach ($name_array as $name) {
+				// TODO: sanitize
+				$qualified_name .= "[" . $name . "]";
+			}
+
+			if ($label !== null && $label !== "") {
+				$ret .= '<label for="' . htmlspecialchars($qualified_name) . '">' . $label . '</label>';
+			}
+
+			$ret .= '<input type="' . htmlspecialchars($type) . '" id="' . htmlspecialchars($qualified_name) .
+				'" name="' . htmlspecialchars($qualified_name) . '" value="' . htmlspecialchars($text) .
+				'" onclick="' . htmlspecialchars($onchange) . '"/>';
+		}
+		else
+		{
+			$ret .= '<input type="' . htmlspecialchars($type) . '" value="' . htmlspecialchars($text) .
+				'" onclick="' . htmlspecialchars($onchange) . '"/>';
+		}
+
+		$ret .= "</select>";
+		return $ret;
 	}
 
 	public function display($form_name, $form_method, $state=null)
 	{
-		$value = $this->text;
-		$qualified_name = $form_name . "[" . $this->name . "]";
-		if ($this->behavior) {
-			$onclick = $this->behavior->action($form_name, $this->action, $form_method);
-		}
-		else
-		{
-			$onclick = '';
-		}
-		$type = $this->type;
-		return '<input type="' . htmlspecialchars($type) . '" name="' . htmlspecialchars($qualified_name) . '" value="' . htmlspecialchars($value) . '" onclick="' . htmlspecialchars($onclick) . '"/>';
+		return self::display_button($form_name, array($this->name), $this->action, $form_method, $this->behavior, $this->text, $this->type, $this->label, $state);
 	}
 
 	public function get_placement() {
