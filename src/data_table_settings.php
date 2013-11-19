@@ -84,7 +84,6 @@ class DataTableSettings {
 	 */
 	protected function create_pagination_limit_controls($form_name, $form_method, $state, $remote_url, $table_name) {
 		$ret = "<div style='float:right;'>";
-		$ret .= "limit: ";
 
 		$option_values = array();
 
@@ -101,7 +100,7 @@ class DataTableSettings {
 
 		$behavior = new DataTableBehaviorRefresh();
 
-		$ret .= DataTableOptions::display_options($form_name, $limit_name_array, $form_action, $form_method, $behavior, $option_values, $state);
+		$ret .= DataTableOptions::display_options($form_name, $limit_name_array, $form_action, $form_method, $behavior, $option_values, "limit: ", $state);
 		$ret .= "</div>";
 		return $ret;
 	}

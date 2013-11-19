@@ -12,6 +12,8 @@ class DataTableOptionsBuilder {
 	protected $behavior;
 	/** @var  string */
 	protected $placement;
+	/** @var  string */
+	protected $label;
 
 	/**
 	 * @return DataTableOptionsBuilder
@@ -57,11 +59,20 @@ class DataTableOptionsBuilder {
 	}
 
 	/**
-	 * @param $placement IDataTableBehavior
+	 * @param $placement string
 	 * @return DataTableOptionsBuilder
 	 */
 	public function placement($placement) {
 		$this->placement = $placement;
+		return $this;
+	}
+
+	/**
+	 * @param $label string
+	 * @return DataTableOptionsBuilder
+	 */
+	public function label($label) {
+		$this->label = $label;
 		return $this;
 	}
 
@@ -101,6 +112,13 @@ class DataTableOptionsBuilder {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function get_label() {
+		return $this->label;
+	}
+
+	/**
 	 * @return DataTableOptions
 	 * @throws Exception
 	 */
@@ -135,6 +153,9 @@ class DataTableOptionsBuilder {
 		}
 		if ($this->placement != IDataTableWidget::placement_top && $this->placement != IDataTableWidget::placement_bottom) {
 			throw new Exception("placement must be 'top' or 'bottom'");
+		}
+		if (!is_null($this->label) && !is_string($this->label)) {
+			throw new Exception("label must be a string or null");
 		}
 
 		return new DataTableOptions($this);

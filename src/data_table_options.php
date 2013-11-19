@@ -16,6 +16,8 @@ class DataTableOptions implements IDataTableWidget {
 	protected $change_behavior;
 	/** @var  string */
 	protected $placement;
+	/** @var string  */
+	protected $label;
 
 	/**
 	 * @param $builder DataTableOptionsBuilder
@@ -30,6 +32,7 @@ class DataTableOptions implements IDataTableWidget {
 		$this->form_action = $builder->get_form_action();
 		$this->change_behavior = $builder->get_behavior();
 		$this->placement = $builder->get_placement();
+		$this->label = $builder->get_label();
 	}
 
 	public function get_options() {
@@ -55,7 +58,7 @@ class DataTableOptions implements IDataTableWidget {
 	 */
 	public function display($form_name, $form_method, $state=null)
 	{
-		return self::display_options($form_name, array($this->name), $this->form_action, $form_method, $this->change_behavior, $this->options, $state);
+		return self::display_options($form_name, array($this->name), $this->form_action, $form_method, $this->change_behavior, $this->options, $this->label, $state);
 	}
 
 	/**
@@ -65,10 +68,14 @@ class DataTableOptions implements IDataTableWidget {
 	 * @param $form_method string GET or POST
 	 * @param $behavior IDataTableBehavior
 	 * @param $options DataTableOption[]
+	 * @param $label
 	 * @param $state DataFormState
+	 * @throws Exception
 	 * @return string
 	 */
-	public static function display_options($form_name, $name_array, $action, $form_method, $behavior, $options, $state=null) {
+	public static function display_options($form_name, $name_array, $action, $form_method, $behavior, $options, $label, $state = null) {
+		$ret = "";
+
 		if ($action && $behavior) {
 			$onchange = $behavior->action($form_name, $action, $form_method);
 		}
@@ -79,15 +86,21 @@ class DataTableOptions implements IDataTableWidget {
 		if ($name_array) {
 			$qualified_name = $form_name;
 			foreach ($name_array as $name) {
-				// TODO: sanitize
+				if (strpos($name, "[") !== false || strpos($name, "]") !== false) {
+					throw new Exception("No square brackets allowed in name");
+				}
 				$qualified_name .= "[" . $name . "]";
 			}
 
-			$ret = '<select name="' . htmlspecialchars($qualified_name) . '" onchange="' . htmlspecialchars($onchange) . '">';
+			if ($label) {
+				$ret .= '<label for="' . htmlspecialchars($qualified_name) . '">' . $label . '</label>';
+			}
+
+			$ret .= '<select name="' . htmlspecialchars($qualified_name) . '" onchange="' . htmlspecialchars($onchange) . '">';
 		}
 		else
 		{
-			$ret = '<select onchange="' . htmlspecialchars($onchange) . '">';
+			$ret .= '<select onchange="' . htmlspecialchars($onchange) . '">';
 		}
 
 		if ($name_array && $state) {
@@ -131,6 +144,6 @@ class DataTableOptionsCellFormatter implements IDataTableCellFormatter {
 	 * @return string HTML for a link
 	 */
 	public function format($form_name, $column_header, $column_data, $rowid, $state) {
-		return DataTableOptions::display_options($form_name, array($column_header, $rowid), "", "POST", null, $column_data->get_options(), $state);
+		return DataTableOptions::display_options($form_name, array($column_header, $rowid), "", "POST", null, $column_data->get_options(), "", $state);
 	}
 }
