@@ -208,6 +208,7 @@ class SQLBuilder {
 
 		$tree = $this->sql_tree;
 
+		// order is important here. The count transform puts everything within a subquery so it must go last
 		$tree = $this->filter_transform->alter($tree, $this->state, $this->settings, $this->table_name);
 		$tree = $this->count_transform->alter($tree, $this->state, $this->settings, $this->table_name);
 
