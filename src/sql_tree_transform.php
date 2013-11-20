@@ -265,10 +265,12 @@ class FilterTreeTransform  implements ISQLTreeTransform
 				foreach ($searching_state as $key => $value) {
 					if (is_string($value)) {
 						$escaped_value = str_replace("'", "''", $value);
-						// TODO: escape $key, but I don't know if $key will contain table name too
-						$phrase = " $key LIKE '%$escaped_value%' ";
+						if ($escaped_value !== "") {
+							// TODO: escape $key, but I don't know if $key will contain table name too
+							$phrase = " $key LIKE '%$escaped_value%' ";
 
-						$tree = BoundedPaginationTreeTransform::add_where_clause($tree, $phrase);
+							$tree = BoundedPaginationTreeTransform::add_where_clause($tree, $phrase);
+						}
 					}
 					else
 					{
