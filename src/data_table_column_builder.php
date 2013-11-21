@@ -18,6 +18,10 @@ class DataTableColumnBuilder {
 	 */
 	protected $searchable;
 	/**
+	 * @var IDataTableSearchFormatter Renders HTML used for searching a column
+	 */
+	protected $search_formatter;
+	/**
 	 * @var string Column header meant to be displayed
 	 */
 	protected $display_header_name;
@@ -73,6 +77,15 @@ class DataTableColumnBuilder {
 	}
 
 	/**
+	 * @param $search_formatter IDataTableSearchFormatter
+	 * @return DataTableColumnBuilder
+	 */
+	public function search_formatter($search_formatter) {
+		$this->search_formatter = $search_formatter;
+		return $this;
+	}
+
+	/**
 	 * @param $display_header_name string
 	 * @return DataTableColumnBuilder
 	 */
@@ -113,6 +126,10 @@ class DataTableColumnBuilder {
 
 	public function get_searchable() {
 		return $this->searchable;
+	}
+
+	public function get_search_formatter() {
+		return $this->search_formatter;
 	}
 
 	public function get_display_header_name() {
@@ -165,6 +182,13 @@ class DataTableColumnBuilder {
 		}
 		if (!is_bool($this->searchable)) {
 			throw new Exception("searchable must be a bool");
+		}
+
+		if (is_null($this->search_formatter)) {
+			$this->search_formatter = new DefaultSearchFormatter();
+		}
+		if (!($this->search_formatter instanceof IDataTableSearchFormatter)) {
+			throw new Exception("search_formatter must be instance of IDataTableSearchFormatter");
 		}
 
 		if (is_null($this->column_key)) {

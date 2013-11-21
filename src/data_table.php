@@ -25,6 +25,7 @@ require_once "data_table_options_builder.php";
 require_once "data_table_options.php";
 require_once "data_table_pagination_state.php";
 require_once "data_table_radio.php";
+require_once "data_table_search_formatter.php";
 require_once "data_table_settings_builder.php";
 require_once "data_table_settings.php";
 require_once "data_table_textbox_builder.php";
@@ -337,7 +338,9 @@ class DataTable
 						}
 						$searching_name = DataFormState::make_field_name($form_name,
 							DataFormState::get_searching_state_key($column_key, $this->table_name));
-						$ret .= '<input size="8" name="' . htmlspecialchars($searching_name) . '" value="' . htmlspecialchars($old_searching_state) . '" />';
+
+						$ret .= '<input type="hidden" id="' . htmlspecialchars($searching_name) . '" name="' . htmlspecialchars($searching_name) . '" value="' . htmlspecialchars($old_searching_state) . '" />';
+						$ret .= $column->get_search_formatter()->format($searching_name, $old_searching_state);
 					}
 				}
 				$ret .= "</th>";

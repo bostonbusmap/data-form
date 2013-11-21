@@ -264,12 +264,22 @@ class FilterTreeTransform  implements ISQLTreeTransform
 			if (is_array($searching_state)) {
 				foreach ($searching_state as $key => $value) {
 					if (is_string($value)) {
-						$escaped_value = str_replace("'", "''", $value);
-						if ($escaped_value !== "") {
-							// TODO: escape $key, but I don't know if $key will contain table name too
-							$phrase = " $key LIKE '%$escaped_value%' ";
+						if ($value) {
+							$search_value = json_decode($value);
+							if (!$search_value) {
+								throw new Exception("Expected search_value to be JSON");
+							}
+							if ($search_value->command === "LIKE") {
+								$escaped_value = str_replace("'", "''", $search_value->values[0]);
+								if ($escaped_value !== "") {
+									// TODO: escape $key, but I don't know if $key will contain table name too
+									$phrase = " $key LIKE '%$escaped_value%' ";
 
-							$tree = BoundedPaginationTreeTransform::add_where_clause($tree, $phrase);
+									$tree = BoundedPaginationTreeTransform::add_where_clause($tree, $phrase);
+								}
+							} else {
+								throw new Exception("TODO: handle other search commands");
+							}
 						}
 					}
 					else

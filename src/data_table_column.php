@@ -66,6 +66,10 @@ class DataTableColumn {
 	 */
 	protected $searchable;
 	/**
+	 * @var IDataTableSearchFormatter
+	 */
+	protected $search_formatter;
+	/**
 	 * @var object Column header data to be displayed
 	 */
 	protected $display_header_name;
@@ -92,6 +96,7 @@ class DataTableColumn {
 		$this->cell_formatter = $builder->get_cell_formatter();
 		$this->sortable = $builder->get_sortable();
 		$this->searchable = $builder->get_searchable();
+		$this->search_formatter = $builder->get_search_formatter();
 		$this->display_header_name = $builder->get_display_header_name();
 		$this->column_key = $builder->get_column_key();
 		$this->css = $builder->get_css();
@@ -128,6 +133,13 @@ class DataTableColumn {
 	 */
 	public function get_searchable() {
 		return $this->searchable;
+	}
+
+	/**
+	 * @return IDataTableSearchFormatter
+	 */
+	public function get_search_formatter() {
+		return $this->search_formatter;
 	}
 
 	/**
