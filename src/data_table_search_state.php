@@ -8,7 +8,7 @@ class DataTableSearchState {
 	/**
 	 * Regex string matching. Case sensitivity depends on collation of database, but usually this is case insensitive
 	 */
-	const rlike = "LIKE";
+	const rlike = "RLIKE";
 
 	/**
 	 * @var string
