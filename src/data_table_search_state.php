@@ -1,4 +1,8 @@
 <?php
+/**
+ * The search parameters for a particular column. This can be simple in the case of a textbox or more complicated
+ * for numerical comparisons for example
+ */
 class DataTableSearchState {
 	/**
 	 * Non-regex string matching. Case sensitivity depends on collation of database, but usually this is case insensitive
