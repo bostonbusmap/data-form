@@ -15,7 +15,7 @@ class DataTableSettingsBuilder
 	protected $sorting;
 
 	/**
-	 * @var string[] mapping of column_key to search phrase
+	 * @var DataTableSearchState[] mapping of column_key to search phrase
 	 */
 	protected $filtering;
 
@@ -69,13 +69,14 @@ class DataTableSettingsBuilder
 	/**
 	 * Filter $column_key by $text. Whether $text is a regex or simple string search is up to application
 	 *
-	 * @param $column_key
-	 * @param $text
+	 * @param $column_key string
+	 * @param $search_state DataTableSearchState
 	 * @return $this
+	 * @throws Exception
 	 */
-	public function filter_by($column_key, $text)
+	public function filter_by($column_key, $search_state)
 	{
-		$this->filtering[$column_key] = $text;
+		$this->filtering[$column_key] = $search_state;
 		return $this;
 	}
 
@@ -165,8 +166,8 @@ class DataTableSettingsBuilder
 			if (!is_string($k) || trim($k) === "") {
 				throw new Exception("Each column_key in filtering must be a string and must exist");
 			}
-			if (!is_string($v)) {
-				throw new Exception("filtering values must be strings");
+			if (!($v instanceof DataTableSearchState)) {
+				throw new Exception("filtering values must be instances of DataTableSearchState");
 			}
 		}
 

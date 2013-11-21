@@ -185,7 +185,7 @@ class DataTableColumnBuilder {
 		}
 
 		if (is_null($this->search_formatter)) {
-			$this->search_formatter = new DefaultSearchFormatter();
+			$this->search_formatter = new TextboxSearchFormatter(DataTableSearchState::like);
 		}
 		if (!($this->search_formatter instanceof IDataTableSearchFormatter)) {
 			throw new Exception("search_formatter must be instance of IDataTableSearchFormatter");

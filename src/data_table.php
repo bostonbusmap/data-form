@@ -26,6 +26,7 @@ require_once "data_table_options.php";
 require_once "data_table_pagination_state.php";
 require_once "data_table_radio.php";
 require_once "data_table_search_formatter.php";
+require_once "data_table_search_state.php";
 require_once "data_table_settings_builder.php";
 require_once "data_table_settings.php";
 require_once "data_table_textbox_builder.php";
@@ -328,7 +329,7 @@ class DataTable
 						}
 						else
 						{
-							$old_searching_state = "";
+							$old_searching_state = null;
 							if ($this->settings) {
 								$default_filtering = $this->settings->get_default_filtering();
 								if (array_key_exists($column_key, $default_filtering)) {
@@ -336,10 +337,18 @@ class DataTable
 								}
 							}
 						}
+						if ($old_searching_state) {
+							$value = $old_searching_state->to_json();
+						}
+						else
+						{
+							$value = "";
+						}
+
 						$searching_name = DataFormState::make_field_name($form_name,
 							DataFormState::get_searching_state_key($column_key, $this->table_name));
 
-						$ret .= '<input type="hidden" id="' . htmlspecialchars($searching_name) . '" name="' . htmlspecialchars($searching_name) . '" value="' . htmlspecialchars($old_searching_state) . '" />';
+						$ret .= '<input type="hidden" id="' . htmlspecialchars($searching_name) . '" name="' . htmlspecialchars($searching_name) . '" value="' . htmlspecialchars($value) . '" />';
 						$ret .= $column->get_search_formatter()->format($searching_name, $old_searching_state);
 					}
 				}

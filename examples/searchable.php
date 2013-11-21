@@ -46,8 +46,28 @@ function make_form($state) {
 
 	$rows = array();
 	foreach ($birds as $bird) {
-		// note: case sensitive search
-		if (!$state->get_searching_state("bird") || strpos(strtolower($bird), strtolower($state->get_searching_state("bird"))) !== false) {
+		$search = $state->get_searching_state("bird");
+		if ($search) {
+			if ($search->get_type() === "LIKE") {
+				$params = $search->get_params();
+				$value = $params[0];
+				if (trim($value) !== "") {
+					if (strpos(strtolower($bird), strtolower($value)) !== false) {
+						$rows[] = array("bird" => $bird);
+					}
+				}
+				else
+				{
+					$rows[] = array("bird" => $bird);
+				}
+			}
+			else
+			{
+				throw new Exception("Unhandled search type");
+			}
+		}
+		else
+		{
 			$rows[] = array("bird" => $bird);
 		}
 	}

@@ -19,7 +19,7 @@ class DataTableSettings {
 	protected $sorting;
 
 	/**
-	 * @var string[] mapping of column_key to search phrase
+	 * @var DataTableSearchState[] mapping of column_key to search state
 	 */
 	protected $filtering;
 
@@ -268,7 +268,7 @@ class DataTableSettings {
 	}
 
 	/**
-	 * @return string[] Map of column_key to some piece of text to show by default
+	 * @return DataTableSearchState[] Map of column_key to some search state to show by default
 	 */
 	public function get_default_filtering() {
 		return $this->filtering;

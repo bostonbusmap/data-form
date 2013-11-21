@@ -1,4 +1,6 @@
 <?php
+
+require_once "data_table_search_state.php";
 /**
  * This class stores data which was provided about the form through $_POST (ie, what column the user clicked to sort)
  */
@@ -152,14 +154,16 @@ class DataFormState
 	}
 
 	/**
-	 * Returns the string to filter on for a given column, or null
+	 * Returns a DataTableSearchType
 	 *
 	 * @param $column_key string
 	 * @param $table_name string Optional table name. If falsey, use state for whole form
-	 * @return string
+	 * @return DataTableSearchState
+	 * @throws Exception
 	 */
 	public function get_searching_state($column_key, $table_name="") {
-		return $this->find_item(self::get_searching_state_key($column_key, $table_name));
+		$search_json = $this->find_item(self::get_searching_state_key($column_key, $table_name));
+		return DataTableSearchState::from_json($search_json);
 	}
 
 	/**

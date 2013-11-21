@@ -7,21 +7,39 @@ require_once "util.php";
 interface IDataTableSearchFormatter {
 	/**
 	 * @param $searching_name string
-	 * @param $old_search_value string
+	 * @param $old_search_value DataTableSearchState
 	 * @return mixed
 	 */
 	function format($searching_name, $old_search_value);
 }
 
-class DefaultSearchFormatter implements IDataTableSearchFormatter {
+class TextboxSearchFormatter implements IDataTableSearchFormatter {
+	/**
+	 * @var string
+	 */
+	protected $type;
+	public function __construct($type) {
+		if ($type !== DataTableSearchState::like || $type !== DataTableSearchState::rlike) {
+			throw new Exception("This search formatter only supports LIKE and RLIKE searches");
+		}
+		$this->type = $type;
+	}
 
 	function format($searching_name, $old_search_value)
 	{
-		$onchange = '$(' . json_encode("#" . jquery_escape($searching_name)) . ').attr("value", JSON.stringify({"command" : "LIKE", "values" : [$(this).val()]}));';
+		// For each column there's a hidden element that contains search state. This way we can
+		// have multiple form elements adjust that hidden element
 
-		$old_search_value_obj = json_decode($old_search_value);
-		if ($old_search_value_obj) {
-			$value = $old_search_value_obj->values[0];
+		// This piece of Javascript puts the textbox contents into JSON and stores it in the hidden state
+		// The JSON is later read as DataTableSearchState
+		$onchange = '$(' . json_encode("#" . jquery_escape($searching_name)) . ').attr("value", JSON.stringify({"type" : "' . $this->type . '", "params" : [$(this).val()]}));';
+
+		if ($old_search_value) {
+			if ($old_search_value->get_type() !== $this->type) {
+				throw new Exception("Unexpected search type");
+			}
+			$params = $old_search_value->get_params();
+			$value = $params[0];
 		}
 		else
 		{

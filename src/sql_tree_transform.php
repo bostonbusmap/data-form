@@ -262,29 +262,29 @@ class FilterTreeTransform  implements ISQLTreeTransform
 				$searching_state = $state->find_item(array(DataFormState::state_key, DataFormState::searching_state_key));
 			}
 			if (is_array($searching_state)) {
-				foreach ($searching_state as $key => $value) {
-					if (is_string($value)) {
-						if ($value) {
-							$search_value = json_decode($value);
-							if (!$search_value) {
-								throw new Exception("Expected search_value to be JSON");
-							}
-							if ($search_value->command === "LIKE") {
-								$escaped_value = str_replace("'", "''", $search_value->values[0]);
-								if ($escaped_value !== "") {
-									// TODO: escape $key, but I don't know if $key will contain table name too
-									$phrase = " $key LIKE '%$escaped_value%' ";
+				foreach (array_keys($searching_state) as $column_key) {
+					$obj = $state->get_searching_state($column_key, $table_name);
+					if ($obj) {
+						$params = $obj->get_params();
+						if ($obj->get_type() === DataTableSearchState::like) {
+							$escaped_value = str_replace("'", "''", $params[0]);
+							if ($escaped_value !== "") {
+								$phrase = " $column_key LIKE '%$escaped_value%' ";
 
-									$tree = BoundedPaginationTreeTransform::add_where_clause($tree, $phrase);
-								}
-							} else {
-								throw new Exception("TODO: handle other search commands");
+								$tree = BoundedPaginationTreeTransform::add_where_clause($tree, $phrase);
 							}
 						}
-					}
-					else
-					{
-						throw new Exception("sorting value should be a string");
+						elseif ($obj->get_type() === DataTableSearchState::rlike) {
+							$escaped_value = str_replace("'", "''", $params[0]);
+							if ($escaped_value !== "") {
+								$phrase = " $column_key RLIKE '$escaped_value' ";
+
+								$tree = BoundedPaginationTreeTransform::add_where_clause($tree, $phrase);
+							}
+						}
+						else {
+							throw new Exception("Unimplemented for search type " . $obj->get_type());
+						}
 					}
 				}
 			}
