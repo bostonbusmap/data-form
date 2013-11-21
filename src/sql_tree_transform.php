@@ -252,7 +252,7 @@ class FilterTreeTransform  implements ISQLTreeTransform
 	{
 		$tree = $input_tree;
 
-
+		// TODO: make this less ugly
 		if ($state) {
 			if ($table_name) {
 				$searching_state = $state->find_item(array(DataFormState::state_key, $table_name, DataFormState::searching_state_key));
@@ -266,24 +266,43 @@ class FilterTreeTransform  implements ISQLTreeTransform
 					$obj = $state->get_searching_state($column_key, $table_name);
 					if ($obj) {
 						$params = $obj->get_params();
-						if ($obj->get_type() === DataTableSearchState::like) {
+						if ($obj->get_type() === DataTableSearchState::like ||
+							$obj->get_type() === DataTableSearchState::rlike ||
+							$obj->get_type() === DataTableSearchState::less_than ||
+							$obj->get_type() === DataTableSearchState::less_or_equal ||
+							$obj->get_type() === DataTableSearchState::greater_than ||
+							$obj->get_type() === DataTableSearchState::greater_or_equal ||
+							$obj->get_type() === DataTableSearchState::equal) {
 							$escaped_value = str_replace("'", "''", $params[0]);
+							// TODO: check is_numeric for numeric comparisons
 							if ($escaped_value !== "") {
-								$phrase = " $column_key LIKE '%$escaped_value%' ";
+								if ($obj->get_type() === DataTableSearchState::like) {
+									$phrase = " $column_key LIKE '%$escaped_value%' ";
+								}
+								elseif ($obj->get_type() === DataTableSearchState::rlike) {
+									$phrase = " $column_key RLIKE '$escaped_value' ";
+								}
+								elseif ($obj->get_type() === DataTableSearchState::less_than) {
+									$phrase = " $column_key < $escaped_value ";
+								}
+								elseif ($obj->get_type() === DataTableSearchState::less_or_equal) {
+									$phrase = " $column_key <= $escaped_value ";
+								}
+								elseif ($obj->get_type() === DataTableSearchState::greater_than) {
+									$phrase = " $column_key > $escaped_value ";
+								}
+								elseif ($obj->get_type() === DataTableSearchState::greater_or_equal) {
+									$phrase = " $column_key >= $escaped_value ";
+								}
+								elseif ($obj->get_type() === DataTableSearchState::equal) {
+									$phrase = " $column_key = $escaped_value ";
+								}
+								else {
+									throw new Exception("Unimplemented for search type " . $obj->get_type());
+								}
 
 								$tree = BoundedPaginationTreeTransform::add_where_clause($tree, $phrase);
 							}
-						}
-						elseif ($obj->get_type() === DataTableSearchState::rlike) {
-							$escaped_value = str_replace("'", "''", $params[0]);
-							if ($escaped_value !== "") {
-								$phrase = " $column_key RLIKE '$escaped_value' ";
-
-								$tree = BoundedPaginationTreeTransform::add_where_clause($tree, $phrase);
-							}
-						}
-						else {
-							throw new Exception("Unimplemented for search type " . $obj->get_type());
 						}
 					}
 				}
