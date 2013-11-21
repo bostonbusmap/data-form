@@ -80,8 +80,11 @@ class NumericalSearchFormatter implements IDataTableSearchFormatter {
 		$type_key = array_merge($searching_state_key, array(DataTableSearchState::type_key));
 		$params_key = array_merge($searching_state_key, array(DataTableSearchState::params_key, "0"));
 
-		$ret = DataTableOptions::display_options($form_name, $type_key, "", "", null, $options, null, $state);
+		// surrounding this with a div to allow CSS to set column width
+		$ret = "<div>";
+		$ret .= DataTableOptions::display_options($form_name, $type_key, "", "", null, $options, null, $state);
 		$ret .= DataTableTextbox::display_textbox($form_name, $params_key, "", "", null, $default_param, null, $state);
+		$ret .= "</div>";
 
 		return $ret;
 	}
