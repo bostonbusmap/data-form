@@ -322,34 +322,16 @@ class DataTable
 					}
 					else
 					{
-						// set searching state then call for a refresh
-						// It's up to code at $this->remote to specify how searching state is used to filter
-						if ($state && $state->get_searching_state($column_key, $this->table_name)) {
-							$old_searching_state = $state->get_searching_state($column_key, $this->table_name);
+						if ($this->settings) {
+							$default_filtering = $this->settings->get_default_filtering();
 						}
 						else
 						{
-							$old_searching_state = null;
-							if ($this->settings) {
-								$default_filtering = $this->settings->get_default_filtering();
-								if (array_key_exists($column_key, $default_filtering)) {
-									$old_searching_state = $default_filtering[$column_key];
-								}
-							}
-						}
-						if ($old_searching_state) {
-							$value = $old_searching_state->to_json();
-						}
-						else
-						{
-							$value = "";
+							$default_filtering = array();
 						}
 
-						$searching_name = DataFormState::make_field_name($form_name,
-							DataFormState::get_searching_state_key($column_key, $this->table_name));
-
-						$ret .= '<input type="hidden" id="' . htmlspecialchars($searching_name) . '" name="' . htmlspecialchars($searching_name) . '" value="' . htmlspecialchars($value) . '" />';
-						$ret .= $column->get_search_formatter()->format($searching_name, $old_searching_state);
+						$ret .= $column->get_search_formatter()->format($form_name, $this->table_name, $column_key,
+							$state, $default_filtering);
 					}
 				}
 				$ret .= "</th>";

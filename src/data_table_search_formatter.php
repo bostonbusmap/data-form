@@ -6,11 +6,14 @@ require_once "util.php";
  */
 interface IDataTableSearchFormatter {
 	/**
-	 * @param $searching_name string
-	 * @param $old_search_value DataTableSearchState
+	 * @param $form_name string
+	 * @param $table_name string
+	 * @param $column_key string
+	 * @param $state DataFormState
+	 * @param $default_values DataTableSearchState[]
 	 * @return mixed
 	 */
-	function format($searching_name, $old_search_value);
+	function format($form_name, $table_name, $column_key, $state, $default_values);
 }
 
 class TextboxSearchFormatter implements IDataTableSearchFormatter {
@@ -19,34 +22,66 @@ class TextboxSearchFormatter implements IDataTableSearchFormatter {
 	 */
 	protected $type;
 	public function __construct($type) {
-		if ($type !== DataTableSearchState::like || $type !== DataTableSearchState::rlike) {
+		if ($type !== DataTableSearchState::like && $type !== DataTableSearchState::rlike) {
 			throw new Exception("This search formatter only supports LIKE and RLIKE searches");
 		}
 		$this->type = $type;
 	}
 
-	function format($searching_name, $old_search_value)
+	function format($form_name, $table_name, $column_key, $state, $default_values)
 	{
-		// For each column there's a hidden element that contains search state. This way we can
-		// have multiple form elements adjust that hidden element
-
-		// This piece of Javascript puts the textbox contents into JSON and stores it in the hidden state
-		// The JSON is later read as DataTableSearchState
-		$onchange = '$(' . json_encode("#" . jquery_escape($searching_name)) . ').attr("value", JSON.stringify({"type" : "' . $this->type . '", "params" : [$(this).val()]}));';
-
-		if ($old_search_value) {
-			if ($old_search_value->get_type() !== $this->type) {
-				throw new Exception("Unexpected search type");
-			}
-			$params = $old_search_value->get_params();
-			$value = $params[0];
+		if (!isset($default_values[$column_key])) {
+			$default_param = "";
+			$default_type = $this->type;
 		}
 		else
 		{
-			$value = "";
+			$default_params = $default_values[$column_key]->get_params();
+			$default_param = $default_params[0];
+
+			$default_type = $default_values[$column_key]->get_type();
 		}
 
-		$ret = '<input type="text" size="8" onchange="' . htmlspecialchars($onchange) . '" value="' . htmlspecialchars($value) . '" />';
+		$searching_state_key = DataFormState::get_searching_state_key($column_key, $table_name);
+		$type_key = array_merge($searching_state_key, array(DataTableSearchState::type_key));
+		$params_key = array_merge($searching_state_key, array(DataTableSearchState::params_key, "0"));
+
+		$type_name = DataFormState::make_field_name($form_name, $type_key);
+
+		// TODO: replace with DataTableHidden
+		$ret = '<input type="hidden" name="' . htmlspecialchars($type_name) . '" value="' .
+			htmlspecialchars($default_type) . '" />';
+		$ret .= DataTableTextbox::display_textbox($form_name, $params_key, "", "", null, $default_param, null, $state);
+
+		return $ret;
+	}
+}
+class NumericalSearchFormatter implements IDataTableSearchFormatter {
+	function format($form_name, $table_name, $column_key, $state, $default_values)
+	{
+		if (isset($default_values[$column_key])) {
+			$default_param = "";
+		}
+		else
+		{
+			$default_params = $default_values[$column_key]->get_params();
+			$default_param = $default_params[0];
+		}
+
+		// mapping of type key to type string
+		$options = array();
+		$options[DataTableSearchState::less_than] = new DataTableOption("<", DataTableSearchState::less_than);
+		$options[DataTableSearchState::less_or_equal] = new DataTableOption("<=", DataTableSearchState::less_or_equal);
+		$options[DataTableSearchState::greater_than] = new DataTableOption(">", DataTableSearchState::greater_than);
+		$options[DataTableSearchState::greater_or_equal] = new DataTableOption(">=", DataTableSearchState::greater_or_equal);
+		$options[DataTableSearchState::equal] = new DataTableOption("=", DataTableSearchState::equal);
+
+		$searching_state_key = DataFormState::get_searching_state_key($column_key, $table_name);
+		$type_key = array_merge($searching_state_key, array(DataTableSearchState::type_key));
+		$params_key = array_merge($searching_state_key, array(DataTableSearchState::params_key, "0"));
+
+		$ret = DataTableOptions::display_options($form_name, $type_key, "", "", null, $options, null, $state);
+		$ret .= DataTableTextbox::display_textbox($form_name, $params_key, "", "", null, $default_param, null, $state);
 
 		return $ret;
 	}

@@ -162,8 +162,11 @@ class DataFormState
 	 * @throws Exception
 	 */
 	public function get_searching_state($column_key, $table_name="") {
-		$search_json = $this->find_item(self::get_searching_state_key($column_key, $table_name));
-		return DataTableSearchState::from_json($search_json);
+		$search_key = self::get_searching_state_key($column_key, $table_name);
+		$params_key = array_merge($search_key, array(DataTableSearchState::params_key));
+		$type_key = array_merge($search_key, array(DataTableSearchState::type_key));
+
+		return new DataTableSearchState($this->find_item($type_key), $this->find_item($params_key));
 	}
 
 	/**

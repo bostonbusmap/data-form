@@ -14,6 +14,15 @@ class DataTableSearchState {
 	 */
 	const rlike = "RLIKE";
 
+	const less_than = "less";
+	const greater_than = "greater";
+	const less_or_equal = "less_or_equal";
+	const greater_or_equal = "greater_or_equal";
+	const equal = "equal";
+
+	const type_key = "_type";
+	const params_key = "_params";
+
 	/**
 	 * @var string
 	 */
@@ -33,9 +42,15 @@ class DataTableSearchState {
 			}
 		}
 
-		if ($type === self::like) {
+		if ($type === self::like ||
+			$type === self::rlike ||
+			$type === self::equal ||
+			$type === self::greater_than ||
+			$type === self::greater_or_equal ||
+			$type === self::less_than ||
+			$type === self::less_or_equal) {
 			if (count($params) !== 1) {
-				throw new Exception("LIKE must have one parameter");
+				throw new Exception("$type must have one parameter");
 			}
 		}
 		else
@@ -54,37 +69,4 @@ class DataTableSearchState {
 		return $this->params;
 	}
 
-	/**
-	 * @return string
-	 */
-	function to_json() {
-		$x = array("type" => $this->type, "params" => $this->params);
-		return json_encode($x);
-	}
-
-	/**
-	 * Factory method which creates this object from JSON. If $json is empty, null will be returned.
-	 * If something is in $json but it's not being parsed, an exception will be thrown
-	 *
-	 * @param $json string
-	 * @returns DataTableSearchState
-	 * @throws Exception
-	 */
-	public static function from_json($json) {
-		if (!is_null($json)) {
-			if (!is_string($json)) {
-				throw new Exception("Expected search_json to be a string");
-			}
-			if (trim($json) !== "") {
-				$search = json_decode($json);
-				if (!$search) {
-					throw new Exception("search JSON wasn't parsed correctly");
-				}
-				$type = $search->type;
-				$params = $search->params;
-				return new DataTableSearchState($type, $params);
-			}
-		}
-		return null;
-	}
 }
