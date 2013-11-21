@@ -59,7 +59,7 @@ class TextboxSearchFormatter implements IDataTableSearchFormatter {
 class NumericalSearchFormatter implements IDataTableSearchFormatter {
 	function format($form_name, $table_name, $column_key, $state, $default_values)
 	{
-		if (isset($default_values[$column_key])) {
+		if (!isset($default_values[$column_key])) {
 			$default_param = "";
 		}
 		else
