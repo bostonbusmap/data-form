@@ -29,7 +29,7 @@ class DataTableHidden implements IDataTableWidget {
 	public function display($form_name, $form_method, $state)
 	{
 		$qualified_name = $form_name . "[" . $this->name . "]";
-		$ret = '<input type="hidden" name="' . htmlspecialchars($qualified_name) . '" value="' . htmlspecialchars($this->value) . '" />';
+		$ret = '<input type="hidden" id="' . htmlspecialchars($qualified_name) . '" name="' . htmlspecialchars($qualified_name) . '" value="' . htmlspecialchars($this->value) . '" />';
 		return $ret;
 	}
 
