@@ -14,12 +14,26 @@ class DataTableBehaviorNone implements IDataTableBehavior {
 		return "return false;";
 	}
 }
-class DataTableBehaviorSubmitNewWindow implements IDataTableBehavior {
+
+class DataTableBehaviorSetParamsThenSubmit implements IDataTableBehavior {
+	/** @var array */
+	protected $params;
+	public function __construct($params) {
+		if (!is_array($params)) {
+			throw new Exception("params must be array");
+		}
+		$this->params = $params;
+	}
 	function action($form_name, $form_action, $form_method) {
 		if (!$form_action) {
 			throw new Exception("form_action is empty");
 		}
-		return 'var $form=$(this).parents("form"); $form.attr("action", ' . json_encode($form_action) . '); $form.attr("target", "_blank");$form.submit();return false;';
+		$params_js = "";
+		foreach ($this->params as $key => $value) {
+			$param_js = '$(' . json_encode("#" . jquery_escape($key)) . ').attr("value", ' . json_encode($value) . ");";
+			$params_js .= $param_js;
+		}
+		return 'var $form=$(this).parents("form"); $form.attr("action", ' . json_encode($form_action) . ');' . $params_js . '$form.submit();return false;';
 	}
 }
 class DataTableBehaviorSubmit implements IDataTableBehavior {
