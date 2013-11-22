@@ -50,11 +50,12 @@ function make_form($state) {
 
 	$widgets = array();
 
-	$add_column_behavior = new DataTableBehaviorRefresh(DataFormState::make_field_name($form_name, array("num_columns")) . "=" . ($num_columns + 1));
+	$num_columns_name = DataFormState::make_field_name($form_name, array("num_columns"));
+	$add_column_behavior = new DataTableBehaviorRefresh(array($num_columns_name => ($num_columns + 1)));
 	$widgets[] = DataTableButtonBuilder::create()->name("add_column")->text("Add Column")->form_action($this_url)->behavior($add_column_behavior)->build();
 
 	if ($num_columns > 2) {
-		$remove_column_behavior = new DataTableBehaviorRefresh(DataFormState::make_field_name($form_name, array("num_columns")) . "=" . ($num_columns - 1));
+		$remove_column_behavior = new DataTableBehaviorRefresh(array($num_columns_name => ($num_columns - 1)));
 		$widgets[] = DataTableButtonBuilder::create()->name("add_column")->text("Remove Column")->form_action($this_url)->behavior($remove_column_behavior)->build();
 	}
 

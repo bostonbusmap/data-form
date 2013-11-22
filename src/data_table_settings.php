@@ -119,7 +119,7 @@ class DataTableSettings {
 		$current_page_name_array = array_merge(DataFormState::get_pagination_state_key($table_name),
 			array(DataTablePaginationState::current_page_key));
 		$current_page_name = DataFormState::make_field_name($form_name, $current_page_name_array);
-		$behavior = new DataTableBehaviorRefresh($current_page_name. "=" . $page_num);
+		$behavior = new DataTableBehaviorRefresh(array($current_page_name => $page_num));
 		$onclick = $behavior->action($form_name, $remote_url, $form_method);
 
 		return ' <a href="#" onclick="' . htmlspecialchars($onclick) . '" title="' . htmlspecialchars($title) . '">' . $text . '</a> ';

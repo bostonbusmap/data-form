@@ -294,9 +294,8 @@ class DataTable
 				}
 				$sorting_state_name = DataFormState::make_field_name($form_name,
 					DataFormState::get_sorting_state_key($column_key, $this->table_name));
-				$sort_string = "&" . $sorting_state_name . "=" . $new_sorting_state;
 
-				$onclick_obj = new DataTableBehaviorClearSortThenRefresh($sort_string);
+				$onclick_obj = new DataTableBehaviorClearSortThenRefresh(array($sorting_state_name, $new_sorting_state));
 				$onclick = $onclick_obj->action($form_name, $remote_url, $form_method);
 				$ret .= '<a onclick="' . htmlspecialchars($onclick) . '">';
 			}

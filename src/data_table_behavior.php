@@ -80,29 +80,41 @@ class DataTableBehaviorSubmitAndValidate implements IDataTableBehavior {
 	}
 }
 class DataTableBehaviorRefresh implements IDataTableBehavior {
-	/** @var string  */
+	/** @var array */
 	protected $extra_params;
-	public function __construct($extra_params="") {
+	/**
+	 * @var string The name of the div to refresh with data. If falsey the form's div will be refreshed
+	 */
+	protected $div;
+	public function __construct($extra_params=array(), $div="") {
+		if (!is_array($extra_params)) {
+			throw new Exception("params must be in an array");
+		}
+		if (!is_string($div)) {
+			throw new Exception("div id must be string");
+		}
 		$this->extra_params = $extra_params;
+		$this->div = $div;
 	}
 	function action($form_name, $form_action, $form_method) {
 		$only_display_form_name = DataFormState::make_field_name($form_name, DataFormState::only_display_form_key());
 		$params = "&" . $only_display_form_name . "=true";
 
-		if ($this->extra_params) {
-			if (substr($this->extra_params, 0, 1) == "&") {
-				$extra_params = substr($this->extra_params, 1);
-			}
-			else
-			{
-				$extra_params = $this->extra_params;
-			}
-			$params .= "&" . $extra_params;
+		foreach ($this->extra_params as $k => $v) {
+			$params .= "&" . urlencode($k) . "=" . urlencode($v);
 		}
 
 		$method = strtolower($form_method);
 		if ($method != "post" && $method != "get") {
 			throw new Exception("Unknown method '$method'");
+		}
+
+		if ($this->div) {
+			$div = $this->div;
+		}
+		else
+		{
+			$div = $form_name;
 		}
 
 		// to submit the form as AJAX we need to serialize the form to json and put it in the parameter string
@@ -111,12 +123,12 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 		return 'var $form=$(this).parents("form"); $.' . $method . '(' . json_encode($form_action) .
 			', $form.serialize()  + ' . json_encode($params) .
 			', function(data, textStatus, jqXHR) { $(' .
-			json_encode("#" . $form_name) .
+			json_encode("#" . $div) .
 			').html(data);});return false;';
 	}
 }
 class DataTableBehaviorClearSortThenRefresh implements IDataTableBehavior {
-	/** @var $extra_params string */
+	/** @var $extra_params array */
 	protected $extra_params;
 	public function __construct($extra_params) {
 		$this->extra_params = $extra_params;
