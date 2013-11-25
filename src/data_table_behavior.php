@@ -93,6 +93,11 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 		if (!is_string($div)) {
 			throw new Exception("div id must be string");
 		}
+		foreach ($extra_params as $k => $v) {
+			if (!is_string($k) || trim($k) === "") {
+				throw new Exception("Each key in extra_params must be a non-empty string");
+			}
+		}
 		$this->extra_params = $extra_params;
 		$this->div = $div;
 	}
