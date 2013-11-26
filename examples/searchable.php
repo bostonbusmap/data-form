@@ -67,7 +67,7 @@ function make_form($state) {
 			if (trim($value) !== "") {
 
 				foreach ($rows as $i => $row) {
-					if (strpos(strtolower($row["bird"]), strtolower($value)) !== false) {
+					if (strpos(strtolower($row["bird"]), strtolower($value)) === false) {
 						$indexes_to_remove[] = $i;
 					}
 				}
