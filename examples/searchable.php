@@ -22,6 +22,8 @@ function make_form($state) {
 	$columns = array();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Bird")->column_key("bird")->
 		searchable(true)->sortable(true)->build();
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Bird weight")->column_key("weight")->
+		searchable(true)->search_formatter(new NumericalSearchFormatter())->build();
 
 	$birds = array("1.1 Struthioniformes",
 		"1.2 Anseriformes",
@@ -44,32 +46,72 @@ function make_form($state) {
 		"1.19 Piciformes",
 		"1.20 Passeriformes");
 
+	$bird_weights = array();
+	mt_srand(0);
+	foreach ($birds as $bird) {
+		$bird_weights[$bird] = floor((((mt_rand() / mt_getrandmax()) * 70) + 10) * 4) / 4;
+	}
+
 	$rows = array();
 	foreach ($birds as $bird) {
-		$search = $state->get_searching_state("bird");
-		if ($search) {
-			if ($search->get_type() === "LIKE") {
-				$params = $search->get_params();
-				$value = $params[0];
-				if (trim($value) !== "") {
-					if (strpos(strtolower($bird), strtolower($value)) !== false) {
-						$rows[] = array("bird" => $bird);
+		$rows[] = array("bird" => $bird, "weight" => $bird_weights[$bird]);
+	}
+
+	// in PHP 5.3 we can replace this with array_filter($rows, function($row) { return($row["weight"] < $value });
+	$indexes_to_remove = array();
+	$bird_search = $state->get_searching_state("bird");
+	if ($bird_search) {
+		if ($bird_search->get_type() === DataTableSearchState::like) {
+			$params = $bird_search->get_params();
+			$value = $params[0];
+			if (trim($value) !== "") {
+
+				foreach ($rows as $i => $row) {
+					if (strpos(strtolower($row["bird"]), strtolower($value)) !== false) {
+						$indexes_to_remove[] = $i;
 					}
 				}
-				else
-				{
-					$rows[] = array("bird" => $bird);
-				}
-			}
-			else
-			{
-				throw new Exception("Unhandled search type");
 			}
 		}
 		else
 		{
-			$rows[] = array("bird" => $bird);
+			throw new Exception("Unhandled search type");
 		}
+	}
+
+	$weight_search = $state->get_searching_state("weight");
+	if ($weight_search) {
+		$params = $weight_search->get_params();
+		$type = $weight_search->get_type();
+		if ($type === DataTableSearchState::less_or_equal ||
+			$type === DataTableSearchState::less_than ||
+			$type === DataTableSearchState::greater_or_equal ||
+			$type === DataTableSearchState::greater_than ||
+			$type === DataTableSearchState::equal) {
+			$value = (float)$params[0];
+
+			foreach ($rows as $i => $row) {
+				if ($type === DataTableSearchState::less_or_equal && $row["weight"] > $value) {
+					$indexes_to_remove[] = $i;
+				}
+				if ($type === DataTableSearchState::less_than && $row["weight"] >= $value) {
+					$indexes_to_remove[] = $i;
+				}
+				if ($type === DataTableSearchState::greater_or_equal && $row["weight"] < $value) {
+					$indexes_to_remove[] = $i;
+				}
+				if ($type === DataTableSearchState::greater_than && $row["weight"] <= $value) {
+					$indexes_to_remove[] = $i;
+				}
+				if ($type === DataTableSearchState::equal && $row["weight"] !== $value) {
+					$indexes_to_remove[] = $i;
+				}
+			}
+		}
+	}
+
+	foreach ($indexes_to_remove as $i) {
+		unset($rows[$i]);
 	}
 
 	if ($state->get_sorting_state("bird") == DataFormState::sorting_state_asc) {
