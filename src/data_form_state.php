@@ -158,7 +158,7 @@ class DataFormState
 	 *
 	 * @param $column_key string
 	 * @param $table_name string Optional table name. If falsey, use state for whole form
-	 * @return DataTableSearchState
+	 * @return DataTableSearchState. May be null if params don't exist
 	 * @throws Exception
 	 */
 	public function get_searching_state($column_key, $table_name="") {
@@ -166,7 +166,17 @@ class DataFormState
 		$params_key = array_merge($search_key, array(DataTableSearchState::params_key));
 		$type_key = array_merge($search_key, array(DataTableSearchState::type_key));
 
-		return new DataTableSearchState($this->find_item($type_key), $this->find_item($params_key));
+		$type = $this->find_item($type_key);
+		$params = $this->find_item($params_key);
+
+		if (is_null($type) && is_null($params)) {
+			return null;
+		}
+		else
+		{
+			// if only one is null, this should be validated in constructor
+			return new DataTableSearchState($type, $params);
+		}
 	}
 
 	/**
