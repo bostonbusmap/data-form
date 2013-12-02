@@ -86,12 +86,19 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 	 * @var string The name of the div to refresh with data. If falsey the form's div will be refreshed
 	 */
 	protected $div;
-	public function __construct($extra_params=array(), $div="") {
+	/**
+	 * @var string The name of the div which overlays the other div with some loading animation
+	 */
+	protected $div_overlay;
+	public function __construct($extra_params=array(), $div="", $div_overlay="") {
 		if (!is_array($extra_params)) {
 			throw new Exception("params must be in an array");
 		}
 		if (!is_string($div)) {
 			throw new Exception("div id must be string");
+		}
+		if (!is_string($div_overlay)) {
+			throw new Exception("div_overlay must be a string");
 		}
 		foreach ($extra_params as $k => $v) {
 			if (!is_string($k) || trim($k) === "") {
@@ -100,10 +107,11 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 		}
 		$this->extra_params = $extra_params;
 		$this->div = $div;
+		$this->div_overlay = $div_overlay;
 	}
 	function action($form_name, $form_action, $form_method) {
 		$only_display_form_name = DataFormState::make_field_name($form_name, DataFormState::only_display_form_key());
-		$params = "&" . $only_display_form_name . "=true";
+		$params = "&" . urlencode($only_display_form_name) . "=true";
 
 		foreach ($this->extra_params as $k => $v) {
 			$params .= "&" . urlencode($k) . "=" . urlencode($v);
@@ -122,13 +130,21 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 			$div = $form_name;
 		}
 
+		$loading_animation = "";
+		if ($this->div_overlay) {
+			$div_overlay = $this->div_overlay;
+			$loading_animation = '$(document)' .
+				'.ajaxStart(function() {$(' . json_encode("#" . jquery_escape($div_overlay)) . ').show();})' .
+				'.ajaxStop(function() {$(' . json_encode("#" . jquery_escape($div_overlay)) . ').hide();});';
+		}
+
 		// to submit the form as AJAX we need to serialize the form to json and put it in the parameter string
 		// the second part of this takes that result and puts it in the div with the same name as the form
 		// ie, replace the form with a refreshed copy
-		return 'var $form=$(this).parents("form"); $.' . $method . '(' . json_encode($form_action) .
+		return 'var $form=$(this).parents("form"); ' . $loading_animation . '$.' . $method . '(' . json_encode($form_action) .
 			', $form.serialize()  + ' . json_encode($params) .
 			', function(data, textStatus, jqXHR) { $(' .
-			json_encode("#" . $div) .
+			json_encode("#" . jquery_escape($div)) .
 			').html(data);});return false;';
 	}
 }
