@@ -299,38 +299,4 @@ class DataFormState
 	{
 		return $this->form_name;
 	}
-
-	/**
-	 * Makes a copy of this object with pagination state removed. This is useful for using form state
-	 * for export where you want to keep sorting and filtering state but pagination is unnecessary
-	 *
-	 * @return DataFormState A copy of this object with pagination data removed. May be same object if no changes made
-	 */
-	public function strip_pagination()
-	{
-		$modified_form_data = $this->form_data;
-		if (!$modified_form_data) {
-			return $this;
-		}
-
-		if (!array_key_exists(self::state_key, $modified_form_data)) {
-			return $this;
-		}
-
-		// check if pagination state exists for whole form or individual table
-		if (array_key_exists(self::pagination_key, $modified_form_data[self::state_key])) {
-			unset($modified_form_data[self::state_key][self::pagination_key]);
-		}
-
-		foreach ($this->form_data[self::state_key] as $table_name => $v) {
-			if (is_array($v) && array_key_exists(self::pagination_key, $v)) {
-				unset($modified_form_data[self::state_key][$table_name][self::pagination_key]);
-			}
-		}
-
-		// make new object
-		$fake_post = array($this->form_name => $modified_form_data);
-		$clone = new DataFormState($this->form_name, $fake_post);
-		return $clone;
-	}
 }

@@ -124,6 +124,19 @@ class SQLBuilder {
 		return $this;
 	}
 
+	/**
+	 * If true, no LIMIT or OFFSET clauses will be added.
+	 *
+	 * Note that this just calls pagination_transform so make sure you aren't doing both
+	 * @return SQLBuilder
+	 */
+	public function ignore_pagination()
+	{
+		$this->pagination_transform(new IdentityTreeTransform());
+		return $this;
+	}
+
+
 	protected function validate_input() {
 		if (is_null($this->table_name)) {
 			$this->table_name = "";

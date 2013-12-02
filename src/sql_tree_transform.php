@@ -15,7 +15,12 @@ interface ISQLTreeTransform {
 	 */
 	function alter($input_tree, $state, $settings, $table_name);
 }
-
+class IdentityTreeTransform implements ISQLTreeTransform {
+	function alter($input_tree, $state, $settings, $table_name)
+	{
+		return $input_tree;
+	}
+}
 /**
  * Add LIMIT and OFFSET clauses given pagination state and settings
  */
