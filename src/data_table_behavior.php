@@ -82,6 +82,44 @@ class DataTableBehaviorSubmitAndValidate implements IDataTableBehavior {
 class DataTableBehaviorRefresh implements IDataTableBehavior {
 	/** @var array */
 	protected $extra_params;
+	public function __construct($extra_params=array()) {
+		if (!is_array($extra_params)) {
+			throw new Exception("params must be in an array");
+		}
+		foreach ($extra_params as $k => $v) {
+			if (!is_string($k) || trim($k) === "") {
+				throw new Exception("Each key in extra_params must be a non-empty string");
+			}
+		}
+		$this->extra_params = $extra_params;
+	}
+	function action($form_name, $form_action, $form_method) {
+		$only_display_form_name = DataFormState::make_field_name($form_name, DataFormState::only_display_form_key());
+		$params = "&" . urlencode($only_display_form_name) . "=true";
+
+		foreach ($this->extra_params as $k => $v) {
+			$params .= "&" . urlencode($k) . "=" . urlencode($v);
+		}
+
+		$method = strtolower($form_method);
+		if ($method != "post" && $method != "get") {
+			throw new Exception("Unknown method '$method'");
+		}
+
+		// to submit the form as AJAX we need to serialize the form to json and put it in the parameter string
+		// the second part of this takes that result and puts it in the div with the same name as the form
+		// ie, replace the form with a refreshed copy
+		return 'var $form=$(this).parents("form"); ' . '$.' . $method . '(' . json_encode($form_action) .
+			', $form.serialize()  + ' . json_encode($params) .
+			', function(data, textStatus, jqXHR) { $(' .
+			json_encode("#" . jquery_escape($form_name)) .
+			').html(data);});return false;';
+	}
+}
+
+class DataTableBehaviorRefreshImage implements IDataTableBehavior {
+	/** @var array */
+	protected $extra_params;
 	/**
 	 * @var string The name of the div to refresh with data. If falsey the form's div will be refreshed
 	 */
@@ -90,15 +128,19 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 	 * @var string The name of the div which overlays the other div with some loading animation
 	 */
 	protected $div_overlay;
+
+	const height_key = "_height";
+	const width_key = "_width";
+
 	public function __construct($extra_params=array(), $div="", $div_overlay="") {
 		if (!is_array($extra_params)) {
 			throw new Exception("params must be in an array");
 		}
 		if (!is_string($div)) {
-			throw new Exception("div id must be string");
+			throw new Exception("div id must be a non-empty string");
 		}
-		if (!is_string($div_overlay)) {
-			throw new Exception("div_overlay must be a string");
+		if (!is_string($div_overlay) || trim($div_overlay) === "") {
+			throw new Exception("div_overlay must be a non-empty string");
 		}
 		foreach ($extra_params as $k => $v) {
 			if (!is_string($k) || trim($k) === "") {
@@ -109,7 +151,9 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 		$this->div = $div;
 		$this->div_overlay = $div_overlay;
 	}
-	function action($form_name, $form_action, $form_method) {
+
+	function action($form_name, $form_action, $form_method)
+	{
 		$only_display_form_name = DataFormState::make_field_name($form_name, DataFormState::only_display_form_key());
 		$params = "&" . urlencode($only_display_form_name) . "=true";
 
@@ -130,22 +174,31 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 			$div = $form_name;
 		}
 
+		// spinning gif is in a separate overlay div which is displayed while data is refreshing
 		$loading_animation = "";
 		if ($this->div_overlay) {
 			$div_overlay = $this->div_overlay;
+			$jquery_div_overlay = "#" . jquery_escape($div_overlay);
 			$loading_animation = '$(document)' .
-				'.ajaxStart(function() {$(' . json_encode("#" . jquery_escape($div_overlay)) . ').show();})' .
-				'.ajaxStop(function() {$(' . json_encode("#" . jquery_escape($div_overlay)) . ').hide();});';
+				'.ajaxStart(function() {$(' . json_encode($jquery_div_overlay) . ').show();})' .
+				'.ajaxStop(function() {$(' . json_encode($jquery_div_overlay) . ').hide();});';
 		}
+
+		$jquery_div = "#" . jquery_escape($div);
+
+		$height_name = DataFormState::make_field_name($form_name, array(self::height_key));
+		$width_name = DataFormState::make_field_name($form_name, array(self::width_key));
 
 		// to submit the form as AJAX we need to serialize the form to json and put it in the parameter string
 		// the second part of this takes that result and puts it in the div with the same name as the form
 		// ie, replace the form with a refreshed copy
 		return 'var $form=$(this).parents("form"); ' . $loading_animation . '$.' . $method . '(' . json_encode($form_action) .
-			', $form.serialize()  + ' . json_encode($params) .
-			', function(data, textStatus, jqXHR) { $(' .
-			json_encode("#" . jquery_escape($div)) .
-			').html(data);});return false;';
+		', $form.serialize()  + ' . json_encode($params) .
+		' + "&' . $height_name . '=" + $(' . json_encode($jquery_div) . ').height() ' .
+		' + "&' . $width_name . '=" + $(' . json_encode($jquery_div) . ').width() ' .
+		', function(data, textStatus, jqXHR) { $(' .
+		json_encode($jquery_div) .
+		').html(data);});return false;';
 	}
 }
 class DataTableBehaviorClearSortThenRefresh implements IDataTableBehavior {
