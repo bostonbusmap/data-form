@@ -132,11 +132,11 @@ class DataTableBehaviorRefreshImage implements IDataTableBehavior {
 	const height_key = "_height";
 	const width_key = "_width";
 
-	public function __construct($extra_params=array(), $div="", $div_overlay="") {
+	public function __construct($div, $div_overlay, $extra_params=array()) {
 		if (!is_array($extra_params)) {
 			throw new Exception("params must be in an array");
 		}
-		if (!is_string($div)) {
+		if (!is_string($div) || trim($div) === "") {
 			throw new Exception("div id must be a non-empty string");
 		}
 		if (!is_string($div_overlay) || trim($div_overlay) === "") {
