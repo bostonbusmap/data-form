@@ -58,18 +58,17 @@ function make_form($prev_state, $current_state) {
 
 	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->build();
 	$form = DataFormBuilder::create("select_zipcodes")->remote($this_url)->tables(array($table))->
-		method("GET")->
 		forwarded_state(array($prev_state, $current_state))->build();
 	return $form;
 }
 
 try {
-	$current_state = new DataFormState("select_zipcodes", $_GET);
-	$prev_state = new DataFormState("select_cities", $_GET, $current_state);
+	$current_state = new DataFormState("select_zipcodes", $_POST);
+	$prev_state = new DataFormState("select_cities", $_POST, $current_state);
 	$prev_form_data = $prev_state->get_form_data();
 
 	if (array_key_exists("city", $prev_form_data)) {
-		$selected_cities = $prev_form_data["city"];
+		$selected_cities = array_filter($prev_form_data["city"]);
 	}
 	else
 	{

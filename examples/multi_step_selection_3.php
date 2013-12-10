@@ -24,7 +24,7 @@ function make_city_table($cities_state, $current_state) {
 
 	$city_state_data = $cities_state->get_form_data();
 	if (array_key_exists("city", $city_state_data)) {
-		$selected_cities = $city_state_data["city"];
+		$selected_cities = array_filter($city_state_data["city"]);
 	}
 	else
 	{
@@ -52,7 +52,7 @@ function make_zip_table($zip_state, $current_state) {
 
 	$zip_state_data = $zip_state->get_form_data();
 	if (array_key_exists("zip", $zip_state_data)) {
-		$selected_zip_codes = $zip_state_data["zip"];
+		$selected_zip_codes = array_filter($zip_state_data["zip"]);
 	}
 	else
 	{
@@ -80,9 +80,9 @@ function make_zip_table($zip_state, $current_state) {
 }
 
 try {
-	$current_state = new DataFormState("results", $_GET);
-	$zip_code_state = new DataFormState("select_zipcodes", $_GET, $current_state);
-	$city_state = new DataFormState("select_cities", $_GET, $zip_code_state);
+	$current_state = new DataFormState("results", $_POST);
+	$zip_code_state = new DataFormState("select_zipcodes", $_POST, $current_state);
+	$city_state = new DataFormState("select_cities", $_POST, $zip_code_state);
 
 	$zip_table = make_zip_table($zip_code_state, $current_state);
 	$city_table = make_city_table($city_state, $current_state);

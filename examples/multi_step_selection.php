@@ -29,7 +29,7 @@ function make_form($state) {
 
 	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->
 		build();
-	$form = DataFormBuilder::create($state->get_form_name())->tables(array($table))->remote($this_url)->method("GET")->build();
+	$form = DataFormBuilder::create($state->get_form_name())->tables(array($table))->remote($this_url)->build();
 	return $form;
 }
 
