@@ -88,23 +88,25 @@ function make_form($state) {
 			$type === DataTableSearchState::greater_or_equal ||
 			$type === DataTableSearchState::greater_than ||
 			$type === DataTableSearchState::equal) {
-			$value = (float)$params[0];
-
-			foreach ($rows as $i => $row) {
-				if ($type === DataTableSearchState::less_or_equal && $row["weight"] > $value) {
-					$indexes_to_remove[] = $i;
-				}
-				if ($type === DataTableSearchState::less_than && $row["weight"] >= $value) {
-					$indexes_to_remove[] = $i;
-				}
-				if ($type === DataTableSearchState::greater_or_equal && $row["weight"] < $value) {
-					$indexes_to_remove[] = $i;
-				}
-				if ($type === DataTableSearchState::greater_than && $row["weight"] <= $value) {
-					$indexes_to_remove[] = $i;
-				}
-				if ($type === DataTableSearchState::equal && $row["weight"] !== $value) {
-					$indexes_to_remove[] = $i;
+			$value_string = $params[0];
+			if (is_numeric($value_string)) {
+				$value = (float)$value_string;
+				foreach ($rows as $i => $row) {
+					if ($type === DataTableSearchState::less_or_equal && $row["weight"] > $value) {
+						$indexes_to_remove[] = $i;
+					}
+					if ($type === DataTableSearchState::less_than && $row["weight"] >= $value) {
+						$indexes_to_remove[] = $i;
+					}
+					if ($type === DataTableSearchState::greater_or_equal && $row["weight"] < $value) {
+						$indexes_to_remove[] = $i;
+					}
+					if ($type === DataTableSearchState::greater_than && $row["weight"] <= $value) {
+						$indexes_to_remove[] = $i;
+					}
+					if ($type === DataTableSearchState::equal && $row["weight"] !== $value) {
+						$indexes_to_remove[] = $i;
+					}
 				}
 			}
 		}
