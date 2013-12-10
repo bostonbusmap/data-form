@@ -35,23 +35,6 @@ function create_columns_from_database($res) {
 }
 
 /**
- * @param $res resource
- * @return array
- * @throws Exception
- */
-function get_rows_from_database($res) {
-	if (!is_resource($res)) {
-		throw new Exception("res is not an open database connection");
-	}
-
-	$rows = array();
-	while ($row = gfy_db::fetch_assoc($res)) {
-		$rows[] = $row;
-	}
-	return $rows;
-}
-
-/**
  * This creates a default DataTable from some SQL
  *
  * @param $sql string SQL to create a table from. This should not already be paginated
@@ -61,17 +44,17 @@ function get_rows_from_database($res) {
  * @return DataTable
  * @throws Exception
  */
-function create_table_from_database($sql, $state, $submit_url=null, $radio_column_key=null) {
+function create_table_from_database($sql, $state, $submit_url="", $radio_column_key="") {
 	if (!is_string($sql) || trim($sql) === "") {
 		throw new Exception("sql must be a string of SQL");
 	}
 	if (!$state || !($state instanceof DataFormState)) {
 		throw new Exception("state must exist and must be instanceof DataFormState");
 	}
-	if ($submit_url && !is_string($submit_url)) {
+	if (!is_string($submit_url)) {
 		throw new Exception("submit must be a URL");
 	}
-	if ($radio_column_key && !is_string($radio_column_key)) {
+	if (!is_string($radio_column_key)) {
 		throw new Exception("radio_column_key must be a string");
 	}
 
@@ -86,7 +69,7 @@ function create_table_from_database($sql, $state, $submit_url=null, $radio_colum
 	$paginated_res = gfy_db::query($paginated_sql, null, true);
 
 	$data_columns = create_columns_from_database($paginated_res);
-	if ($radio_column_key) {
+	if ($radio_column_key !== "") {
 		$checkbox_column = DataTableColumnBuilder::create()->cell_formatter(new DataTableRadioFormatter())->column_key($radio_column_key)->build();
 		$columns = array_merge(array($checkbox_column), $data_columns);
 	}
@@ -94,10 +77,10 @@ function create_table_from_database($sql, $state, $submit_url=null, $radio_colum
 	{
 		$columns = $data_columns;
 	}
-	$rows = get_rows_from_database($paginated_res);
+	$rows = new DatabaseIterator($paginated_res, null, $radio_column_key);
 
 	$widgets = array();
-	if ($submit_url) {
+	if ($submit_url !== "") {
 		$button = DataTableButtonBuilder::create()->text("Submit")->behavior(new DataTableBehaviorSubmit())->form_action($submit_url)->build();
 		$widgets[] = $button;
 	}
