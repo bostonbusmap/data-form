@@ -43,10 +43,20 @@ class DataTableLink implements IDataTableWidget {
 
 	public function display($form_name, $form_method, $state)
 	{
-		$link = $this->link;
-		$text = $this->text;
-		if ($this->behavior) {
-			$onclick = $this->behavior->action($form_name, $this->link, $form_method);
+		return self::display_link($form_name, $form_method, $this->link, $this->text, $this->behavior);
+	}
+
+	/**
+	 * @param $form_name string
+	 * @param $form_method string
+	 * @param $link string
+	 * @param $text string
+	 * @param $behavior IDataTableBehavior
+	 * @return string
+	 */
+	public static function display_link($form_name, $form_method, $link, $text, $behavior) {
+		if ($behavior) {
+			$onclick = $behavior->action($form_name, $link, $form_method);
 		}
 		else
 		{
@@ -66,18 +76,20 @@ class DataTableLinkFormatter implements IDataTableCellFormatter {
 	/**
 	 * Implementation to display a link
 	 *
-	 * WARNING: do not remove parameters, this uses reflection to call the function
 	 * @param string $form_name The name of the form
 	 * @param string $column_header Unused
 	 * @param DataTableLink $column_data The link data
 	 * @param int $rowid Row id number
 	 * @param DataFormState $state Unused
 	 * @return string HTML for a link
+	 * @throws Exception
 	 */
 	public function format($form_name, $column_header, $column_data, $rowid, $state) {
-		// TODO: sanitize for HTML
+		if (!($column_data instanceof DataTableLink)) {
+			throw new Exception("column_data expected to be instance of DataTableLink");
+		}
 		$text = $column_data->get_text();
 		$link = $column_data->get_link();
-		return '<a href="' . htmlspecialchars($link) . '">' . $text . '</a>';
+		return DataTableLink::display_link($form_name, "POST", $link, $text, null);
 	}
 }
