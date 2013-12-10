@@ -1,5 +1,6 @@
 <?php
 
+require_once FILE_BASE_PATH . "/lib/database_iterator.php";
 // Useful functions for working with DataForm and DataTable objects
 
 /**
@@ -69,6 +70,8 @@ function create_table_from_database($sql, $state, $submit_url="", $radio_column_
 	$paginated_res = gfy_db::query($paginated_sql, null, true);
 
 	$data_columns = create_columns_from_database($paginated_res);
+	gfy_db::close($paginated_res);
+	
 	if ($radio_column_key !== "") {
 		$checkbox_column = DataTableColumnBuilder::create()->cell_formatter(new DataTableRadioFormatter())->column_key($radio_column_key)->build();
 		$columns = array_merge(array($checkbox_column), $data_columns);
@@ -77,7 +80,7 @@ function create_table_from_database($sql, $state, $submit_url="", $radio_column_
 	{
 		$columns = $data_columns;
 	}
-	$rows = new DatabaseIterator($paginated_res, null, $radio_column_key);
+	$rows = new DatabaseIterator($paginated_sql, null, $radio_column_key);
 
 	$widgets = array();
 	if ($submit_url !== "") {
