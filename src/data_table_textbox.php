@@ -65,7 +65,7 @@ class DataTableTextbox implements IDataTableWidget {
 			$onchange = "";
 		}
 
-		if ($name_array && $state && !is_null($state->find_item($name_array))) {
+		if ($name_array && $state && $state->has_item($name_array)) {
 			$text = $state->find_item($name_array);
 		}
 		else
@@ -74,11 +74,7 @@ class DataTableTextbox implements IDataTableWidget {
 		}
 
 		if ($name_array) {
-			$qualified_name = $form_name;
-			foreach ($name_array as $name) {
-				// TODO: sanitize
-				$qualified_name .= "[" . $name . "]";
-			}
+			$qualified_name = DataFormState::make_field_name($form_name, $name_array);
 
 			if ($label !== null && $label !== "") {
 				$ret .= '<label for="' . htmlspecialchars($qualified_name) . '">' . $label . '</label>';

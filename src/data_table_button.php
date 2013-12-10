@@ -71,11 +71,7 @@ class DataTableButton implements IDataTableWidget {
 		}
 
 		if ($name_array) {
-			$qualified_name = $form_name;
-			foreach ($name_array as $name) {
-				// TODO: sanitize
-				$qualified_name .= "[" . $name . "]";
-			}
+			$qualified_name = DataFormState::make_field_name($form_name, $name_array);
 
 			if ($label !== null && $label !== "") {
 				$ret .= '<label for="' . htmlspecialchars($qualified_name) . '">' . $label . '</label>';

@@ -98,7 +98,7 @@ class DataTableOptions implements IDataTableWidget {
 		}
 
 		// if this item is in state, use whatever value is there, else use the default
-		if ($state && $state->has_item($name_array)) {
+		if ($state && $name_array && $state->has_item($name_array)) {
 			$has_selected = true;
 			$selected = $state->find_item($name_array);
 		}
