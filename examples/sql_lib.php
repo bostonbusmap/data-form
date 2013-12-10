@@ -117,8 +117,8 @@ function export_rows($state) {
 	$sql_builder = new SQLBuilder($browse_searches_query);
 	$sql_builder->state($state);
 	$sql_builder->ignore_pagination();
-	if (!($selected_items && $selected_only)) {
-		// if nothing is selected
+	if (!$selected_only || $selected_items) {
+		// Filtering behavior might mask rows selected on unfiltered row set, so turn it off
 		$sql_builder->ignore_filtering();
 	}
 	$query = $sql_builder->build();
