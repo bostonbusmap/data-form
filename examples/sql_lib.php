@@ -99,14 +99,28 @@ function make_searches_form($state) {
  * @param $state DataFormState
  */
 function export_rows($state) {
-	$selected_only = $state->find_item(array("selected_only"));
-	$selected_only = filter_var($selected_only, FILTER_VALIDATE_BOOLEAN);
+	$selected_only = filter_var($state->find_item(array("selected_only")), FILTER_VALIDATE_BOOLEAN);
 
+	$items = $state->find_item(array("search_id"));
+	if (!$items) {
+		$items = array();
+	}
+
+	$selected_items = array();
+	foreach ($items as $key => $value) {
+		if ($value !== null && $value !== false && $value !== "") {
+			$selected_items[$key] = $value;
+		}
+	}
 
 	$browse_searches_query = make_searches_query();
 	$sql_builder = new SQLBuilder($browse_searches_query);
 	$sql_builder->state($state);
 	$sql_builder->ignore_pagination();
+	if (!($selected_items && $selected_only)) {
+		// if nothing is selected
+		$sql_builder->ignore_filtering();
+	}
 	$query = $sql_builder->build();
 
 	header("Content-Disposition: attachment; filename=\"export_searches.tsv\"");
@@ -114,15 +128,11 @@ function export_rows($state) {
 
 	$headers = array("search_date", "search_name");
 	$rows = array();
-	$selected_items = $state->find_item(array("search_id"));
-	if (!$selected_items) {
-		$selected_items = array();
-	}
 	foreach (new DatabaseIterator($query) as $row) {
 		$search_id = (string)$row["search_id"];
 
 		// if 'Export all rows' or if nothing is selected, or if we're on a selected item
-		if (!$selected_only || !$selected_items || in_array($search_id, $selected_items)) {
+		if (!$selected_only || ($selected_items && in_array($search_id, $selected_items))) {
 			$rows[] = array($row["search_date"], $row["search_name"]);
 		}
 	}

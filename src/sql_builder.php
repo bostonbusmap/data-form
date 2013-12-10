@@ -136,6 +136,17 @@ class SQLBuilder {
 		return $this;
 	}
 
+	/**
+	 * If true, no filtering clauses will be added.
+	 *
+	 * Note that this just calls filter_transform so make sure you aren't doing both
+	 * @return SQLBuilder
+	 */
+	public function ignore_filtering()
+	{
+		$this->filter_transform(new IdentityTreeTransform());
+		return $this;
+	}
 
 	protected function validate_input() {
 		if (is_null($this->table_name)) {
