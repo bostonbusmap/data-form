@@ -166,6 +166,40 @@ class DataFormState
 	}
 
 	/**
+	 * Checks if the lookup path has an item
+	 *
+	 * This is different than just find_item($path) === null because that will not distinguish between
+	 * null and missing values
+	 *
+	 * @param $path string[] Lookup path for array
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function has_item($path) {
+		if (!is_array($path)) {
+			throw new Exception("path must be an array of string keys");
+		}
+		if (count($path) === 0) {
+			return false;
+		}
+
+		if (count($path) === 1) {
+			return isset($this->form_data[$path[0]]);
+		}
+		else {
+			$subset = array_slice($path, 0, count($path) - 1);
+			$remainder = $this->find_item($subset);
+			if (is_array($remainder)) {
+				return array_key_exists($path[count($path) - 1], $remainder);
+			}
+			else
+			{
+				return false;
+			}
+		}
+	}
+
+	/**
 	 * Concatenate $form_name and items in $path to make an HTML field name
 	 *
 	 * @param $form_name string

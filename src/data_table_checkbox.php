@@ -31,8 +31,9 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 	 * @return string HTML for a checkbox
 	 */
 	public static function format_checkbox($form_name, $column_header, $column_data, $rowid, $state) {
-		if ($state && is_array($state->find_item(array($column_header)))) {
+		if ($state && $state->has_item(array($column_header, $rowid))) {
 			$checked_item = $state->find_item(array($column_header, $rowid));
+			// TODO: == or ===?
 			$checked = ($column_data == $checked_item ? "checked" : "");
 		}
 		else
@@ -47,9 +48,8 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 		}
 
 		$input_name = DataFormState::make_field_name($form_name, array($column_header, $rowid));
-		$hidden_name = DataFormState::make_field_name($form_name, array(DataFormState::state_key, DataFormState::blanks_key, $column_header, $rowid));
 		$ret = '<input type="checkbox" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" ' . $checked . ' />';
-		$ret .= '<input type="hidden" name="' . htmlspecialchars($hidden_name) . '" value="" />';
+		$ret .= DataTableHidden::display_hidden($form_name, $state, array(DataFormState::state_key, DataFormState::blanks_key, $column_header, $rowid), "");
 
 		return $ret;
 	}
