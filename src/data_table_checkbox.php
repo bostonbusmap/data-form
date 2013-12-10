@@ -33,8 +33,8 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 	public static function format_checkbox($form_name, $column_header, $column_data, $rowid, $state) {
 		if ($state && $state->has_item(array($column_header, $rowid))) {
 			$checked_item = $state->find_item(array($column_header, $rowid));
-			// TODO: == or ===?
-			$checked = ($column_data == $checked_item ? "checked" : "");
+
+			$checked = ((string)$column_data === (string)$checked_item ? "checked" : "");
 		}
 		else
 		{
