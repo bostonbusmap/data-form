@@ -16,6 +16,8 @@ class DataFormState
 	const only_display_form = "_only_display_form";
 
 	const forwarded_state_key = "_forwarded_state";
+	const hidden_state_key = "_hidden_state";
+	const blanks_key = "_blanks";
 
 	const pagination_key = "_pagination";
 
@@ -55,7 +57,7 @@ class DataFormState
 		}
 		else {
 			if ($source_state) {
-				$form_data = $source_state->find_item(array(self::forwarded_state_key, $form_name));
+				$form_data = $source_state->find_item(array(self::state_key, self::forwarded_state_key, $form_name));
 				if (!$form_data) {
 					$form_data = array();
 				}
@@ -75,14 +77,58 @@ class DataFormState
 		}
 
 		if ($this->form_data) {
+			// just some validation
 			foreach (array(self::sorting_state_key, self::searching_state_key, self::pagination_key) as $key) {
-				if (array_key_exists($key, $this->form_data)) {
-					if (!is_array($this->form_data[$key])) {
+				if (isset($this->form_data[self::state_key][$key])) {
+					if (!is_array($this->form_data[self::state_key][$key])) {
 						throw new Exception("$key is expected to be an array");
 					}
 				}
 			}
+
+
+			if (isset($this->form_data[self::state_key][self::blanks_key])) {
+				$this->form_data = self::copy_over_array($this->form_name,
+					$this->form_data[self::state_key][self::blanks_key], $this->form_data);
+			}
+
+			if (isset($this->form_data[self::state_key][self::hidden_state_key])) {
+				$this->form_data = self::copy_over_array($this->form_name,
+					$this->form_data[self::state_key][self::hidden_state_key], $this->form_data);
+			}
 		}
+	}
+
+	/**
+	 * Copy every src[k] to dest[k] and return the newly merged array
+	 *
+	 * Like array_merge but numeric indexes are not treated any differently, and dest is not overwritten
+	 *
+	 * @param $base string
+	 * @param $src array
+	 * @param $dest array
+	 * @return array
+	 */
+	private static function copy_over_array($base, $src, $dest) {
+		if (!is_array($dest) || !is_array($src)) {
+			return $src;
+		}
+		foreach ($src as $k => $v) {
+			if (isset($dest[$k])) {
+				if (is_array($dest[$k])) {
+					$dest[$k] = self::copy_over_array($base . "[" . $k . "]", $v, $dest[$k]);
+				}
+				else
+				{
+					// don't overwrite
+				}
+			}
+			else
+			{
+				$dest[$k] = $v;
+			}
+		}
+		return $dest;
 	}
 
 	/**
@@ -272,6 +318,20 @@ class DataFormState
 	 */
 	public static function only_validate_key() {
 		return array(self::state_key, self::only_validate_key);
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public static function get_hidden_state_key() {
+		return array(self::state_key, self::hidden_state_key);
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public static function get_blanks_key() {
+		return array(self::state_key, self::blanks_key);
 	}
 
 	/**

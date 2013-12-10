@@ -79,11 +79,25 @@ class DataForm {
 		// form action is set in javascript
 		$ret .= '<form name="' . htmlspecialchars($this->form_name) . '" method="' . htmlspecialchars($this->method) . '">';
 
-		$field_name = DataFormState::make_field_name($this->form_name, DataFormState::exists_key());
-		$ret .= '<input type="hidden" name="' . htmlspecialchars($field_name) . '" value="true" />';
+		$exists_field_name = DataFormState::make_field_name($this->form_name, DataFormState::exists_key());
+		$ret .= '<input type="hidden" name="' . htmlspecialchars($exists_field_name) . '" value="true" />';
+
+		$state_prefix = $this->form_name . "[" . DataFormState::state_key .  "]";
 
 		foreach ($this->forwarded_state as $forwarded_state) {
-			$ret .= self::make_inputs_from_forwarded_state($forwarded_state->get_form_data(), $this->form_name . "[" . DataFormState::forwarded_state_key . "][" . $forwarded_state->get_form_name() . "]");
+			$ret .= self::make_hidden_inputs_from_array($forwarded_state->get_form_data(),
+				DataFormState::make_field_name($this->form_name,
+					array(DataFormState::state_key, DataFormState::forwarded_state_key, $forwarded_state->get_form_name())));
+		}
+
+		if ($state && $state->exists()) {
+			// We've already integrated old hidden data into state where it doesn't overwrite (in DataFormState's constructor)
+			// Now write these values as items for new hidden state
+			$new_hidden_data = $state->get_form_data();
+			unset($new_hidden_data[DataFormState::state_key]);
+
+			$ret .= self::make_hidden_inputs_from_array($new_hidden_data,
+				DataFormState::make_field_name($this->form_name, array(DataFormState::state_key, DataFormState::hidden_state_key)));
 		}
 
 		foreach ($this->tables as $table) {
@@ -96,14 +110,31 @@ class DataForm {
 
 	/**
 	 * Writes a bunch of hidden inputs for $obj. Names are concatenated such that a[b][c] will be stored
-	 * in $_POST or $_GET as {'a' : {'b' : {'c' : value}}}
+	 * in $_POST or $_GET as assoc arrays like {'a' : {'b' : {'c' : value}}}
 	 *
 	 * @param $obj array|string|number either an array with more hidden inputs, or something convertable to a string
 	 * @param $base string Prefix for input name
 	 * @throws Exception
 	 * @return string HTML of hidden inputs
 	 */
-	private static function make_inputs_from_forwarded_state($obj, $base)
+	private static function make_hidden_inputs_from_array($obj, $base) {
+		$array = self::make_field_names($obj, $base);
+		$ret = "";
+		foreach ($array as $k => $v) {
+			$ret .= '<input type="hidden" name="' . htmlspecialchars($k) . '" value="' . htmlspecialchars($v) . '" />';
+		}
+		return $ret;
+	}
+
+	/**
+	 * Returns list of field names as keys like "a[b][c]" => "value"
+	 *
+	 * @param $obj array|string|number either an array with more hidden inputs, or something convertable to a string
+	 * @param $base string Prefix for input name
+	 * @throws Exception
+	 * @return string[]
+	 */
+	private static function make_field_names($obj, $base)
 	{
 		if (!is_string($base)) {
 			throw new Exception("base must be a string");
@@ -112,8 +143,8 @@ class DataForm {
 			throw new Exception("base must not be empty");
 		}
 
+		$ret = array();
 		if (is_array($obj)) {
-			$ret = "";
 			foreach ($obj as $k => $v) {
 				if (!is_string($k) && !is_int($k)) {
 					throw new Exception("keys in obj must be strings or integers");
@@ -124,12 +155,16 @@ class DataForm {
 				if (strpos($k, "[") !== false || strpos($k, "]") !== false) {
 					throw new Exception("square brackets not permitted in keys");
 				}
-				$ret .= self::make_inputs_from_forwarded_state($obj[$k], $base . "[" . $k . "]");
+
+				$results = self::make_field_names($obj[$k], $base . "[" . $k . "]");
+				foreach ($results as $sub_key => $sub_value) {
+					$ret[$sub_key] = $sub_value;
+				}
 			}
 		}
 		else
 		{
-			$ret = '<input type="hidden" name="' . htmlspecialchars($base) . '" value="' . htmlspecialchars($obj) . '" />';
+			$ret[$base] = $obj;
 		}
 		return $ret;
 	}

@@ -6,14 +6,18 @@ require_once "util.php";
  */
 interface IDataTableSearchFormatter {
 	/**
+	 * TODO: figure out a way to simplify this interface, remove some parameters
+	 *
 	 * @param $form_name string
-	 * @param $table_name string
-	 * @param $column_key string
+	 * @param $form_action string URL to refresh to
+	 * @param $form_method string Either post or get
+	 * @param $table_name string Name of table if table has a name
+	 * @param $column_key string Which column search formatter applies to
 	 * @param $state DataFormState
-	 * @param $default_values DataTableSearchState[]
+	 * @param $default_values DataTableSearchState[] key is column key, value is whatever the user filled in when the refresh happened
 	 * @return mixed
 	 */
-	function format($form_name, $table_name, $column_key, $state, $default_values);
+	function format($form_name, $form_action, $form_method, $table_name, $column_key, $state, $default_values);
 }
 
 class TextboxSearchFormatter implements IDataTableSearchFormatter {
@@ -28,7 +32,7 @@ class TextboxSearchFormatter implements IDataTableSearchFormatter {
 		$this->type = $type;
 	}
 
-	function format($form_name, $table_name, $column_key, $state, $default_values)
+	function format($form_name, $form_action, $form_method, $table_name, $column_key, $state, $default_values)
 	{
 		if (!isset($default_values[$column_key])) {
 			$default_param = "";
@@ -51,13 +55,13 @@ class TextboxSearchFormatter implements IDataTableSearchFormatter {
 		// TODO: replace with DataTableHidden
 		$ret = '<input type="hidden" name="' . htmlspecialchars($type_name) . '" value="' .
 			htmlspecialchars($default_type) . '" />';
-		$ret .= DataTableTextbox::display_textbox($form_name, $params_key, "", "", null, $default_param, null, $state);
+		$ret .= DataTableTextbox::display_textbox($form_name, $params_key, $form_action, $form_method, new DataTableBehaviorRefresh(), $default_param, null, $state);
 
 		return $ret;
 	}
 }
 class NumericalSearchFormatter implements IDataTableSearchFormatter {
-	function format($form_name, $table_name, $column_key, $state, $default_values)
+	function format($form_name, $form_action, $form_method, $table_name, $column_key, $state, $default_values)
 	{
 		if (!isset($default_values[$column_key])) {
 			$default_param = "";
@@ -82,8 +86,8 @@ class NumericalSearchFormatter implements IDataTableSearchFormatter {
 
 		// surrounding this with a div to allow CSS to set column width
 		$ret = "<div>";
-		$ret .= DataTableOptions::display_options($form_name, $type_key, "", "", null, $options, null, $state);
-		$ret .= DataTableTextbox::display_textbox($form_name, $params_key, "", "", null, $default_param, null, $state);
+		$ret .= DataTableOptions::display_options($form_name, $type_key, $form_action, $form_method,  new DataTableBehaviorRefresh(), $options, null, $state);
+		$ret .= DataTableTextbox::display_textbox($form_name, $params_key, $form_action, $form_method,  new DataTableBehaviorRefresh(), $default_param, null, $state);
 		$ret .= "</div>";
 
 		return $ret;

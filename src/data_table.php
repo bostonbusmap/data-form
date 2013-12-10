@@ -329,7 +329,7 @@ class DataTable
 							$default_filtering = array();
 						}
 
-						$ret .= $column->get_search_formatter()->format($form_name, $this->table_name, $column_key,
+						$ret .= $column->get_search_formatter()->format($form_name, $remote_url, $form_method, $this->table_name, $column_key,
 							$state, $default_filtering);
 					}
 				}
