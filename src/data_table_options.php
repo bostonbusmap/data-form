@@ -141,6 +141,7 @@ class DataTableOptionsCellFormatter implements IDataTableCellFormatter {
 	 * @return string HTML for a link
 	 */
 	public function format($form_name, $column_header, $column_data, $rowid, $state) {
+		// TODO: form_action and form_method should probably come from somewhere else instead of just using default values
 		return DataTableOptions::display_options($form_name, array($column_header, $rowid), "", "POST", null, $column_data->get_options(), "", $state);
 	}
 }
