@@ -90,7 +90,7 @@ function make_searches_form($state) {
 
 
 
-	$table = DataTableBuilder::create()->columns($columns)->rows(new DatabaseIterator($query))->settings($settings)->widgets($widgets)->build();
+	$table = DataTableBuilder::create()->columns($columns)->rows(new DatabaseIterator($query, null, "search_id"))->settings($settings)->widgets($widgets)->build();
 	$form = DataFormBuilder::create($state->get_form_name())->remote($_SERVER["REQUEST_URI"])->tables(array($table))->build();
 	return $form;
 }
