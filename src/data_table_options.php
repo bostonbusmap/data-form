@@ -84,13 +84,7 @@ class DataTableOptions implements IDataTableWidget {
 			$onchange = "";
 		}
 		if ($name_array) {
-			$qualified_name = $form_name;
-			foreach ($name_array as $name) {
-				if (strpos($name, "[") !== false || strpos($name, "]") !== false) {
-					throw new Exception("No square brackets allowed in name");
-				}
-				$qualified_name .= "[" . $name . "]";
-			}
+			$qualified_name = DataFormState::make_field_name($form_name, $name_array);
 
 			if ($label !== null && $label !== "") {
 				$ret .= '<label for="' . htmlspecialchars($qualified_name) . '">' . $label . '</label>';
@@ -103,27 +97,30 @@ class DataTableOptions implements IDataTableWidget {
 			$ret .= '<select onchange="' . htmlspecialchars($onchange) . '">';
 		}
 
-		if ($name_array && $state) {
-			$selected_item = $state->find_item($name_array);
+		// if this item is in state, use whatever value is there, else use the default
+		if ($state && $state->has_item($name_array)) {
+			$has_selected = true;
+			$selected = $state->find_item($name_array);
 		}
 		else
 		{
-			$selected_item = null;
+			$has_selected = false;
+			$selected = null;
 		}
-		foreach ($options as $option) {
-			if (is_null($selected_item)) {
-				$override_select = null;
-			}
-			elseif ($selected_item === $option->get_value())
-			{
-				$override_select = true;
-			}
-			else
-			{
-				$override_select = false;
-			}
 
-			$ret .= $option->display($override_select);
+		foreach ($options as $option) {
+			if ($has_selected) {
+				if ($option->get_value() === $selected) {
+					$ret .= $option->display(true);
+				}
+				else
+				{
+					$ret .= $option->display(false);
+				}
+			}
+			else {
+				$ret .= $option->display($option->is_default_selected());
+			}
 		}
 
 		$ret .= "</select>";
