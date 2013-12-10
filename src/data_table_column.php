@@ -120,7 +120,7 @@ class DataTableColumn {
 	 * @param string $form_name Name of HTML form
 	 * @param string $column_header Column key
 	 * @param object $column_data Data to display
-	 * @param int $rowid ID of cell's row
+	 * @param string $rowid ID of cell's row
 	 * @param DataFormState $state State of form
 	 * @return string
 	 */

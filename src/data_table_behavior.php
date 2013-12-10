@@ -1,4 +1,7 @@
 <?php
+
+// TODO: put most of this into a JavaScript file for cleanliness
+
 interface IDataTableBehavior {
 	/**
 	 * @param string $form_name Name of form
