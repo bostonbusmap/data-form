@@ -93,7 +93,14 @@ class DataTableButton implements IDataTableWidget {
 
 	public function display($form_name, $form_method, $state=null)
 	{
-		return self::display_button($form_name, array($this->name), $this->action, $form_method, $this->behavior, $this->text, $this->type, $this->label, $state);
+		if ($this->name) {
+			$name_array = array($this->name);
+		}
+		else
+		{
+			$name_array = array();
+		}
+		return self::display_button($form_name, $name_array, $this->action, $form_method, $this->behavior, $this->text, $this->type, $this->label, $state);
 	}
 
 	public function get_placement() {
