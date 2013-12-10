@@ -57,7 +57,8 @@ class DataTableTextbox implements IDataTableWidget {
 		$ret = "";
 
 		if ($behavior) {
-			$onchange = $behavior->action($form_name, $action, $form_method);
+			// trigger if user presses Enter
+			$onchange = "if (event.keyCode == 13) { " . $behavior->action($form_name, $action, $form_method) . " }";
 		}
 		else
 		{
@@ -83,11 +84,11 @@ class DataTableTextbox implements IDataTableWidget {
 				$ret .= '<label for="' . htmlspecialchars($qualified_name) . '">' . $label . '</label>';
 			}
 
-			$ret .= '<input type="text" id="' . htmlspecialchars($qualified_name) . '" name="' . htmlspecialchars($qualified_name) . '" onsubmit="' . htmlspecialchars($onchange) . '" value="' . htmlspecialchars($text) . '" />';
+			$ret .= '<input type="text" id="' . htmlspecialchars($qualified_name) . '" name="' . htmlspecialchars($qualified_name) . '" onkeypress="' . htmlspecialchars($onchange) . '" value="' . htmlspecialchars($text) . '" />';
 		}
 		else
 		{
-			$ret .= '<input type="text" onsubmit="' . htmlspecialchars($onchange) . '" value="' . htmlspecialchars($text) . '" />';
+			$ret .= '<input type="text" onkeypress="' . htmlspecialchars($onchange) . '" value="' . htmlspecialchars($text) . '" />';
 		}
 
 		$ret .= "</select>";
