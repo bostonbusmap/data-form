@@ -9,12 +9,17 @@ try {
 
 	gfy_header("Show results", "");
 	$numbers = $current_state->find_item(array("number"));
+	$selected_any = false;
 	if ($numbers) {
 		foreach ($numbers as $number) {
-			echo "Selected item " . $number . "<br />";
+			if ($number !== "") {
+				echo "Selected item " . $number . "<br />";
+				$selected_any = true;
+			}
 		}
 	}
-	else
+
+	if (!$selected_any)
 	{
 		echo "No even numbers selected";
 	}

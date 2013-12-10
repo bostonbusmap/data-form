@@ -43,6 +43,9 @@ class OnlyEvenItemsSelected implements IValidatorRule {
 		}
 		$odds = array();
 		foreach ($selected_items as $item) {
+			if ($item === "") {
+				continue;
+			}
 			if (!is_numeric($item)) {
 				throw new Exception("Assumed all items were numeric");
 			}
