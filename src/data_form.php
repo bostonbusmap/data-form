@@ -2,32 +2,80 @@
 require_once "data_form_builder.php";
 require_once "data_table.php";
 
+/**
+ * Renders an HTML form with pagination, sorting, filtering and validation. See examples directory for common
+ * usages.
+ *
+ * The object is created using a DataFormBuilder object to specify parameters. Then the user can call $form->display($state)
+ * to render the form HTML, with $state being a DataFormState object that represents what was submitted to the form via POST or GET.
+ * To properly create an AJAX-friendly form, see the examples (the sql.php example for instance).
+ *
+ * All fields inside the form must have this syntax: form_name[field_name][rowid]. See DataFormState for more information on
+ * field names.
+ *
+ * The form looks like this:
+ *
+ * <div id='form_name'>
+ * <div id='form_name_flash'><!-- error messages go here --></div>
+ * <form action='' name='form_name'> <!-- action is set by buttons using JS right before submit -->
+ * <input type='hidden' value='true' name='form_name[_state][_form_exists]' />
+ * <!-- hidden fields for forwarded state -->
+ * <!-- hidden fields for hidden rows -->
+ * <a onclick='widgetBehavior();'>Link at top of table</a>
+ * <table>
+ *  <caption><!-- pagination stuff --></caption>
+ *  <thead>
+ *   <!-- row for header names -->
+ *   <!-- optional row with filtering controls -->
+ *  </thead>
+ *  <tbody>
+ * 	 <!-- lots of rows and cells with data -->
+ *  </tbody>
+ * </table>
+ * </form>
+ *
+ * </div>
+ *
+ */
 class DataForm {
-	/** @var  DataTable[] */
+	/** @var  DataTable[] A list of tables which will render HTML tables */
 	protected $tables;
 
-	/** @var string */
+	/** @var string The name of the form */
 	private $form_name;
 
 
-	/** @var  DataFormState[] State received which should be forwarded */
+	/**
+	 * @var  DataFormState[]
+	 *
+	 * If user is creating forms on multiple pages, they can forward the state from the previous page by adding all of the
+	 * DataFormStates to an array and setting this field
+	 */
 	private $forwarded_state;
 
 	/** @var  string Form method, either GET or POST */
 	private $method;
 
-	/** @var  string CSS class for div */
+	/** @var  string CSS class for the DIV which wraps everything */
 	private $div_class;
-	/** @var string|bool Either false or a URL to send pagination, sorting, or searching requests to */
+	/** @var string|bool
+	 * A URL to send pagination, sorting, or searching requests to.
+	 * If this is false, the form is assumed to be local and sorting and filtering
+	 * are done in Javascript instead.
+	 *
+	 * $_SERVER['REQUEST_URI'] should be sufficient for most cases
+	 * */
 	private $remote;
 
 	/**
-	 * @var IValidatorRule[]
+	 * @var IValidatorRule[] A list of validation rules to apply. See validate() for use
 	 */
 	private $validator_rules;
 
 
 	/**
+	 * Use DataFormBuilder::build()
+	 *
 	 * @param $builder DataFormBuilder
 	 * @throws Exception
 	 */
@@ -64,6 +112,12 @@ class DataForm {
 		return $ret;
 	}
 
+	/**
+	 * Returns HTML for just the form element
+	 * @param DataFormState $state The state which holds what the user is working on
+	 * @return string HTML for form
+	 * @throws Exception
+	 */
 	public function display_form($state=null) {
 		if ($state && !($state instanceof DataFormState)) {
 			throw new Exception("state must be instance of DataFormState");
@@ -170,7 +224,9 @@ class DataForm {
 	}
 
 	/**
-	 * @param $state DataFormState
+	 * Runs validation rules and returns a string with validation errors if any were found
+	 *
+	 * @param $state DataFormState What the user was working on
 	 * @return string HTML with validation errors. Must be an empty string if no errors found
 	 * @throws Exception
 	 */

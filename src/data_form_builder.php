@@ -1,13 +1,16 @@
 <?php
 class DataFormBuilder {
-	/** @var  DataTable[] */
+	/** @var  DataTable[] A list of tables which will render HTML tables */
 	protected $tables;
 
-	/** @var string */
+	/** @var string The name of the form */
 	private $form_name;
 
 
-	/** @var  DataFormState[] State received which should be forwarded */
+	/** @var  DataFormState[]
+	 * If user is creating forms on multiple pages, they can forward the state from the previous page by adding all of the
+	 * DataFormStates to an array and setting this field
+	 */
 	private $forwarded_state;
 
 	/** @var  string Form submit method, either POST or GET. POST by default */
@@ -16,20 +19,30 @@ class DataFormBuilder {
 	/** @var  string CSS class for div */
 	private $div_class;
 
-	/** @var string|bool If this is a string then sorting, searching, and pagination options are sent to this URL
-	 * If false sorting and searching are done locally */
+	/** @var string|bool
+	 * A URL to send pagination, sorting, or searching requests to.
+	 * If this is false, the form is assumed to be local and sorting and filtering
+	 * are done in Javascript instead.
+	 *
+	 * $_SERVER['REQUEST_URI'] should be sufficient for most cases
+	 * */
 	private $remote;
 
-	/** @var IValidatorRule[] */
+	/** @var IValidatorRule[] A list of rules to apply for validation */
 	private $validator_rules;
 
-
+	/**
+	 * @param $form_name string Name of form
+	 */
 	public function __construct($form_name) {
 		$this->form_name = $form_name;
 	}
 
 	/**
-	 * @param $form_name string
+	 * Allows user to chain methods after this one. As of PHP 5.2 the new syntax does not allow this
+	 * but otherwise these are equivalent
+	 *
+	 * @param $form_name string Name of form
 	 * @return DataFormBuilder
 	 */
 	public static function create($form_name) {
@@ -37,7 +50,9 @@ class DataFormBuilder {
 	}
 
 	/**
-	 * @param $tables DataTable[]
+	 * A list of tables which will render HTML tables
+	 *
+	 * @param $tables DataTable[] A list of tables which will render HTML tables
 	 * @return DataFormBuilder
 	 */
 	public function tables($tables) {
@@ -58,7 +73,9 @@ class DataFormBuilder {
 	}
 
 	/**
-	 * @param $method string
+	 * HTTP form submit method
+	 *
+	 * @param $method string Either POST or GET
 	 * @return DataFormBuilder
 	 */
 	public function method($method) {
@@ -67,7 +84,9 @@ class DataFormBuilder {
 	}
 
 	/**
-	 * @param $div_class string
+	 * The CSS class for the DIV surrounding the form
+	 *
+	 * @param $div_class string CSS class
 	 * @return DataFormBuilder
 	 */
 	public function div_class($div_class) {
@@ -88,6 +107,12 @@ class DataFormBuilder {
 		return $this;
 	}
 
+	/**
+	 * List of rules for validation
+	 *
+	 * @param $validator_rules IValidatorRule[]
+	 * @return DataFormBuilder
+	 */
 	public function validator_rules($validator_rules) {
 		$this->validator_rules = $validator_rules;
 		return $this;
@@ -96,6 +121,8 @@ class DataFormBuilder {
 
 
 	/**
+	 * Validates input and creates a DataForm
+	 *
 	 * @throws Exception
 	 * @return DataForm
 	 */

@@ -2,7 +2,20 @@
 
 require_once "data_table_search_state.php";
 /**
- * This class stores data which was provided about the form through $_POST (ie, what column the user clicked to sort)
+ * This class stores data which was provided about the form through $_POST or $_GET.
+ *
+ * Since all fields are formatted similar to form_name[field_name], this is put into
+ * $_POST as $_POST[$form_name][$field_name]. DataFormState basically holds the array $_POST[$form_name]
+ * in $this->form_data with some exceptions:
+ *
+ *   - If source_state is specified in the constructor, it will look in the
+ *     _forwarded_state field of another DataForm to see if is listed and use that
+ *     (eg, $form_data[another_form_name][_state][_forwarded_state][form_name])
+ *   - Items from $form_data[form_name][_state][_blanks] are copied to $form_data[form_name]
+ *     because certain items like checkboxes don't show up at all if unchecked.
+ *   - Then items from $form_data[form_name][_state][_hidden_state] are copied into $form_data[form_name]
+ *     as long as it won't overwrite anything.
+ *
  */
 class DataFormState
 {
@@ -26,20 +39,22 @@ class DataFormState
 	const only_validate_key = "_validate";
 
 	/**
-	 * The piece of $_REQUEST that's relevant to this form
+	 * The piece of $_POST or $_GET that's relevant to this form, slightly modified
 	 * @var array
 	 */
 	private $form_data;
 
 	/**
-	 * @var string
+	 * @var string Name of form
 	 */
 	private $form_name;
 
 	/**
+	 * Creates a DataFormState
+	 *
 	 * @param $form_name string
 	 * @param $post array should be $_POST or $_GET
-	 * @param $source_state DataFormState If not in $request, look in $current_state's forwarded_state
+	 * @param $source_state DataFormState If not in $post, look in $current_state's forwarded_state and use that
 	 * @throws Exception
 	 */
 	public function __construct($form_name, $post, $source_state=null)
@@ -86,7 +101,9 @@ class DataFormState
 				}
 			}
 
-
+			// Copy over blank items in case they aren't sent in $_POST if blank.
+			// For items like checkboxes we also have a hidden field set
+			// so we can know for sure that an item is blank.
 			if (isset($this->form_data[self::state_key][self::blanks_key])) {
 				$this->form_data = self::copy_over_array($this->form_name,
 					$this->form_data[self::state_key][self::blanks_key], $this->form_data);
