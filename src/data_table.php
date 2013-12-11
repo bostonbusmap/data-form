@@ -26,6 +26,8 @@ require_once "data_table_options.php";
 require_once "data_table_pagination_state.php";
 require_once "data_table_radio.php";
 require_once "data_table_search_formatter.php";
+require_once "data_table_search_widget.php";
+require_once "data_table_search_widget_builder.php";
 require_once "data_table_search_state.php";
 require_once "data_table_settings_builder.php";
 require_once "data_table_settings.php";
@@ -321,16 +323,16 @@ class DataTable
 					}
 					else
 					{
+						$default_value = null;
 						if ($this->settings) {
 							$default_filtering = $this->settings->get_default_filtering();
-						}
-						else
-						{
-							$default_filtering = array();
+							if (isset($default_filtering[$column_key])) {
+								$default_value = $default_filtering[$column_key];
+							}
 						}
 
 						$ret .= $column->get_search_formatter()->format($form_name, $remote_url, $form_method, $this->table_name, $column_key,
-							$state, $default_filtering);
+							$state, $default_value, "");
 					}
 				}
 				$ret .= "</th>";
