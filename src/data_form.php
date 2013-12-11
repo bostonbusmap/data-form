@@ -77,7 +77,7 @@ class DataForm {
 		$ret .= '<div id="' . htmlspecialchars($this->form_name . "_flash") . '"></div>';
 
 		// form action is set in javascript
-		$ret .= '<form name="' . htmlspecialchars($this->form_name) . '" method="' . htmlspecialchars($this->method) . '">';
+		$ret .= '<form accept-charset="utf-8" name="' . htmlspecialchars($this->form_name) . '" method="' . htmlspecialchars($this->method) . '">';
 
 		$exists_field_name = DataFormState::make_field_name($this->form_name, DataFormState::exists_key());
 		$ret .= '<input type="hidden" name="' . htmlspecialchars($exists_field_name) . '" value="true" />';
