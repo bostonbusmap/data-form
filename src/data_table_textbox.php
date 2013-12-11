@@ -34,7 +34,14 @@ class DataTableTextbox implements IDataTableWidget {
 
 	public function display($form_name, $form_method, $state)
 	{
-		return self::display_textbox($form_name, array($this->name), $this->action, $form_method, $this->submit_behavior, $this->text, $this->label, $state);
+		if ($this->name !== "") {
+			$name_array = array($this->name);
+		}
+		else
+		{
+			$name_array = array();
+		}
+		return self::display_textbox($form_name, $name_array, $this->action, $form_method, $this->submit_behavior, $this->text, $this->label, $state);
 	}
 
 	public function get_placement()
