@@ -14,7 +14,7 @@ interface IDataTableBehavior {
 
 class DataTableBehaviorNone implements IDataTableBehavior {
 	function action($form_name, $form_action, $form_method) {
-		return "return false;";
+		return "event.preventDefault();";
 	}
 }
 
