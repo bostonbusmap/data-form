@@ -31,12 +31,7 @@ class DataTableBehaviorSetParamsThenSubmit implements IDataTableBehavior {
 		if (!$form_action) {
 			throw new Exception("form_action is empty");
 		}
-		$params_js = "";
-		foreach ($this->params as $key => $value) {
-			$param_js = '$(' . json_encode("#" . jquery_escape($key)) . ').attr("value", ' . json_encode($value) . ");";
-			$params_js .= $param_js;
-		}
-		return 'var $form=$(this).parents("form"); $form.attr("action", ' . json_encode($form_action) . ');' . $params_js . '$form.submit();return false;';
+		return 'return DataForm.setParamsThenSubmit(this, event, ' . json_encode($form_action) . ', ' . json_encode($this->params) . ');';
 	}
 }
 class DataTableBehaviorSubmit implements IDataTableBehavior {
@@ -44,7 +39,7 @@ class DataTableBehaviorSubmit implements IDataTableBehavior {
 		if (!$form_action) {
 			throw new Exception("form_action is empty");
 		}
-		return '$form=$(this).parents("form"); $form.attr("action", ' . json_encode($form_action) . ');$form.submit();return false;';
+		return 'return DataForm.submit(this, event, ' . json_encode($form_action) . ');';
 	}
 }
 class DataTableBehaviorSubmitAndValidate implements IDataTableBehavior {
@@ -60,7 +55,7 @@ class DataTableBehaviorSubmitAndValidate implements IDataTableBehavior {
 	function action($form_name, $form_action, $form_method)
 	{
 		$validate_name = DataFormState::make_field_name($form_name, DataFormState::only_validate_key());
-		$params = "&" . $validate_name . "=true";
+		$params = array($validate_name => "true");
 
 		$method = strtolower($form_method);
 		if ($method != "post" && $method != "get") {
@@ -71,15 +66,8 @@ class DataTableBehaviorSubmitAndValidate implements IDataTableBehavior {
 		// first submit data with validation parameter to validation url
 		// If a non-empty result is received (which would be errors), put it in flash div,
 		// else do the submit
-		return 'var $form=$(this).parents("form"); $.' . $method . '(' . json_encode($this->validation_url) . ','.
-			' $form.serialize()  + ' .
-			json_encode($params) .
-			', function(data, textStatus, jqXHR) { ' .
-			'if (data) { $(' . json_encode("#" . $flash_name) . ').html(data); } else {' .
-			'$form.attr("action", ' .
-			json_encode($form_action) .
-			');$form.submit();' .
-			'}}); return false;';
+		return 'return DataForm.submitThenValidate(this, event, ' . json_encode($form_action) . ', ' . json_encode($method) .
+			', ' . json_encode($this->validation_url) . ', ' . json_encode($flash_name) . ', ' . json_encode($params) . ');';
 	}
 }
 class DataTableBehaviorRefresh implements IDataTableBehavior {
@@ -98,25 +86,16 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 	}
 	function action($form_name, $form_action, $form_method) {
 		$only_display_form_name = DataFormState::make_field_name($form_name, DataFormState::only_display_form_key());
-		$params = "&" . urlencode($only_display_form_name) . "=true";
-
-		foreach ($this->extra_params as $k => $v) {
-			$params .= "&" . urlencode($k) . "=" . urlencode($v);
-		}
+		$params = $this->extra_params;
+		$params[$only_display_form_name] = "true";
 
 		$method = strtolower($form_method);
 		if ($method != "post" && $method != "get") {
 			throw new Exception("Unknown method '$method'");
 		}
 
-		// to submit the form as AJAX we need to serialize the form to json and put it in the parameter string
-		// the second part of this takes that result and puts it in the div with the same name as the form
-		// ie, replace the form with a refreshed copy
-		return 'var $form=$(this).parents("form"); ' . '$.' . $method . '(' . json_encode($form_action) .
-			', $form.serialize()  + ' . json_encode($params) .
-			', function(data, textStatus, jqXHR) { $(' .
-			json_encode("#" . jquery_escape($form_name)) .
-			').html(data);});return false;';
+		return 'return DataForm.refresh(this, event, ' . json_encode($form_action) . ', ' . json_encode($form_method) . ', ' .
+			json_encode($form_name) . ', ' . json_encode($params) . ');';
 	}
 }
 
@@ -158,16 +137,8 @@ class DataTableBehaviorRefreshImage implements IDataTableBehavior {
 	function action($form_name, $form_action, $form_method)
 	{
 		$only_display_form_name = DataFormState::make_field_name($form_name, DataFormState::only_display_form_key());
-		$params = "&" . urlencode($only_display_form_name) . "=true";
-
-		foreach ($this->extra_params as $k => $v) {
-			$params .= "&" . urlencode($k) . "=" . urlencode($v);
-		}
-
-		$method = strtolower($form_method);
-		if ($method != "post" && $method != "get") {
-			throw new Exception("Unknown method '$method'");
-		}
+		$params = $this->extra_params;
+		$params[$only_display_form_name] = "true";
 
 		if ($this->div) {
 			$div = $this->div;
@@ -177,31 +148,13 @@ class DataTableBehaviorRefreshImage implements IDataTableBehavior {
 			$div = $form_name;
 		}
 
-		// spinning gif is in a separate overlay div which is displayed while data is refreshing
-		$loading_animation = "";
-		if ($this->div_overlay) {
-			$div_overlay = $this->div_overlay;
-			$jquery_div_overlay = "#" . jquery_escape($div_overlay);
-			$loading_animation = '$(document)' .
-				'.ajaxStart(function() {$(' . json_encode($jquery_div_overlay) . ').show();})' .
-				'.ajaxStop(function() {$(' . json_encode($jquery_div_overlay) . ').hide();});';
-		}
-
-		$jquery_div = "#" . jquery_escape($div);
-
 		$height_name = DataFormState::make_field_name($form_name, array(self::height_key));
 		$width_name = DataFormState::make_field_name($form_name, array(self::width_key));
 
-		// to submit the form as AJAX we need to serialize the form to json and put it in the parameter string
-		// the second part of this takes that result and puts it in the div with the same name as the form
-		// ie, replace the form with a refreshed copy
-		return 'var $form=$(this).parents("form"); ' . $loading_animation . '$.' . $method . '(' . json_encode($form_action) .
-		', $form.serialize()  + ' . json_encode($params) .
-		' + "&' . $height_name . '=" + $(' . json_encode($jquery_div) . ').height() ' .
-		' + "&' . $width_name . '=" + $(' . json_encode($jquery_div) . ').width() ' .
-		', function(data, textStatus, jqXHR) { $(' .
-		json_encode($jquery_div) .
-		').html(data);});return false;';
+		return 'return DataForm.refreshImage(this, event, ' . json_encode($form_action) . ', ' . json_encode($form_method) . ', ' .
+		json_encode($div) . ', ' . json_encode($this->div_overlay) . ', ' .
+		json_encode($height_name) . ', ' . json_encode($width_name) . ', ' .
+		json_encode($params) . ');';
 	}
 }
 class DataTableBehaviorClearSortThenRefresh implements IDataTableBehavior {
@@ -212,10 +165,18 @@ class DataTableBehaviorClearSortThenRefresh implements IDataTableBehavior {
 	}
 
 	function action($form_name, $form_action, $form_method) {
+		$only_display_form_name = DataFormState::make_field_name($form_name, DataFormState::only_display_form_key());
+		$params = $this->extra_params;
+		$params[$only_display_form_name] = "true";
 
-		$clear_sorts = '$(this).parents("form").find(".hidden_sorting").attr("value", "");';
-		$refresh_behavior = new DataTableBehaviorRefresh($this->extra_params);
-		return $clear_sorts . $refresh_behavior->action($form_name, $form_action, $form_method);
+		$method = strtolower($form_method);
+		if ($method != "post" && $method != "get") {
+			throw new Exception("Unknown method '$method'");
+		}
+
+		return 'return DataForm.clearSortThenRefresh(this, event, ' . json_encode($form_action) . ', ' . json_encode($form_method) . ', ' .
+		json_encode($form_name) . ', ' . json_encode($params) . ');';
+
 	}
 }
 class DataTableBehaviorDefault implements IDataTableBehavior {
