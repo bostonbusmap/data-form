@@ -11,25 +11,48 @@ require_once "data_table_search_state.php";
  *   - If source_state is specified in the constructor, it will look in the
  *     _forwarded_state field of another DataForm to see if is listed and use that
  *     (eg, $form_data[another_form_name][_state][_forwarded_state][form_name])
- *   - Items from $form_data[form_name][_state][_blanks] are copied to $form_data[form_name]
- *     because certain items like checkboxes don't show up at all if unchecked.
+ *
  *   - Then items from $form_data[form_name][_state][_hidden_state] are copied into $form_data[form_name]
- *     as long as it won't overwrite anything.
+ *     as long as it won't overwrite anything in $form_data[form_name] or $form_data[form_name][_state][_blanks]
  *
  */
 class DataFormState
 {
+	/**
+	 * All special hidden fields should go under form_name[state_key]
+	 */
 	const state_key = "_state";
 
+	/**
+	 * Holds ordering information for columns
+	 */
 	const sorting_state_key = "_sorting_state";
 	const sorting_state_asc = "asc";
 	const sorting_state_desc = "desc";
 
+	/**
+	 * Holds filtering information for columns
+	 */
 	const searching_state_key = "_searching_state";
+	/**
+	 * If form_name[state_key][only_display_form] is set, page should render only the form HTML, not the whole page
+	 */
 	const only_display_form = "_only_display_form";
 
+	/**
+	 * form_name[state_key][forwarded_state_key] contains form state from previous pages
+	 */
 	const forwarded_state_key = "_forwarded_state";
+	/**
+	 * form_name[state_key][hidden_state_key] contains form state for hidden rows or other items
+	 */
 	const hidden_state_key = "_hidden_state";
+	/**
+	 * form_name[state_key][blanks_key] contains fields which exist elsewhere in the form
+	 * but whose information may not be sent if field is unselected. For example checkboxes
+	 * would define a blank item under this key which would always be sent even if checkbox is
+	 * unchecked.
+	 */
 	const blanks_key = "_blanks";
 
 	const pagination_key = "_pagination";
@@ -195,7 +218,7 @@ class DataFormState
 	}
 
 	/**
-	 * Searches hash for item that matches path. If $path = array("a", "b"), then this returns
+	 * Searches array for item that matches path. If $path = array("a", "b"), then this returns
 	 * whatever's at {'a' : {'b' : ???}}, or null
 	 *
 	 * @param $path string[] an array of keys to drill down with
