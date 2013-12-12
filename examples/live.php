@@ -1,5 +1,7 @@
 <?php
 /**
+ * Example for DataForm
+ *
  * LICENSE: This source file and any compiled code are the property of its
  * respective author(s).  All Rights Reserved.  Unauthorized use is prohibited.
  *
@@ -12,6 +14,14 @@ require_once "../../../../../lib/main_lib.php";
 
 require_once FILE_BASE_PATH . "/www/browser/lib/data_table/data_form.php";
 
+/**
+ * This example is meant to show how things would work without SQLBuilder, if we handled sorting and filtering
+ * ourselves.
+ */
+
+/**
+ * Simple formatter that turns everything in this column red.
+ */
 class RedFormatter implements IDataTableCellFormatter {
 	public function format($form_name, $column_header, $column_data, $rowid, $state)
 	{
@@ -34,10 +44,12 @@ function compare_result_column_asc($a, $b) {
 function make_form($state) {
 	$this_url = $_SERVER['REQUEST_URI'];
 
+	// Make two columns: one to show numbers from 0 through 14 inclusive, and another column to show a modulo result
 	$columns = array();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Numbers")->column_key("number")->build();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Result")->column_key("result")->sortable(true)->build();
 
+	// get 'factor' value which is set using the select element defined below
 	$multiplier = $state->find_item(array("factor"));
 	if (is_null($multiplier)) {
 		$multiplier = 4;
@@ -47,6 +59,7 @@ function make_form($state) {
 		$multiplier = (int)$multiplier;
 	}
 
+	// Create some pretty simple data
 	$rows = array();
 	for ($i = 0; $i < 15; $i++) {
 		$row = array();
@@ -56,6 +69,7 @@ function make_form($state) {
 		$rows[] = $row;
 	}
 
+	// Sort the simple data using the comparators defined above
 	if ($state->get_sorting_state("result") == DataFormState::sorting_state_asc) {
 		usort($rows, "compare_result_column_asc");
 	}
@@ -63,25 +77,31 @@ function make_form($state) {
 		usort($rows, "compare_result_column_desc");
 	}
 
+	// Make a refresh button. This is not really necessary since refreshes happen whenever
+	// sorting links are clicked.
 	$buttons = array();
 	$buttons[] = DataTableButtonBuilder::create()->name("refresh")->text("(x * ?) % 7")->form_action($this_url)->behavior(new DataTableBehaviorRefresh())->build();
 
-	// note that '4' is selected by default, but this will be overridden
-	// if the form is refreshed
+	// Make select element which will become 'multiplication[factor]' field
+
+	// Note that '4' is selected by default, but this will be ignored
+	// if there is a value defined for this element in DataFormState.
 	$options = array();
 	$options[] = new DataTableOption("3", "3");
 	$options[] = new DataTableOption("4", "4", true);
 	$options[] = new DataTableOption("5", "5");
 
-
+	// Make the select element
 	$buttons[] = DataTableOptionsBuilder::create()->options($options)->name("factor")->form_action($this_url)->behavior(new DataTableBehaviorRefresh())->build();
 
+	// Create the DataTable, then the DataForm with the DataTable in it
 	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->build();
 	$form = DataFormBuilder::create($state->get_form_name())->tables(array($table))->remote($this_url)->build();
 	return $form;
 }
 
 try {
+	// $state contains our form state which contains sorting information and all our fields
 	$state = new DataFormState("multiplication", $_POST);
 	$form = make_form($state);
 	if ($state->only_display_form()) {

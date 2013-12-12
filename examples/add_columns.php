@@ -90,6 +90,9 @@ function make_form($state) {
 }
 
 try {
+	// $state is used to keep form data consistent between refreshes (and to interpret it after submitting the form)
+
+	// Try selecting some checkboxes and add a column. Notice how the checkboxes remain selected.
 	$state = new DataFormState("add_columns", $_POST);
 	$form = make_form($state);
 	if ($state->only_display_form()) {
