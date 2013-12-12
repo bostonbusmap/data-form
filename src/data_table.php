@@ -41,16 +41,11 @@ require_once "util.php";
 require_once "validator_rule.php";
 
 /**
- * This displays a table of data which is also a form.
- * Rows can be selectable and results are submitted to $form_action
+ * This displays an HTML table of data. Rows can be selectable and results are submitted to $form_action
  *
  * Table columns (which must be DataTableColumn) are displayed in order of $columns
  * and are matched with data if the key in $columns matches a key
  * from $sql_field_names or a row in $rows.
- *
- * A DataTableColumn is in charge of how to display the column, which may be string data or have a checkbox
- * or select widget or many other things. The user may use callbacks to customize the DataTableColumn
- * See the PHPDoc for DataTableColumn for more information
  *
  */
 class DataTable
@@ -59,13 +54,15 @@ class DataTable
 	 * @var string Allows for table-specific state. Optional
 	 */
 	private $table_name;
-	/** @var \IDataTableWidget[]  */
+	/** @var \IDataTableWidget[] Buttons or other pieces of HTML outside the table */
 	private $widgets;
-	/** @var \DataTableColumn[]  */
+	/** @var \DataTableColumn[] Columns for the table */
 	private $columns;
-	/** @var \string[]  */
+	/** @var \string[] You may optionally define this to map field_name -> column_index instead of
+	 * putting column keys directly on each row. */
 	private $field_names;
-	/** @var array|Traversable  */
+	/** @var array|Traversable The data displayed for this form.
+	 * This must be already paginated; what you put here is what will be outputed. */
 	private $rows;
 
 	/**
@@ -106,14 +103,14 @@ class DataTable
 	}
 
 	/**
-	 * Returns HTML for table. This is useful if sending it via ajax to populate a div
+	 * Returns HTML for table. Meant for use by DataForm, users should call DataForm::display() instead
 	 *
 	 * May display empty message instead of empty_message is set and there are no rows
 	 *
-	 * @param string $form_name
+	 * @param string $form_name The name of the form
 	 * @param string $form_method Either GET or POST
-	 * @param $remote_url string
-	 * @param DataFormState $state
+	 * @param $remote_url string The URL to refresh from via AJAX
+	 * @param DataFormState $state Optional state which contains form data. If null defaults are used
 	 * @throws Exception
 	 * @return string HTML
 	 */
