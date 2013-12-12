@@ -1,5 +1,7 @@
 <?php
 /**
+ * Search DataForm example
+ *
  * LICENSE: This source file and any compiled code are the property of its
  * respective author(s).  All Rights Reserved.  Unauthorized use is prohibited.
  *
@@ -12,6 +14,7 @@ require_once "../../../../../lib/main_lib.php";
 
 require_once FILE_BASE_PATH . "/www/browser/lib/data_table/data_form.php";
 
+// comparator for bird names
 function compare_bird_column_asc($a, $b) {
 	return $a["bird"] < $b["bird"];
 }
@@ -21,12 +24,17 @@ function compare_bird_column_desc($a, $b) {
 }
 
 /**
+ * Returns DataForm for bird vs bird weights
+ *
  * @param DataFormState $state
+ * @throws Exception
  * @return DataForm
  */
 function make_form($state) {
 	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/searchable.php";
 
+	// Two columns: bird name and some randomly generated bird weight
+	// Note that the second column uses NumericalSearchFormatter to display a different search control
 	$columns = array();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Bird")->column_key("bird")->
 		searchable(true)->sortable(true)->build();
@@ -54,18 +62,23 @@ function make_form($state) {
 		"1.19 Piciformes",
 		"1.20 Passeriformes");
 
+	// make up some semi-reasonable bird weights for each bird
 	$bird_weights = array();
+	// make this deterministic
 	mt_srand(0);
 	foreach ($birds as $bird) {
 		$bird_weights[$bird] = floor((((mt_rand() / mt_getrandmax()) * 70) + 10) * 4) / 4;
 	}
 
+	// make our rows
 	$rows = array();
 	foreach ($birds as $bird) {
 		$rows[] = array("bird" => $bird, "weight" => $bird_weights[$bird]);
 	}
 
-	// in PHP 5.3 we can replace this with array_filter($rows, function($row) { return($row["weight"] < $value });
+	// Filter rows based on bird names
+	// in PHP 5.3 we can replace this with something like
+	//   array_filter($rows, function($row) { return($row["weight"] < $value });
 	$indexes_to_remove = array();
 	$bird_search = $state->get_searching_state("bird");
 	if ($bird_search) {
@@ -87,6 +100,7 @@ function make_form($state) {
 		}
 	}
 
+	// Filter remaining rows based on bird weight
 	$weight_search = $state->get_searching_state("weight");
 	if ($weight_search) {
 		$params = $weight_search->get_params();
@@ -120,10 +134,12 @@ function make_form($state) {
 		}
 	}
 
+	// remove filtered rows
 	foreach ($indexes_to_remove as $i) {
 		unset($rows[$i]);
 	}
 
+	// sort remaining rows on bird name
 	if ($state->get_sorting_state("bird") == DataFormState::sorting_state_asc) {
 		usort($rows, "compare_bird_column_asc");
 	}
@@ -131,10 +147,12 @@ function make_form($state) {
 		usort($rows, "compare_bird_column_desc");
 	}
 
+	// Add refresh button. This isn't strictly necessary since you can press Enter to active search
 	$buttons = array();
 	$buttons[] = DataTableButtonBuilder::create()->text("Refresh")->name("refresh")->form_action($this_url)->
 		behavior(new DataTableBehaviorRefresh())->build();
 
+	// Create DataTable and DataForm
 	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->build();
 	$form = DataFormBuilder::create("searchable")->tables(array($table))->remote($this_url)->build();
 	return $form;

@@ -1,5 +1,7 @@
 <?php
 /**
+ * Example showing pagination in DataForms
+ *
  * LICENSE: This source file and any compiled code are the property of its
  * respective author(s).  All Rights Reserved.  Unauthorized use is prohibited.
  *
@@ -12,7 +14,15 @@ require_once "../../../../../lib/main_lib.php";
 
 require_once FILE_BASE_PATH . "/www/browser/lib/data_table/data_form.php";
 
+/**
+ * Simple formatter which highlights prime numbers in red
+ */
 class PrimeFormatter implements IDataTableCellFormatter {
+	/**
+	 * Note that we are only doing this on whatever number of rows on the page
+	 * @param $x int
+	 * @return bool
+	 */
 	private static function is_prime($x) {
 		if ($x < 2) {
 			return false;
@@ -41,24 +51,30 @@ class PrimeFormatter implements IDataTableCellFormatter {
 }
 
 /**
- * @param DataFormState $state
+ * @param DataFormState $state Contains pagination information
  * @return DataForm
  */
 function make_form($state) {
-	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/pagination.php";
+	$this_url = $_SERVER['REQUEST_URI'];
 
-	$pagination = $state->get_pagination_state();
-	$current_page = $pagination->get_current_page();
+	// The pagination state stores things like the current limit and page number
+	$pagination_state = $state->get_pagination_state();
+	$current_page = $pagination_state->get_current_page();
 
+	// just one column here, a list of numbers, highlighted with PrimeFormatter if prime, and sortable
 	$columns = array();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Prime numbers")->column_key("number")->
 		cell_formatter(new PrimeFormatter())->sortable(true)->build();
 
-	$rows = array();
+	// Paginate through numbers 0 through 1472
 	$total_count = 1473;
+	// Make pagination (and other DataTable) settings
+	// Note that total_rows needs to be set here so that the DataTable
+	// can calculate how many pages there are.
 	$settings = DataTableSettingsBuilder::create()->total_rows($total_count)->default_limit(25)->build();
 
-	$limit = $pagination->get_limit();
+	// A limit of 0 means display all rows
+	$limit = $pagination_state->get_limit();
 	if (is_null($limit)) {
 		$limit = $settings->get_default_limit();
 	}
@@ -66,11 +82,13 @@ function make_form($state) {
 		$limit = $total_count;
 	}
 
+	// fill in the data within the page boundaries
 	$start = $limit * $current_page;
 	$end = $limit * ($current_page + 1);
 	if ($end > $total_count) {
 		$end = $total_count;
 	}
+	$rows = array();
 	for ($i = $start; $i < $end; $i++) {
 		if ($state->get_sorting_state("number") == DataFormState::sorting_state_desc) {
 			$rows[] = array("number" => $total_count - $i - 1);
@@ -81,10 +99,10 @@ function make_form($state) {
 		}
 	}
 
-
+	// create the DataTable and DataForm
 	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->
 		settings($settings)->build();
-	$form = DataFormBuilder::create("primes")->tables(array($table))->remote($this_url)->build();
+	$form = DataFormBuilder::create($state->get_form_name())->tables(array($table))->remote($this_url)->build();
 	return $form;
 }
 
@@ -96,7 +114,7 @@ try {
 	}
 	else
 	{
-		gfy_header("Simple table example", "");
+		gfy_header("Pagination example", "");
 		echo $form->display($state);
 	}
 }

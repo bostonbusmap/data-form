@@ -14,9 +14,14 @@
 class Selected {
 	/** @var  object Something representable as a string */
 	protected $thing;
-	/** @var bool  */
+	/** @var bool Is item selected by default? */
 	protected $selected;
 
+	/**
+	 * @param $thing object Something representable as a string
+	 * @param $selected bool Is it selected?
+	 * @throws Exception
+	 */
 	public function __construct($thing, $selected) {
 		$this->thing = $thing;
 		if (!is_bool($selected)) {
@@ -25,10 +30,16 @@ class Selected {
 		$this->selected = $selected;
 	}
 
+	/**
+	 * @return object Something representable as string
+	 */
 	public function get_thing() {
 		return $this->thing;
 	}
 
+	/**
+	 * @return bool Is item selected by default?
+	 */
 	public function is_selected() {
 		return $this->selected;
 	}

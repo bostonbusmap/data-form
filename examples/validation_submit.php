@@ -1,5 +1,7 @@
 <?php
 /**
+ * Validation example using DataForm
+ *
  * LICENSE: This source file and any compiled code are the property of its
  * respective author(s).  All Rights Reserved.  Unauthorized use is prohibited.
  *
@@ -16,15 +18,14 @@ require_once "data.php";
 try {
 	$current_state = new DataFormState("select_3", $_POST);
 
+	// Get numbers from current_state and print them
 	gfy_header("Show results", "");
 	$numbers = $current_state->find_item(array("number"));
 	$selected_any = false;
 	if ($numbers) {
 		foreach ($numbers as $number) {
-			if ($number !== "") {
-				echo "Selected item " . $number . "<br />";
-				$selected_any = true;
-			}
+			echo "Selected item " . $number . "<br />";
+			$selected_any = true;
 		}
 	}
 

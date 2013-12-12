@@ -1,5 +1,7 @@
 <?php
 /**
+ * Example showing use of DataForm with SQL
+ *
  * LICENSE: This source file and any compiled code are the property of its
  * respective author(s).  All Rights Reserved.  Unauthorized use is prohibited.
  *
@@ -11,6 +13,7 @@
 require_once "sql_lib.php";
 
 try {
+	// See make_searches_form in sql_lib.php for more information
 	$state = new DataFormState("searches", $_POST);
 	$form = make_searches_form($state);
 	if ($state->only_display_form()) {

@@ -1,5 +1,7 @@
 <?php
 /**
+ * Example exporting SQL with DataForm
+ *
  * LICENSE: This source file and any compiled code are the property of its
  * respective author(s).  All Rights Reserved.  Unauthorized use is prohibited.
  *
@@ -11,6 +13,7 @@
 require_once "sql_lib.php";
 
 try {
+	// see export_rows() in sql_lib.php for more information
 	$state = new DataFormState("searches", $_POST);
 	export_rows($state);
 }
