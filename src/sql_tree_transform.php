@@ -9,7 +9,7 @@
  */
 
 /**
- * Transforms a SQL tree into a new tree somehow
+ * Transforms a SQL tree into a new tree
  */
 interface ISQLTreeTransform {
 	/**
@@ -17,13 +17,17 @@ interface ISQLTreeTransform {
 	 * altered since arrays are passed by value, nor would we want to modify it.
 	 *
 	 * @param $input_tree array A SQL tree object produced by PHP-SQL-Parser library
-	 * @param $state DataFormState
-	 * @param $settings DataTableSettings
-	 * @param $table_name string
+	 * @param $state DataFormState State from form
+	 * @param $settings DataTableSettings Default settings for DataTable
+	 * @param $table_name string Name of table, if any
 	 * @return array The altered array.
 	 */
 	function alter($input_tree, $state, $settings, $table_name);
 }
+
+/**
+ * Does no transformation, just returns input tree
+ */
 class IdentityTreeTransform implements ISQLTreeTransform {
 	function alter($input_tree, $state, $settings, $table_name)
 	{
@@ -80,6 +84,10 @@ class LimitPaginationTreeTransform implements ISQLTreeTransform
 		return $tree;
 	}
 }
+
+/**
+ * Paginate based on contents of database column using WHERE clauses
+ */
 class BoundedPaginationTreeTransform implements ISQLTreeTransform
 {
 	/** @var  string */
@@ -143,6 +151,8 @@ class BoundedPaginationTreeTransform implements ISQLTreeTransform
 	}
 
 	/**
+	 * Add WHERE clause to $tree.
+	 *
 	 * @param $tree array
 	 * @param $clause string (Not escaped!)
 	 * @return array SQL tree
@@ -174,6 +184,10 @@ class BoundedPaginationTreeTransform implements ISQLTreeTransform
 		return $tree;
 	}
 }
+
+/**
+ * Count distinct items
+ */
 class DistinctCountTreeTransform  implements ISQLTreeTransform
 {
 	/** @var  string */
@@ -200,6 +214,10 @@ class DistinctCountTreeTransform  implements ISQLTreeTransform
 		return $tree;
 	}
 }
+
+/**
+ * Put query into subquery and count all rows. This is probably what you want.
+ */
 class CountTreeTransform implements ISQLTreeTransform {
 	function alter($input_tree, $state, $settings, $table_name)
 	{

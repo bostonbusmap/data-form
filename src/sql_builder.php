@@ -13,42 +13,44 @@ require_once FILE_BASE_PATH . "/lib/PHP-SQL-Parser/php-sql-creator.php";
 require_once FILE_BASE_PATH . "/lib/PHP-SQL-Parser/php-sql-parser.php";
 
 /**
- * Produce SQL given a DataFormState
+ * Alters SQL using information from special fields in DataFormState for pagination, sorting and filtering
  */
 class SQLBuilder {
 	/**
-	 * @var array Tree posted PHP-SQL-Parser. Must only be modified by push_ methods and constructor
+	 * @var array Abstract syntax tree created by PHP-SQL-Parser. Must only be modified by constructor
 	 */
 	protected $sql_tree;
 
-	/** @var  DataFormState */
+	/** @var  DataFormState State containing table information */
 	protected $state;
 
-	/** @var  string */
+	/** @var  string Name of table, if any */
 	protected $table_name;
 
-	/** @var  DataTableSettings */
+	/** @var  DataTableSettings Default settings for table */
 	protected $settings;
 
 	/**
-	 * @var ISQLTreeTransform
+	 * @var ISQLTreeTransform How to alter SQL to represent pagination
 	 */
 	protected $pagination_transform;
 	/**
-	 * @var ISQLTreeTransform
+	 * @var ISQLTreeTransform  How to alter SQL to represent filtering
 	 */
 	protected $filter_transform;
 	/**
-	 * @var ISQLTreeTransform
+	 * @var ISQLTreeTransform  How to alter SQL to represent sorting
 	 */
 	protected $sort_transform;
 	/**
-	 * @var ISQLTreeTransform
+	 * @var ISQLTreeTransform  How to alter SQL to represent counting
 	 */
 	protected $count_transform;
 
 	/**
-	 * @param $sql string
+	 * Create SQLBuilder. This parses the SQL into a tree for further modification
+	 *
+	 * @param $sql string SQL to parse
 	 * @throws Exception
 	 */
 	public function __construct($sql) {
@@ -94,6 +96,10 @@ class SQLBuilder {
 		return $this;
 	}
 
+	/**
+	 * @param $settings DataTableSettings
+	 * @return SQLBuilder
+	 */
 	public function settings($settings) {
 		$this->settings = $settings;
 		return $this;
@@ -145,7 +151,7 @@ class SQLBuilder {
 	}
 
 	/**
-	 * If true, no filtering clauses will be added.
+	 * If true, no filtering clauses will be added (typically WHERE clauses)
 	 *
 	 * Note that this just calls filter_transform so make sure you aren't doing both
 	 * @return SQLBuilder
@@ -156,6 +162,10 @@ class SQLBuilder {
 		return $this;
 	}
 
+	/**
+	 * Validate input. Throws an exception if input is not valid
+	 * @throws Exception
+	 */
 	protected function validate_input() {
 		if (is_null($this->table_name)) {
 			$this->table_name = "";
