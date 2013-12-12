@@ -101,49 +101,95 @@ class DataFormState
 				}
 			}
 
-			// Copy over blank items in case they aren't sent in $_POST if blank.
 			// For items like checkboxes we also have a hidden field set
 			// so we can know for sure that an item is blank.
 			if (isset($this->form_data[self::state_key][self::blanks_key])) {
-				$this->form_data = self::copy_over_array($this->form_name,
-					$this->form_data[self::state_key][self::blanks_key], $this->form_data);
+				$blanks = $this->form_data[self::state_key][self::blanks_key];
+			}
+			else
+			{
+				$blanks = array();
 			}
 
+			// All items are stored as hidden fields in hidden_state_key
+			// so we preserve the values during pagination or filtering rows
 			if (isset($this->form_data[self::state_key][self::hidden_state_key])) {
-				$this->form_data = self::copy_over_array($this->form_name,
-					$this->form_data[self::state_key][self::hidden_state_key], $this->form_data);
+				$history = $this->form_data[self::state_key][self::hidden_state_key];
 			}
+			else
+			{
+				$history = array();
+			}
+
+			// This is trying to solve the problem of keeping track of unchecked items
+			// even when $history references the item. Unchecked items aren't sent in $_POST at all
+			// so if we just copied $history it would overwrite the unchecked items, leaving it checked.
+
+			// First this copies $blanks over $form_data as long as it doesn't overwrite anything.
+			// This puts empty strings in the form data to take place of unchecked items.
+			$form_data_with_blanks = self::copy_over_array($blanks, $form_data, $form_data);
+			// Then we make a copy of history with all current form data removed.
+			$form_data_history_only = self::copy_over_array($history, $form_data_with_blanks, array());
+			// Then we copy history_only over the current data
+			$this->form_data = self::copy_over_array($form_data_history_only, array(), $this->form_data);
 		}
 	}
 
 	/**
-	 * Copy every src[k] to dest[k] and return the newly merged array
+	 * Copy everything from $src to $dest, overwriting whatever is in $dest
+	 * as long as the value at the same key doesn't exist in $dont_overwrite.
 	 *
-	 * Like array_merge but numeric indexes are not treated any differently, and dest is not overwritten
+	 * If $src is not an array we return $src
 	 *
-	 * @param $base string
+	 * Note that we just care if the key exists in $dont_overwrite and $dont_overwrite[$key] is not an array.
+	 * None of those values are used in the result.
+	 *
+	 * Returns the modified $dest
+	 *
 	 * @param $src array
+	 * @param $dont_overwrite array
 	 * @param $dest array
 	 * @return array
 	 */
-	private static function copy_over_array($base, $src, $dest) {
-		if (!is_array($dest) || !is_array($src)) {
+	private static function copy_over_array($src, $dont_overwrite, $dest) {
+		if (!is_array($src)) {
+			// We default to overwriting $dest with $src unless $dont_overwrite's key matches $src's key
+			// but we don't have any information about keys here. That check should have been done by calling function
 			return $src;
 		}
-		foreach ($src as $k => $v) {
-			if (isset($dest[$k])) {
-				if (is_array($dest[$k])) {
-					$dest[$k] = self::copy_over_array($base . "[" . $k . "]", $v, $dest[$k]);
+
+		if (!is_array($dest)) {
+			// both src and dont_overwrite are arrays at this point so whatever we return must
+			// be an array too
+			$dest = array();
+		}
+
+		foreach ($src as $src_k => $src_v) {
+			// If key is not in dont_overwrite just copy everything
+			// else call this function recursively to do the same check for nested arrays
+			if (isset($dest[$src_k])) {
+				$dest_v = $dest[$src_k];
+			}
+			else
+			{
+				$dest_v = null;
+			}
+
+			if (is_array($dont_overwrite) && array_key_exists($src_k, $dont_overwrite)) {
+				$dont_overwrite_v = $dont_overwrite[$src_k];
+				if (is_array($dont_overwrite_v)) {
+					$dest[$src_k] = self::copy_over_array($src_v, $dont_overwrite_v, $dest_v);
 				}
 				else
 				{
-					// don't overwrite
+					// value exists in $dont_overwrite, so leave $dest as it is
 				}
 			}
 			else
 			{
-				$dest[$k] = $v;
+				$dest[$src_k] = self::copy_over_array($src_v, null, $dest_v);
 			}
+
 		}
 		return $dest;
 	}
