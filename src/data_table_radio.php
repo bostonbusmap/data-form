@@ -1,4 +1,7 @@
 <?php
+/**
+ * Renders radio options with value of cell data
+ */
 class DataTableRadioFormatter implements IDataTableCellFormatter {
 
 	/**

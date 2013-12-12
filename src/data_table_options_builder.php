@@ -1,18 +1,21 @@
 <?php
 require_once "data_table_widget.php";
 
+/**
+ * Builder for DataTableOptions
+ */
 class DataTableOptionsBuilder {
 	/** @var DataTableOption[] */
 	protected $options;
-	/** @var  string Name of form element */
+	/** @var  string Field name. Becomes form_name[name]  */
 	protected $name;
-	/** @var  string */
+	/** @var  string URL to submit to */
 	protected $form_action;
-	/** @var  IDataTableBehavior */
+	/** @var  IDataTableBehavior What happens when new item is selected */
 	protected $behavior;
-	/** @var  string */
+	/** @var  string Where options is rendered outside DataTable */
 	protected $placement;
-	/** @var  string */
+	/** @var  string HTML for label element */
 	protected $label;
 
 	/**
@@ -119,6 +122,8 @@ class DataTableOptionsBuilder {
 	}
 
 	/**
+	 * Validate input and create DataTableOptions
+	 *
 	 * @return DataTableOptions
 	 * @throws Exception
 	 */

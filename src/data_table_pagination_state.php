@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class to contain pagination state
+ * Class to contain pagination part of DataFormState
  */
 class DataTablePaginationState {
 	const limit_key = "_limit";
