@@ -290,7 +290,7 @@ class DataFormState
 	 *
 	 * @param $form_name string
 	 * @param $path string[]
-	 * @return string
+	 * @return string field name
 	 * @throws Exception
 	 */
 	public static function make_field_name($form_name, $path) {
@@ -346,6 +346,8 @@ class DataFormState
 	}
 
 	/**
+	 * A string array which can be used with make_field_name to get a field name for search state
+	 *
 	 * @param $column_key string
 	 * @param $table_name string
 	 * @return string[]
@@ -365,13 +367,15 @@ class DataFormState
 	 *
 	 * @param $column_key string
 	 * @param $table_name string Optional table name. If falsey, use state for whole form
-	 * @return string
+	 * @return string 'asc' or 'desc' or null if unspecified for column
 	 */
 	public function get_sorting_state($column_key, $table_name="") {
 		return $this->find_item(self::get_sorting_state_key($column_key, $table_name));
 	}
 
 	/**
+	 * A string array which can be used with make_field_name to get a field name for sorting state
+	 *
 	 * @param $column_key string
 	 * @param $table_name string
 	 * @return string[]
@@ -387,6 +391,8 @@ class DataFormState
 	}
 
 	/**
+	 * Returns a DataTablePaginationState for a table, which contains limit and page information
+	 *
 	 * @param string $table_name Optional table name. If set, gets the pagination state for the table, else gets
 	 * the pagination state for the whole form
 	 * @throws Exception
@@ -397,6 +403,8 @@ class DataFormState
 	}
 
 	/**
+	 * A string array which can be used with make_field_name to get a field name for pagination state
+	 *
 	 * @param $table_name string
 	 * @return string[]
 	 */
@@ -411,6 +419,8 @@ class DataFormState
 	}
 
 	/**
+	 * Returns true if client indicates that it wants only HTML for form to be rendered, not whole page
+	 *
 	 * @return bool Did client indicate that it wants the raw HTML form?
 	 *
 	 * This is true if user wants to do an AJAX refresh of the form
@@ -420,6 +430,8 @@ class DataFormState
 	}
 
 	/**
+	 * A string array which can be used with make_field_name to get a field name
+	 *
 	 * @return string[]
 	 */
 	public static function only_display_form_key() {
@@ -427,6 +439,8 @@ class DataFormState
 	}
 
 	/**
+	 * Returns true if client indicates it wants only validation text to be rendered, not whole page.
+	 *
 	 * @return bool Is client only looking to validate the form, not submit it?
 	 */
 	public function only_validate() {
@@ -434,6 +448,8 @@ class DataFormState
 	}
 
 	/**
+	 * A string array which can be used with make_field_name to get a field name
+	 *
 	 * @return string[]
 	 */
 	public static function only_validate_key() {
@@ -441,6 +457,8 @@ class DataFormState
 	}
 
 	/**
+	 * A string array which can be used with make_field_name to get a field name
+	 *
 	 * @return string[]
 	 */
 	public static function get_hidden_state_key() {
@@ -448,6 +466,8 @@ class DataFormState
 	}
 
 	/**
+	 * A string array which can be used with make_field_name to get a field name
+	 *
 	 * @return string[]
 	 */
 	public static function get_blanks_key() {
@@ -455,17 +475,26 @@ class DataFormState
 	}
 
 	/**
+	 * Returns true if this DataFormState found anything in $_POST or $_GET for it.
+	 *
 	 * @return bool
 	 */
 	public function exists() {
 		return $this->find_item(self::exists_key());
 	}
 
+	/**
+	 * A string array which can be used with make_field_name to get a field name
+	 *
+	 * @return string[]
+	 */
 	public static function exists_key() {
 		return array(self::state_key, self::form_exists);
 	}
 
 	/**
+	 * The slightly manipulated data from $_POST or $_GET
+	 *
 	 * @return array The data from $_POST specific to this state
 	 */
 	public function get_form_data() {
@@ -473,7 +502,9 @@ class DataFormState
 	}
 
 	/**
-	 * @return string
+	 * The form name
+	 *
+	 * @return string The form name
 	 */
 	public function get_form_name()
 	{
