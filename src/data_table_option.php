@@ -1,15 +1,20 @@
 <?php
 /**
- * Represents HTML option element. Use with DataTableOptions
+ * Represents HTML option element. Provide an array of this object to DataTableOptions
  */
 class DataTableOption {
 	/** @var  string */
 	protected $text;
 	/** @var  string */
 	protected $value;
-	/** @var  bool */
+	/** @var  bool Selected by default? */
 	protected $default_selected;
 
+	/**
+	 * @param $text string Text for option in menu (unsanitized HTML)
+	 * @param $value string Value for option in menu
+	 * @param bool $default_selected Is selected by default?
+	 */
 	public function __construct($text, $value, $default_selected=false) {
 		$this->text = $text;
 		if (is_int($value)) {
@@ -32,6 +37,8 @@ class DataTableOption {
 	}
 
 	/**
+	 * Render HTML option element. Use inside DataTableOptions which will render inside <select>
+	 *
 	 * @param $selected bool
 	 * @return string HTML
 	 */
