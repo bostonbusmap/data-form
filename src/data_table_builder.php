@@ -94,7 +94,9 @@ class DataTableBuilder {
 	}
 
 	/**
-	 * Mapping of row_id => row. row is array of items with either field name keys or index keys
+	 * Mapping of row_id => row. row is array of items with either field name keys or index keys.
+	 *
+	 * If $rows is a Traversable, it will be converted to an array internally during build()
 	 *
 	 * @param array|Traversable $rows
 	 * @return DataTableBuilder
@@ -170,7 +172,7 @@ class DataTableBuilder {
 	}
 
 	/**
-	 * @return array|Traversable Mapping of row_id => row. row is array of items with either field name keys or index keys
+	 * @return array Mapping of row_id => row. row is array of items with either field name keys or index keys
 	 */
 	public function get_rows() {
 		return $this->rows;
@@ -263,8 +265,15 @@ class DataTableBuilder {
 		if (is_null($this->rows)) {
 			$this->rows = array();
 		}
-		if (!is_array($this->rows) && !($this->rows instanceof Traversable)) {
-			throw new Exception("rows must be an array of arrays or a Traversable, the data to display in the table");
+		if ($this->rows instanceof Traversable) {
+			$rows = array();
+			foreach ($this->rows as $k => $v) {
+				$rows[$k] = $v;
+			}
+			$this->rows = $rows;
+		}
+		if (!is_array($this->rows)) {
+			throw new Exception("rows must be an array of arrays or a Traversable");
 		}
 		foreach ($this->rows as $row) {
 			if (!is_array($row)) {

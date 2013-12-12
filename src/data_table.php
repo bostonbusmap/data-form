@@ -61,7 +61,7 @@ class DataTable
 	/** @var \string[] You may optionally define this to map field_name -> column_index instead of
 	 * putting column keys directly on each row. */
 	private $field_names;
-	/** @var array|Traversable The data displayed for this form.
+	/** @var array The data displayed for this form.
 	 * This must be already paginated; what you put here is what will be outputed. */
 	private $rows;
 
