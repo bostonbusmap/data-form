@@ -145,6 +145,8 @@ class DataTableColumnBuilder {
 	}
 
 	/**
+	 * Validates input and creates DataTableColumn
+	 *
 	 * @return DataTableColumn
 	 * @throws Exception
 	 */

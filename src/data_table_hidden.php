@@ -1,9 +1,9 @@
 <?php
 /**
- * A hidden input
+ * Hidden input field
  */
 class DataTableHidden implements IDataTableWidget {
-	/** @var string */
+	/** @var string Value of element */
 	protected $value;
 	/** @var  string Name of field element (will become form_name[name]) */
 	protected $name;
@@ -21,6 +21,8 @@ class DataTableHidden implements IDataTableWidget {
 	}
 
 	/**
+	 * Renders hidden field
+	 *
 	 * @param $form_name string Name of form
 	 * @param $form_method string GET or POST
 	 * @param $state DataFormState
@@ -34,10 +36,10 @@ class DataTableHidden implements IDataTableWidget {
 	/**
 	 * Returns hidden input field with either whatever's in $state or otherwise $default_value
 	 *
-	 * @param $form_name string
-	 * @param $state DataFormState
-	 * @param $name_array string[]
-	 * @param $default_value string
+	 * @param $form_name string Name of form
+	 * @param $state DataFormState State of form
+	 * @param $name_array string[] Array of names which will become the field name, like form_name[a1][a2][a3]...
+	 * @param $default_value string Value if no value in state
 	 * @return string HTML
 	 */
 	public static function display_hidden($form_name, $state, $name_array, $default_value) {

@@ -1,4 +1,7 @@
 <?php
+/**
+ * Builder for DataTableHidden
+ */
 class DataTableHiddenBuilder {
 	/** @var string */
 	protected $value;
@@ -45,6 +48,8 @@ class DataTableHiddenBuilder {
 	}
 
 	/**
+	 * Validate input and create DataTableHidden
+	 *
 	 * @return DataTableHidden
 	 * @throws Exception
 	 */

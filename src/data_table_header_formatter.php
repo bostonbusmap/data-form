@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Interface meant to represent a function or closure which formats cells in a certain way
+ * Interface meant to represent a function or closure which formats header cells in a certain way
  */
 interface IDataTableHeaderFormatter {
 	/**

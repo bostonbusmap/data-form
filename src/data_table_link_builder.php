@@ -1,6 +1,9 @@
 <?php
+/**
+ * Builder for DataTableLink
+ */
 class DataTableLinkBuilder {
-	/** @var string */
+	/** @var string Text for link. Unsanitized HTML! */
 	protected $text;
 	/**
 	 * @var string Note that this is also where the form is submitted if the behavior is set accordingly
@@ -21,6 +24,8 @@ class DataTableLinkBuilder {
 	}
 
 	/**
+	 * Text for link. Unsanitized HTML!
+	 *
 	 * @param $text string
 	 * @return DataTableLinkBuilder
 	 */
@@ -30,6 +35,7 @@ class DataTableLinkBuilder {
 	}
 
 	/**
+	 * URL for link target or form action, depending on what the behavior is
 	 * @param $link string
 	 * @return DataTableLinkBuilder
 	 */
@@ -39,6 +45,8 @@ class DataTableLinkBuilder {
 	}
 
 	/**
+	 * Field name (becomes form_name[name])
+	 *
 	 * @param $name string
 	 * @return DataTableLinkBuilder
 	 */
@@ -48,6 +56,8 @@ class DataTableLinkBuilder {
 	}
 
 	/**
+	 * What happens when link is clicked
+	 *
 	 * @param $behavior IDataTableBehavior
 	 * @return DataTableLinkBuilder
 	 */
@@ -101,6 +111,8 @@ class DataTableLinkBuilder {
 	}
 
 	/**
+	 * Validate input and create DataTableLink
+	 *
 	 * @return DataTableLink
 	 * @throws Exception
 	 */

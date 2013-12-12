@@ -8,13 +8,13 @@ class DataTableLink implements IDataTableWidget {
 	 * @var string Note that this doubles as the form action if a behavior is used on the link
 	 */
 	protected $link;
-	/** @var  string */
+	/** @var  string Link text (unsanitized HTML!) */
 	protected $text;
 	/**
-	 * @var IDataTableBehavior
+	 * @var IDataTableBehavior What happens when the link is clicked
 	 */
 	protected $behavior;
-	/** @var string  */
+	/** @var string Where link goes relative to DataTable */
 	protected $placement;
 
 	// add other parameters as appropriate
@@ -47,12 +47,14 @@ class DataTableLink implements IDataTableWidget {
 	}
 
 	/**
-	 * @param $form_name string
-	 * @param $form_method string
-	 * @param $link string
-	 * @param $text string
-	 * @param $behavior IDataTableBehavior
-	 * @return string
+	 * Returns HTML for link
+	 *
+	 * @param $form_name string Name of form
+	 * @param $form_method string Either POST or GET
+	 * @param $link string URL for link
+	 * @param $text string Text of link
+	 * @param $behavior IDataTableBehavior What happens when link is clicked
+	 * @return string HTML
 	 */
 	public static function display_link($form_name, $form_method, $link, $text, $behavior) {
 		if ($behavior) {
@@ -71,6 +73,9 @@ class DataTableLink implements IDataTableWidget {
 	}
 }
 
+/**
+ * Displays DataTableLink objects as HTML links which exist in cells for this column
+ */
 class DataTableLinkFormatter implements IDataTableCellFormatter {
 
 	/**
