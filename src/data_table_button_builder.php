@@ -1,26 +1,27 @@
 <?php
 
 class DataTableButtonBuilder {
-	/** @var string */
+	/** @var string Text of button */
 	protected $text;
 	/**
-	 * @var string
+	 * @var string Type of button, either 'submit' or 'reset'
 	 */
 	protected $type;
 	/** @var  string Name of form element */
 	protected $name;
-	/** @var  string */
+	/** @var  string URL to submit to */
 	protected $form_action;
-	/** @var  IDataTableBehavior */
+	/** @var  IDataTableBehavior What happens when button is clicked */
 	protected $behavior;
-	/** @var  string */
+	/** @var  string Where button will be displayed relative to form */
 	protected $placement;
 	/**
-	 * @var string
+	 * @var string Label for button
 	 */
 	protected $label;
 
 	/**
+	 * Creates a builder. Identical to constructor
 	 * @return DataTableButtonBuilder
 	 */
 	public static function create() {
@@ -140,6 +141,8 @@ class DataTableButtonBuilder {
 	}
 
 	/**
+	 * Validates input and creates DataTableButton
+	 *
 	 * @return DataTableButton
 	 * @throws Exception
 	 */

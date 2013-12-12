@@ -189,6 +189,8 @@ class DataTableBuilder {
 	}
 
 	/**
+	 * Default settings for table
+	 *
 	 * @return DataTableSettings
 	 */
 	public function get_settings() {
@@ -196,6 +198,7 @@ class DataTableBuilder {
 	}
 
 	/**
+	 * Text for header of table
 	 * @return string
 	 */
 	public function get_header() {
@@ -203,6 +206,7 @@ class DataTableBuilder {
 	}
 
 	/**
+	 * Empty message if table has no rows
 	 * @return string
 	 */
 	public function get_empty_message() {
@@ -210,7 +214,7 @@ class DataTableBuilder {
 	}
 
 	/**
-	 * Constructs a DataTable
+	 * Validates input and constructs a DataTable
 	 *
 	 * @return DataTable
 	 * @throws Exception

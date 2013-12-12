@@ -1,7 +1,10 @@
 <?php
 
-// TODO: put most of this into a JavaScript file for cleanliness
-
+/**
+ * An interface which describes Javascript to execute when a button is clicked, menu item is selected, etc.
+ *
+ * Default implementations are mostly defined in data_form.js
+ */
 interface IDataTableBehavior {
 	/**
 	 * @param string $form_name Name of form
@@ -18,6 +21,9 @@ class DataTableBehaviorNone implements IDataTableBehavior {
 	}
 }
 
+/**
+ * Set hidden fields to certain values then submit form.
+ */
 class DataTableBehaviorSetParamsThenSubmit implements IDataTableBehavior {
 	/** @var array */
 	protected $params;
@@ -34,6 +40,10 @@ class DataTableBehaviorSetParamsThenSubmit implements IDataTableBehavior {
 		return 'return DataForm.setParamsThenSubmit(this, event, ' . json_encode($form_action) . ', ' . json_encode($this->params) . ');';
 	}
 }
+
+/**
+ * Set form action for form then submit form
+ */
 class DataTableBehaviorSubmit implements IDataTableBehavior {
 	function action($form_name, $form_action, $form_method) {
 		if (!$form_action) {
@@ -42,6 +52,10 @@ class DataTableBehaviorSubmit implements IDataTableBehavior {
 		return 'return DataForm.submit(this, event, ' . json_encode($form_action) . ');';
 	}
 }
+
+/**
+ * Use AJAX to validate form, then submit form if validation succeeded, else display errors in flash area.
+ */
 class DataTableBehaviorSubmitAndValidate implements IDataTableBehavior {
 	/** @var  string */
 	protected $validation_url;
@@ -70,6 +84,10 @@ class DataTableBehaviorSubmitAndValidate implements IDataTableBehavior {
 			', ' . json_encode($this->validation_url) . ', ' . json_encode($flash_name) . ', ' . json_encode($params) . ');';
 	}
 }
+
+/**
+ * Use AJAX to get updated copy of form.
+ */
 class DataTableBehaviorRefresh implements IDataTableBehavior {
 	/** @var array */
 	protected $extra_params;
@@ -99,6 +117,9 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 	}
 }
 
+/**
+ * Send form information using AJAX with $div height and width, and put result in $div (probably HTML with link to an image)
+ */
 class DataTableBehaviorRefreshImage implements IDataTableBehavior {
 	/** @var array */
 	protected $extra_params;
@@ -157,6 +178,10 @@ class DataTableBehaviorRefreshImage implements IDataTableBehavior {
 		json_encode($params) . ');';
 	}
 }
+
+/**
+ * Clear sorting state then refresh form using AJAX
+ */
 class DataTableBehaviorClearSortThenRefresh implements IDataTableBehavior {
 	/** @var $extra_params array */
 	protected $extra_params;
@@ -184,6 +209,10 @@ class DataTableBehaviorDefault implements IDataTableBehavior {
 		return "";
 	}
 }
+
+/**
+ * Do whatever you want here. Be careful!
+ */
 class DataTableBehaviorCustom implements IDataTableBehavior {
 	/** @var  string */
 	protected $javascript;

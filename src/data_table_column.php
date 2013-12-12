@@ -3,6 +3,9 @@
 require_once "data_table_cell_formatter.php";
 require_once "data_table_header_formatter.php";
 
+/**
+ * Default cell formatter. Returns unaltered cell data
+ */
 class DefaultCellFormatter implements IDataTableCellFormatter {
 
 	/**
@@ -21,6 +24,9 @@ class DefaultCellFormatter implements IDataTableCellFormatter {
 	}
 }
 
+/**
+ * Default column header formatter. Adds strong tags around header_data
+ */
 class DefaultHeaderFormatter implements IDataTableHeaderFormatter {
 
 	/**
@@ -39,13 +45,13 @@ class DefaultHeaderFormatter implements IDataTableHeaderFormatter {
 }
 
 /**
- * An object which displays column data in an HTML table. Use with display_sql_table_form in data_table.php
+ * An object which stores column data in an HTML table. Each one of these corresponds to the column
+ * rendered in the table.
  *
- * This uses callbacks to transform the cell data into something with HTML which is then printed in the cell
+ * The column_key is matched with the same key in DataTable::rows to figure out what data to display.
  *
- * This can also be used to provide checkboxes, select widgets or whatever else.
- *
- * See default_display_header and default_display_data for default implementations of callbacks
+ * This uses $cell_formatter to transform the cell data into something with HTML (numbers, checkboxes, etc)
+ * which is then printed in the cell.
  */
 class DataTableColumn {
 	/**
@@ -85,6 +91,8 @@ class DataTableColumn {
 	protected $css;
 
 	/**
+	 * Use DataTableColumnBuilder::build()
+	 *
 	 * @param $builder DataTableColumnBuilder
 	 * @throws Exception
 	 */
@@ -136,6 +144,8 @@ class DataTableColumn {
 	}
 
 	/**
+	 * Returns formatter used for search boxes in column header
+	 *
 	 * @return IDataTableSearchFormatter
 	 */
 	public function get_search_formatter() {
@@ -151,6 +161,8 @@ class DataTableColumn {
 	}
 
 	/**
+	 * The column key used to look up data for each cell in DataTable->rows
+	 *
 	 * @return string
 	 */
 	public function get_column_key() {
@@ -158,6 +170,8 @@ class DataTableColumn {
 	}
 
 	/**
+	 * The css class applied to this column
+	 *
 	 * @return string
 	 */
 	public function get_css()

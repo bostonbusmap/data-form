@@ -3,6 +3,12 @@
 require_once("data_table.php");
 require_once("data_table_column.php");
 
+/**
+ * Renders a checkbox whose value is the cell data
+ *
+ * Note that this also creates a hidden field in DataFormState::blanks_key to figure out when
+ * checkbox is unchecked.
+ */
 class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 
 	/**
@@ -10,7 +16,7 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 	 *
 	 * @param string $form_name The name of the form
 	 * @param string $column_header Name of column
-	 * @param object $column_data Unused
+	 * @param object $column_data Value for checkbox
 	 * @param string $rowid Row id
 	 * @param DataFormState $state
 	 * @return string HTML for a checkbox
@@ -25,7 +31,7 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 	 *
 	 * @param string $form_name The name of the form
 	 * @param string $column_header Name of column
-	 * @param object $column_data Unused
+	 * @param object $column_data Value for checkbox
 	 * @param string $rowid Row id
 	 * @param DataFormState $state
 	 * @return string HTML for a checkbox
@@ -55,6 +61,9 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 	}
 }
 
+/**
+ * Displays a checkbox which selects all other checkboxes in column
+ */
 class DataTableCheckboxHeaderFormatter implements IDataTableHeaderFormatter {
 
 	/**

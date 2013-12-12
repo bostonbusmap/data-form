@@ -66,7 +66,7 @@ class DataTable
 	private $rows;
 
 	/**
-	 * @var string[] Mapping of row id to CSS classes. Can be null
+	 * @var string[] Mapping of row id to CSS classes. Can be null, in which case it picks some default row classes
 	 */
 	private $row_classes;
 
@@ -145,6 +145,8 @@ class DataTable
 		{
 			$ret .= '<table class="table-stripeclass:shadedbg table-altstripeclass:shadedbg" style="width: 400px;">';
 		}
+
+		// write pagination controls
 		if ($this->header || ($this->settings && $this->settings->uses_pagination())) {
 			$ret .= "<caption>";
 
@@ -159,8 +161,10 @@ class DataTable
 			$ret .= "</caption>";
 		}
 
+		// write header, which may include sorting and filtering HTML
 		$ret .= $this->display_table_header($form_name, $form_method, $remote_url, $state);
 
+		// write data
 		$ret .= $this->display_table_body($form_name, $form_method, $state);
 		$ret .= "</table>";
 
@@ -174,6 +178,10 @@ class DataTable
 		return $ret;
 	}
 
+	/**
+	 * Return true if any column is sortable
+	 * @return bool
+	 */
 	public function is_sortable() {
 		foreach ($this->columns as $column) {
 			if ($column->get_sortable()) {
@@ -183,6 +191,10 @@ class DataTable
 		return false;
 	}
 
+	/**
+	 * Return true if any column is filterable
+	 * @return bool
+	 */
 	public function is_searchable() {
 		foreach ($this->columns as $column) {
 			if ($column->get_searchable()) {
@@ -192,6 +204,11 @@ class DataTable
 		return false;
 	}
 
+	/**
+	 * Return the name of the table if table has a name, or a falsey value
+	 *
+	 * @return string Name of table if table has a name, or a falsey value
+	 */
 	public function get_table_name()
 	{
 		return $this->table_name;
@@ -203,10 +220,12 @@ class DataTable
 	}
 
 	/**
-	 * @param $form_name string
+	 * Display header which includes sorting and filtering HTML
+	 *
+	 * @param $form_name string Name of form
 	 * @param $form_method string GET or POST
-	 * @param $remote_url string
-	 * @param $state DataFormState
+	 * @param $remote_url string URL to refresh from
+	 * @param $state DataFormState State with form information
 	 * @return string HTML
 	 */
 	protected function display_table_header($form_name, $form_method, $remote_url, $state)
@@ -341,10 +360,12 @@ class DataTable
 	}
 
 	/**
+	 * Display the table body HTML
+	 *
 	 * @param $form_name string Name of form
 	 * @param $form_method string GET or POST
-	 * @param $state DataFormState
-	 * @return string
+	 * @param $state DataFormState State of form
+	 * @return string HTML
 	 * @throws Exception
 	 */
 	public function display_table_body($form_name, $form_method, $state)
@@ -418,6 +439,8 @@ class DataTable
 	}
 
 	/**
+	 * Default settings for the table
+	 *
 	 * @return DataTableSettings
 	 */
 	public function get_settings()

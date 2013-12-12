@@ -3,26 +3,26 @@
 require_once "data_table_widget.php";
 
 /**
- * A widget which displays a button for submitting a DataTable form or resetting it
+ * A widget which displays a HTML button
  */
 class DataTableButton implements IDataTableWidget {
-	/** @var string  */
+	/** @var string Text of button  */
 	private $text;
 	/**
-	 * @var string
+	 * @var string URL of button
 	 */
 	private $action;
-	/** @var  string */
+	/** @var  string field name (will be altered to form_name[name]) */
 	private $name;
-	/** @var  string */
+	/** @var  string Either 'submit' or 'reset' */
 	private $type;
 	/**
-	 * @var IDataTableBehavior
+	 * @var IDataTableBehavior What happens when button is clicked
 	 */
 	private $behavior;
 
 	/**
-	 * @var string
+	 * @var string Where button will go relative to form
 	 */
 	private $placement;
 	/**
@@ -48,16 +48,18 @@ class DataTableButton implements IDataTableWidget {
 	}
 
 	/**
-	 * @param $form_name string
+	 * Returns HTML for button
+	 *
+	 * @param $form_name string Name of form
 	 * @param $name_array string[] Name for button. Each item will be surrounded by square brackets and concatenated
-	 * @param $action string
+	 * @param $action string URL to submit form to
 	 * @param $form_method string GET or POST
-	 * @param $behavior IDataTableBehavior
-	 * @param $text string
+	 * @param $behavior IDataTableBehavior What happens when button is clicked
+	 * @param $text string Text of button
 	 * @param $type string Type of button (currently either 'submit' or 'reset')
-	 * @param $label string
-	 * @param $state DataFormState
-	 * @return string
+	 * @param $label string Label HTML for button
+	 * @param $state DataFormState State of form. Currently unused
+	 * @return string HTML
 	 */
 	public static function display_button($form_name, $name_array, $action, $form_method, $behavior, $text, $type, $label, $state = null) {
 		$ret = "";
