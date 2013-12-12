@@ -120,21 +120,3 @@ function create_data_form_from_database($sql, $state, $submit_url=null, $radio_c
 	$form = DataFormBuilder::create($state->get_form_name())->remote($_SERVER['REQUEST_URI'])->tables(array($table))->build();
 	return $form;
 }
-
-/**
- * Escape jquery special characters.
- * @param $str
- * @return mixed
- * @throws Exception
- */
-function jquery_escape($str) {
-	if (!is_string($str)) {
-		throw new Exception("str is required to be a string");
-	}
-
-	$str = str_replace("[", '\[', $str);
-	$str = str_replace("]", '\]', $str);
-	$str = str_replace(".", '\.', $str);
-
-	return $str;
-}
