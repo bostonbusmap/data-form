@@ -1,5 +1,14 @@
 <?php
 /**
+ * LICENSE: This source file and any compiled code are the property of its
+ * respective author(s).  All Rights Reserved.  Unauthorized use is prohibited.
+ *
+ * @package    GFY Web Inteface
+ * @author     George Schneeloch <george_schneeloch@hms.harvard.edu>
+ * @copyright  2013 Above Authors and the President and Fellows of Harvard University
+ */
+
+/**
  * The search parameters for a particular column. This can be simple in the case of a textbox or more complicated
  * for numerical comparisons for example
  *

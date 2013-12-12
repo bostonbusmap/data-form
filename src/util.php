@@ -1,4 +1,12 @@
 <?php
+/**
+ * LICENSE: This source file and any compiled code are the property of its
+ * respective author(s).  All Rights Reserved.  Unauthorized use is prohibited.
+ *
+ * @package    GFY Web Inteface
+ * @author     George Schneeloch <george_schneeloch@hms.harvard.edu>
+ * @copyright  2013 Above Authors and the President and Fellows of Harvard University
+ */
 
 require_once FILE_BASE_PATH . "/lib/database_iterator.php";
 // Useful functions for working with DataForm and DataTable objects

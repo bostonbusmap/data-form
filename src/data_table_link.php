@@ -1,5 +1,14 @@
 <?php
 /**
+ * LICENSE: This source file and any compiled code are the property of its
+ * respective author(s).  All Rights Reserved.  Unauthorized use is prohibited.
+ *
+ * @package    GFY Web Inteface
+ * @author     George Schneeloch <george_schneeloch@hms.harvard.edu>
+ * @copyright  2013 Above Authors and the President and Fellows of Harvard University
+ */
+
+/**
  * Represents a link for use with DataTable. To use, create a DataTableLink object for each cell in the column.
  * Use DataTableLinkFormatter as an option for the DataTableColumn to display the links
  */
