@@ -62,14 +62,16 @@ class DataTableOptions implements IDataTableWidget {
 	}
 
 	/**
-	 * @param $form_name string
-	 * @param $name_array string[] Name for select. Each item will be surrounded by square brackets and concatenated
-	 * @param $action string
+	 * Returns HTML for select element
+	 *
+	 * @param $form_name string Name of form
+	 * @param $name_array string[] Name for select. Will become form_name[a1][a2][a3]... for each string in this array
+	 * @param $action string URL to submit to when new item is selected
 	 * @param $form_method string GET or POST
-	 * @param $behavior IDataTableBehavior
-	 * @param $options DataTableOption[]
-	 * @param $label string
-	 * @param $state DataFormState
+	 * @param $behavior IDataTableBehavior What happens when new item is selected
+	 * @param $options DataTableOption[] Each option for the select element
+	 * @param $label string HTML for label
+	 * @param $state DataFormState State of form
 	 * @throws Exception
 	 * @return string
 	 */
@@ -129,6 +131,9 @@ class DataTableOptions implements IDataTableWidget {
 
 }
 
+/**
+ * Renders DataTableOptions objects which exist in cell data
+ */
 class DataTableOptionsCellFormatter implements IDataTableCellFormatter {
 	/**
 	 * Implementation to display a checkbox
@@ -139,9 +144,13 @@ class DataTableOptionsCellFormatter implements IDataTableCellFormatter {
 	 * @param string $rowid Row id number
 	 * @param DataFormState $state State of form
 	 * @return string HTML for a link
+	 * @throws Exception
 	 */
 	public function format($form_name, $column_header, $column_data, $rowid, $state) {
 		// TODO: form_action and form_method should probably come from somewhere else instead of just using default values
+		if (!($column_data instanceof DataTableOptions)) {
+			throw new Exception("Only DataTableOptions can be used with DataTableOptionsCellFormatter");
+		}
 		return DataTableOptions::display_options($form_name, array($column_header, $rowid), "", "POST", null, $column_data->get_options(), "", $state);
 	}
 }
