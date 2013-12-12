@@ -14,9 +14,9 @@
 class DataTableSettings {
 	const default_limit = 25;
 
-	/** @var  int */
+	/** @var  int Default number of rows per page */
 	protected $default_limit;
-	/** @var  int */
+	/** @var  int Number of rows in data set. Used to calculate pagination */
 	protected $total_rows;
 
 	/** @var string[] Mapping of limit number to text to display for that limit number */
@@ -33,6 +33,8 @@ class DataTableSettings {
 	protected $filtering;
 
 	/**
+	 * Use DataTableSettingsBuilder::build()
+	 *
 	 * @param $builder DataTableSettingsBuilder
 	 * @throws Exception
 	 */
@@ -68,11 +70,13 @@ class DataTableSettings {
 	}
 
 	/**
-	 * @param string $form_name
+	 * Returns HTML for pagination controls. Meant for use by DataTable
+	 *
+	 * @param string $form_name Name of form
 	 * @param string $form_method GET or POST
-	 * @param DataFormState $state
-	 * @param string $remote_url
-	 * @param string $table_name
+	 * @param DataFormState $state Form state containing pagination information
+	 * @param string $remote_url URL to refresh to
+	 * @param string $table_name Name of table containing pagination controls (if any)
 	 * @return string
 	 */
 	public function display_controls($form_name, $form_method, $state, $remote_url, $table_name) {
@@ -84,11 +88,13 @@ class DataTableSettings {
 	}
 
 	/**
-	 * @param $form_name string
+	 * Display limit select element
+	 *
+	 * @param $form_name string Name of form
 	 * @param $form_method string GET or POST
-	 * @param DataFormState $state
-	 * @param $remote_url string
-	 * @param $table_name string
+	 * @param DataFormState $state State with pagination information
+	 * @param $remote_url string URL for refresh
+	 * @param $table_name string Name of table if any
 	 * @return string HTML
 	 */
 	protected function create_pagination_limit_controls($form_name, $form_method, $state, $remote_url, $table_name) {
@@ -115,13 +121,15 @@ class DataTableSettings {
 	}
 
 	/**
-	 * @param $page_num int
-	 * @param $text string
-	 * @param $title string
-	 * @param $form_name string
-	 * @param $remote_url string
+	 * Display single page link
+	 *
+	 * @param $page_num int Page number
+	 * @param $text string Text of page link (for example, 'Next', '2', 'Prev')
+	 * @param $title string Mouseover title
+	 * @param $form_name string Name of form
+	 * @param $remote_url string URL to refresh from
 	 * @param $form_method string GET or POST
-	 * @param $table_name string
+	 * @param $table_name string Name of table if any
 	 * @return string HTML
 	 */
 	protected function create_page_link($page_num, $text, $title, $form_name, $remote_url, $form_method, $table_name) {
@@ -135,6 +143,8 @@ class DataTableSettings {
 	}
 
 	/**
+	 * Display page links
+	 *
 	 * @param string $form_name
 	 * @param string $form_method GET or POST
 	 * @param DataFormState $state
@@ -259,16 +269,28 @@ class DataTableSettings {
 		return !is_null($this->total_rows);
 	}
 
+	/**
+	 * Default number of rows per page
+	 *
+	 * @return int
+	 */
 	public function get_default_limit()
 	{
 		return $this->default_limit;
 	}
 
+	/**
+	 * Number of rows in data set
+	 *
+	 * @return int
+	 */
 	public function get_total_rows() {
 		return $this->total_rows;
 	}
 
 	/**
+	 * Columns which are sorted by default, and how
+	 *
 	 * @return string[] Map of column_key to either 'asc' or 'desc'
 	 */
 	public function get_default_sorting()
@@ -277,6 +299,8 @@ class DataTableSettings {
 	}
 
 	/**
+	 * How columns are filtered by default
+	 *
 	 * @return DataTableSearchState[] Map of column_key to some search state to show by default
 	 */
 	public function get_default_filtering() {

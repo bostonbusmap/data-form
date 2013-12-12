@@ -16,24 +16,30 @@ class DataTableSearchWidget implements IDataTableWidget {
 	/** @var  IDataTableSearchFormatter */
 	protected $formatter;
 
-	/** @var string  */
+	/** @var string Where search textbox will be displayed relative to DataTable */
 	protected $placement;
 
-	/** @var string  */
+	/** @var string Where to submit to */
 	protected $form_action;
 
-	/** @var  string */
+	/** @var  string Name of table if any */
 	protected $table_name;
 
-	/** @var  string */
+	/** @var  string Column key */
 	protected $column_key;
 
-	/** @var  DataTableSearchState */
+	/** @var  DataTableSearchState Default value for search textbox */
 	protected $default_value;
 
-	/** @var string  */
+	/** @var string Label with HTML */
 	protected $label;
 
+	/**
+	 * Use DataTableSearchWidgetBuilder::build()
+	 *
+	 * @param $builder
+	 * @throws Exception
+	 */
 	public function __construct($builder) {
 		if (!($builder instanceof DataTableSearchWidgetBuilder)) {
 			throw new Exception("builder must be of type DataTableSearchWidgetBuilder");
@@ -65,6 +71,8 @@ class DataTableSearchWidget implements IDataTableWidget {
 	}
 
 	/**
+	 * Render search widget HTML
+	 *
 	 * @param $form_name string Name of form
 	 * @param $form_method string GET or POST
 	 * @param $state DataFormState

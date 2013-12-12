@@ -13,22 +13,20 @@
  */
 class DataTableSearchWidgetBuilder
 {
-	/** @var  string */
+	/** @var  string Where to submit to */
 	protected $form_action;
-	/** @var  IDataTableBehavior */
-	protected $behavior;
-	/** @var  string */
+	/** @var  string Where search textbox will be displayed relative to DataTable */
 	protected $placement;
-	/** @var  string */
+	/** @var  string Label with HTML*/
 	protected $label;
-	/** @var  string */
+	/** @var  string Type of search (See constants in DataTableSearchState) */
 	protected $search_type;
-	/** @var  string */
+	/** @var  string Name of table if any */
 	protected $table_name;
-	/** @var  string */
+	/** @var  string Column key */
 	protected $column_key;
 
-	/** @var  DataTableSearchState */
+	/** @var  DataTableSearchState Default value for search textbox */
 	protected $default_value;
 
 	/**
@@ -46,16 +44,6 @@ class DataTableSearchWidgetBuilder
 	public function form_action($form_action)
 	{
 		$this->form_action = $form_action;
-		return $this;
-	}
-
-	/**
-	 * @param $behavior IDataTableBehavior
-	 * @return DataTableSearchWidgetBuilder
-	 */
-	public function behavior($behavior)
-	{
-		$this->behavior = $behavior;
 		return $this;
 	}
 
@@ -119,14 +107,6 @@ class DataTableSearchWidgetBuilder
 	}
 
 	/**
-	 * @return IDataTableBehavior
-	 */
-	public function get_behavior()
-	{
-		return $this->behavior;
-	}
-
-	/**
 	 * @return string
 	 */
 	public function get_placement()
@@ -177,9 +157,6 @@ class DataTableSearchWidgetBuilder
 
 		if ($this->form_action && !is_string($this->form_action)) {
 			throw new Exception("form_action must be a string");
-		}
-		if ($this->behavior && !($this->behavior instanceof IDataTableBehavior)) {
-			throw new Exception("change_behavior must be instance of IDataTableBehavior");
 		}
 		if (is_null($this->placement)) {
 			$this->placement = IDataTableWidget::placement_top;

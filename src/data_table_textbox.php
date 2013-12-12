@@ -12,13 +12,13 @@
  * Represents a simple one line textbox
  */
 class DataTableTextbox implements IDataTableWidget {
-	/** @var  string */
+	/** @var  string Default text */
 	protected $text;
-	/** @var  string */
+	/** @var  string Field name (becomes form_name[name]) */
 	protected $name;
 	/** @var  string URL to submit to */
 	protected $action;
-	/** @var  IDataTableBehavior */
+	/** @var  IDataTableBehavior What happens when Enter is pressed */
 	protected $submit_behavior;
 	/** @var string either 'top' or 'bottom' */
 	protected $placement;
@@ -26,6 +26,8 @@ class DataTableTextbox implements IDataTableWidget {
 	protected $label;
 
 	/**
+	 * Use DataTableTextboxBuilder::build()
+	 *
 	 * @param $builder DataTableTextboxBuilder
 	 * @throws Exception
 	 */
@@ -59,15 +61,17 @@ class DataTableTextbox implements IDataTableWidget {
 	}
 
 	/**
-	 * @param $form_name string
+	 * Display textbox HTML
+	 *
+	 * @param $form_name string Name of form
 	 * @param $name_array string[] Name for select. Each item will be surrounded by square brackets and concatenated
-	 * @param $action string
+	 * @param $action string URL to submit to
 	 * @param $form_method string GET or POST
-	 * @param $behavior IDataTableBehavior
-	 * @param $default_text string
-	 * @param $label string
-	 * @param $state DataFormState
-	 * @return string
+	 * @param $behavior IDataTableBehavior What happens when enter is pressed
+	 * @param $default_text string Default text for textbox
+	 * @param $label string Label HTML for textbox
+	 * @param $state DataFormState State for form
+	 * @return string HTML
 	 */
 	public static function display_textbox($form_name, $name_array, $action, $form_method, $behavior, $default_text, $label, $state = null) {
 		$ret = "";
@@ -108,6 +112,12 @@ class DataTableTextbox implements IDataTableWidget {
 	}
 }
 
+/**
+ * Puts column data in a textbox for each row in the table
+ *
+ * Be careful not to use this at the same time as the textbox header formatter on the same column
+ * since they will both use the same name and overwrite each other.
+ */
 class DataTableTextboxCellFormatter implements IDataTableCellFormatter {
 	public function format($form_name, $column_header, $column_data, $rowid, $state)
 	{
@@ -116,6 +126,8 @@ class DataTableTextboxCellFormatter implements IDataTableCellFormatter {
 }
 
 /**
+ * Puts header data in a textbox. Useful if you want to allow user to edit column titles
+ *
  * Be careful not to use this at the same time as the textbox cell formatter on the same column
  * since they will both use the same name and overwrite each other.
  */

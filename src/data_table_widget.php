@@ -9,19 +9,26 @@
  */
 
 /**
- * Some piece of HTML displayed right outside the table
+ * Piece of HTML displayed above or below the table
  */
 interface IDataTableWidget {
 	const placement_top = "top";
 	const placement_bottom = "bottom";
 
 	/**
+	 * Returns HTML to display widget
+	 *
 	 * @param $form_name string Name of form
 	 * @param $form_method string GET or POST
-	 * @param $state DataFormState
+	 * @param $state DataFormState State which may contain widget state
 	 * @return string HTML
 	 */
 	public function display($form_name, $form_method, $state);
 
+	/**
+	 * Describes where widget will be rendered relative to textbox
+	 *
+	 * @return string See IDataTableWidget constants for possible values
+	 */
 	public function get_placement();
 }

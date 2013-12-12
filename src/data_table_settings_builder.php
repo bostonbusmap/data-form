@@ -41,12 +41,23 @@ class DataTableSettingsBuilder
 		return new DataTableSettingsBuilder();
 	}
 
+	/**
+	 * Default number of rows per page
+	 * @param $default_limit int
+	 * @return DataTableSettingsBuilder
+	 */
 	public function default_limit($default_limit)
 	{
 		$this->default_limit = $default_limit;
 		return $this;
 	}
 
+	/**
+	 * Number of rows in data set. Used for pagination
+	 *
+	 * @param $total_rows int
+	 * @return DataTableSettingsBuilder
+	 */
 	public function total_rows($total_rows)
 	{
 		$this->total_rows = $total_rows;
@@ -117,6 +128,12 @@ class DataTableSettingsBuilder
 		return $this->filtering;
 	}
 
+	/**
+	 * Validate input and create DataTableSettings
+	 * 
+	 * @return DataTableSettings
+	 * @throws Exception
+	 */
 	public function build()
 	{
 		if (is_null($this->default_limit)) {

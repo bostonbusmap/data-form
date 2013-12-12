@@ -13,20 +13,22 @@
  */
 class DataTableTextboxBuilder
 {
-	/** @var string */
+	/** @var string Default text for textbox */
 	protected $text;
 	/** @var  string Name of form element */
 	protected $name;
-	/** @var  string */
+	/** @var  string URL for form submit */
 	protected $form_action;
-	/** @var  IDataTableBehavior */
+	/** @var  IDataTableBehavior What happens when enter is pressed */
 	protected $behavior;
-	/** @var  string */
+	/** @var  string Where textbox is rendered near HTML table */
 	protected $placement;
-	/** @var  string */
+	/** @var  string Label HTML for textbox */
 	protected $label;
 
 	/**
+	 * Identical to constructor, but allows method chaining not allowed for constructors in earlier versions of PHP
+	 *
 	 * @return DataTableTextboxBuilder
 	 */
 	public static function create()
@@ -141,6 +143,8 @@ class DataTableTextboxBuilder
 	}
 
 	/**
+	 * Validate data and return DataTableTextbox
+	 *
 	 * @return DataTableTextbox
 	 * @throws Exception
 	 */
