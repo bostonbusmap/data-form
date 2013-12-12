@@ -270,7 +270,7 @@ class DataFormState
 		}
 
 		if (count($path) === 1) {
-			return isset($this->form_data[$path[0]]);
+			return array_key_exists($path[0], $this->form_data);
 		}
 		else {
 			$subset = array_slice($path, 0, count($path) - 1);
