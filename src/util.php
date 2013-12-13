@@ -44,6 +44,51 @@ function create_columns_from_database($res) {
 }
 
 /**
+ * Return a paginated SQL query, and set number of rows on $settings (creating $settings if null)
+ *
+ * @param $query string SQL
+ * @param $state DataFormState
+ * @param $settings DataTableSettings Table settings. This will become a copy of the input with total_rows
+ * set to the number of rows. New default object will be created if this is null.
+ * @param $conn_type string Connection type, used for querying for count
+ * @return string SQL
+ * @throws Exception
+ */
+function paginate_sql($query, $state, &$settings, $conn_type=null) {
+	if (!is_string($query)) {
+		throw new Exception("query must be a string");
+	}
+	if (!($state instanceof DataFormState)) {
+		throw new Exception("state must be instance of DataFormState");
+	}
+	if ($settings !== null && !($settings instanceof DataTableSettings)) {
+		throw new Exception("settings must be instance of DataTableSettings, or null to create a new object");
+	}
+	if (($conn_type !== null) && !is_string($conn_type)) {
+		throw new Exception("conn_type must be a string or null");
+	}
+
+	// There's a cost to parsing SQL so this object is used twice
+	$sql_builder = SQLBuilder::create($query);
+
+	$count_sql = $sql_builder->state($state)->settings($settings)->build_count();
+	$count_res = gfy_db::query($count_sql, $conn_type, true);
+	$count_row = gfy_db::fetch_row($count_res);
+	$num_rows = (int)$count_row[0];
+
+	if (!$settings) {
+		$settings = $settings->make_builder()->total_rows($num_rows)->build();
+	}
+	else
+	{
+		$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
+	}
+
+	$paginated_sql = $sql_builder->settings($settings)->build();
+	return $paginated_sql;
+}
+
+/**
  * This creates a default DataTable from some SQL
  *
  * @param $sql string SQL to create a table from. This should not already be paginated
@@ -67,13 +112,7 @@ function create_table_from_database($sql, $state, $submit_url="", $radio_column_
 		throw new Exception("radio_column_key must be a string");
 	}
 
-	$count_sql = SQLBuilder::create($sql)->state($state)->build_count();
-	$count_res = gfy_db::query($count_sql, null, true);
-	$count_row = gfy_db::fetch_row($count_res);
-	$num_rows = (int)$count_row[0];
-
-	$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
-	$paginated_sql = SQLBuilder::create($sql)->settings($settings)->state($state)->build();
+	$paginated_sql = paginate_sql($sql, $state, $settings);
 
 	$paginated_res = gfy_db::query($paginated_sql, null, true);
 
