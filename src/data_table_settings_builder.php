@@ -13,9 +13,9 @@
  */
 class DataTableSettingsBuilder
 {
-	/** @var  int */
+	/** @var  int Default number of rows per page */
 	protected $default_limit;
-	/** @var  int */
+	/** @var  int Number of total rows in data (before pagination) */
 	protected $total_rows;
 
 	/** @var string[] Mapping of limit number to text to display for that limit number */
@@ -103,26 +103,41 @@ class DataTableSettingsBuilder
 		return $this;
 	}
 
+	/**
+	 * @return int Default number of rows per page
+	 */
 	public function get_default_limit()
 	{
 		return $this->default_limit;
 	}
 
+	/**
+	 * @return int Number of rows in data (without pagination, but after filtering)
+	 */
 	public function get_total_rows()
 	{
 		return $this->total_rows;
 	}
 
+	/**
+	 * @return string[] Mapping of limit number to text to display for that limit number
+	 */
 	public function get_limit_options()
 	{
 		return $this->limit_options;
 	}
 
+	/**
+	 * @return string[] mapping of column_key to sorting direction ('asc' or 'desc')
+	 */
 	public function get_sorting()
 	{
 		return $this->sorting;
 	}
 
+	/**
+	 * @return DataTableSearchState[] mapping of column_key to search phrase
+	 */
 	public function get_filtering()
 	{
 		return $this->filtering;
