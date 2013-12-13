@@ -35,7 +35,7 @@ function make_organisms_table($state) {
 
 try
 {
-	$state = new DataFormState("browse_organisms", $_POST);
+	$state = new DataFormState("browse_organisms", $_GET);
 
 	$form = make_organisms_table($state);
 

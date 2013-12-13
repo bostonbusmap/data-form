@@ -164,7 +164,7 @@ class DataFormBuilder {
 		}
 
 		if (is_null($this->method)) {
-			$this->method = "POST";
+			$this->method = "GET";
 		}
 		if (!is_string($this->method)) {
 			throw new Exception("method must be a string, either GET or POST");

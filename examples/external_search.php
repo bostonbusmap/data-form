@@ -119,7 +119,7 @@ function make_external_search_form($state) {
 
 try {
 	// $state contains our form state which contains search text among other things
-	$state = new DataFormState("searches", $_POST);
+	$state = new DataFormState("searches", $_GET);
 	// create our DataForm
 	$form = make_external_search_form($state);
 	// If an AJAX request, just display the form HTML

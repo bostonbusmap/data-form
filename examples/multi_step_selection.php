@@ -55,7 +55,7 @@ function make_form($state) {
 try {
 	// $state here is mostly used to keep state if we refresh the form via AJAX
 	// However we don't do that in this particular case, but it's a good idea in general anyway.
-	$state = new DataFormState("select_cities", $_POST);
+	$state = new DataFormState("select_cities", $_GET);
 	$form = make_form($state);
 	if ($state->only_display_form()) {
 		echo $form->display_form($state);

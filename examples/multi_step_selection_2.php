@@ -91,9 +91,9 @@ try {
 
 
 	// $current_state contains the sorting state for this form
-	$current_state = new DataFormState("select_zipcodes", $_POST);
+	$current_state = new DataFormState("select_zipcodes", $_GET);
 	// This comes either from $_POST or the forwarded_state within $current_state
-	$prev_state = new DataFormState("select_cities", $_POST, $current_state);
+	$prev_state = new DataFormState("select_cities", $_GET, $current_state);
 	$prev_form_data = $prev_state->get_form_data();
 
 	// Get selected cities so we can display a list of them

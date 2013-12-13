@@ -130,7 +130,7 @@ function make_form($state) {
 }
 
 try {
-	$state = new DataFormState("select_3", $_POST);
+	$state = new DataFormState("select_3", $_GET);
 	$form = make_form($state);
 	if ($state->only_display_form()) {
 		// DataFormState indicates that only form HTML should be displayed

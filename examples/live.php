@@ -102,7 +102,7 @@ function make_form($state) {
 
 try {
 	// $state contains our form state which contains sorting information and all our fields
-	$state = new DataFormState("multiplication", $_POST);
+	$state = new DataFormState("multiplication", $_GET);
 	$form = make_form($state);
 	if ($state->only_display_form()) {
 		echo $form->display_form($state);

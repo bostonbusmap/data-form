@@ -114,9 +114,9 @@ try {
 	 */
 
 
-	$current_state = new DataFormState("results", $_POST);
-	$zip_code_state = new DataFormState("select_zipcodes", $_POST, $current_state);
-	$city_state = new DataFormState("select_cities", $_POST, $zip_code_state);
+	$current_state = new DataFormState("results", $_GET);
+	$zip_code_state = new DataFormState("select_zipcodes", $_GET, $current_state);
+	$city_state = new DataFormState("select_cities", $_GET, $zip_code_state);
 
 	// create DataTables from DataFormState data
 	$zip_table = make_zip_table($zip_code_state, $current_state);

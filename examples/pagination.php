@@ -107,7 +107,7 @@ function make_form($state) {
 }
 
 try {
-	$state = new DataFormState("primes", $_POST);
+	$state = new DataFormState("primes", $_GET);
 	$form = make_form($state);
 	if ($state->only_display_form()) {
 		echo $form->display_form($state);
