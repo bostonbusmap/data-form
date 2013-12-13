@@ -21,7 +21,7 @@ require_once FILE_BASE_PATH . "/www/browser/lib/data_table/data_form.php";
  * @return DataForm
  */
 function make_form($state) {
-	$this_url = $_SERVER['REQUEST_URI'];
+	$this_url = "add_columns.php";
 
 	// numbers in $rows will be converted to checkboxes using this formatter
 	$checkbox_formatter = new DataTableCheckboxCellFormatter();

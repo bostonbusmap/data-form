@@ -36,7 +36,7 @@ class DataFormBuilder {
 	 * If this is false, the form is assumed to be local and sorting and filtering
 	 * are done in Javascript instead.
 	 *
-	 * $_SERVER['REQUEST_URI'] should be sufficient for most cases
+	 * If using $_SERVER['REQUEST_URI'] for this, make sure to remove the query string first
 	 * */
 	private $remote;
 
@@ -107,7 +107,9 @@ class DataFormBuilder {
 	}
 
 	/**
-	 * If this is a string then sorting, searching, and pagination options are sent to this URL
+	 * If this is a string then sorting, searching, and pagination options are sent to this URL.
+	 * Be careful about using $_SERVER['REQUEST_URI'] for this since the query string is included in this, which
+	 * you probably don't want.
 	 * If false sorting and searching are done locally
 	 *
 	 * @param bool|string $remote

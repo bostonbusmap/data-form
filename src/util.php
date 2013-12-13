@@ -117,6 +117,9 @@ function create_data_form_from_database($sql, $state, $submit_url=null, $radio_c
 
 	$table = create_table_from_database($sql, $state, $submit_url, $radio_column_key);
 
-	$form = DataFormBuilder::create($state->get_form_name())->remote($_SERVER['REQUEST_URI'])->tables(array($table))->build();
+	// chop off query string. Since the form data goes into the query string leaving it there will complicate things
+	$this_url = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
+
+	$form = DataFormBuilder::create($state->get_form_name())->remote($this_url)->tables(array($table))->build();
 	return $form;
 }

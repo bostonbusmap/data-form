@@ -15,7 +15,7 @@ require_once "sql_lib.php";
 try {
 	// See make_searches_form in sql_lib.php for more information
 	$state = new DataFormState("searches", $_POST);
-	$form = make_searches_form($state);
+	$form = make_searches_form($state, "sql.php");
 	if ($state->only_display_form()) {
 		echo $form->display_form($state);
 	}

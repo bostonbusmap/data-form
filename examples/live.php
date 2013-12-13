@@ -42,7 +42,7 @@ function compare_result_column_asc($a, $b) {
  * @return DataForm
  */
 function make_form($state) {
-	$this_url = $_SERVER['REQUEST_URI'];
+	$this_url = "live.php";
 
 	// Make two columns: one to show numbers from 0 through 14 inclusive, and another column to show a modulo result
 	$columns = array();

@@ -88,7 +88,7 @@ class OnlyEvenItemsSelected implements IValidatorRule {
  * @return DataForm
  */
 function make_form($state) {
-	$this_url = $_SERVER['REQUEST_URI'];
+	$this_url = "validation.php";
 
 	// Two columns: checkbox and number (both using same data, column_key = 'number')
 	$columns = array();

@@ -33,8 +33,8 @@ function compare_zip_column_desc($a, $b) {
  * @return DataForm
  */
 function make_form($prev_state, $current_state) {
-	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/multi_step_selection_2.php";
-	$next_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/multi_step_selection_3.php";
+	$this_url = "multi_step_selection_2.php";
+	$next_url = "multi_step_selection_3.php";
 
 	// make two columns: a checkbox and the zip code. Zip code is sortable to show off this feature.
 	$columns = array();

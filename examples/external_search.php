@@ -112,7 +112,7 @@ function make_external_search_form($state) {
 
 	$table = DataTableBuilder::create()->columns($columns)->rows(new DatabaseIterator($query, null, "search_id"))->
 		settings($settings)->widgets($widgets)->build();
-	$form = DataFormBuilder::create($state->get_form_name())->remote($_SERVER["REQUEST_URI"])->
+	$form = DataFormBuilder::create($state->get_form_name())->remote("external_search.php")->
 		tables(array($table))->build();
 	return $form;
 }

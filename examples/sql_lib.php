@@ -67,9 +67,10 @@ function make_searches_query() {
 
 /**
  * @param DataFormState $state
+ * @param string $this_url
  * @return DataForm
  */
-function make_searches_form($state) {
+function make_searches_form($state, $this_url) {
 	// generate some SQL
 	$browse_searches_query = make_searches_query();
 
@@ -131,7 +132,7 @@ function make_searches_form($state) {
 	// Specifying the row key parameter is important because it allows the DataForm to uniquely identify
 	// checkboxes and other input fields, even on different pages.
 	$table = DataTableBuilder::create()->columns($columns)->rows(new DatabaseIterator($query, null, "search_id"))->settings($settings)->widgets($widgets)->build();
-	$form = DataFormBuilder::create($state->get_form_name())->remote($_SERVER["REQUEST_URI"])->tables(array($table))->build();
+	$form = DataFormBuilder::create($state->get_form_name())->remote($this_url)->tables(array($table))->build();
 	return $form;
 }
 

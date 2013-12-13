@@ -55,7 +55,7 @@ class PrimeFormatter implements IDataTableCellFormatter {
  * @return DataForm
  */
 function make_form($state) {
-	$this_url = $_SERVER['REQUEST_URI'];
+	$this_url = "pagination.php";
 
 	// The pagination state stores things like the current limit and page number
 	$pagination_state = $state->get_pagination_state();

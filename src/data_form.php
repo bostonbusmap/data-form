@@ -72,7 +72,7 @@ class DataForm {
 	 * If this is false, the form is assumed to be local and sorting and filtering
 	 * are done in Javascript instead.
 	 *
-	 * $_SERVER['REQUEST_URI'] should be sufficient for most cases
+	 * If using $_SERVER['REQUEST_URI'] make sure to remove the query string first
 	 * */
 	private $remote;
 

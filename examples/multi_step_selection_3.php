@@ -123,7 +123,7 @@ try {
 	$city_table = make_city_table($city_state, $current_state);
 	// create a DataForm with both DataTables
 	$form = DataFormBuilder::create("results")->tables(array($zip_table, $city_table))->
-		forwarded_state(array($current_state, $zip_code_state))->remote($_SERVER['REQUEST_URI'])->build();
+		forwarded_state(array($current_state, $zip_code_state))->remote("multi_step_selection_3.php")->build();
 
 	if ($current_state->only_display_form()) {
 		echo $form->display_form($current_state);
