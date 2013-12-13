@@ -122,49 +122,44 @@ class DataFormState
 			throw new Exception("form_data was expected to be an array");
 		}
 
-		if ($this->form_data) {
-			// just some validation
-			foreach (array(self::sorting_state_key, self::searching_state_key, self::pagination_key) as $key) {
-				if (isset($this->form_data[self::state_key][$key])) {
-					if (!is_array($this->form_data[self::state_key][$key])) {
-						throw new Exception("$key is expected to be an array");
-					}
+		// just some validation
+		foreach (array(self::sorting_state_key, self::searching_state_key, self::pagination_key) as $key) {
+			if (isset($this->form_data[self::state_key][$key])) {
+				if (!is_array($this->form_data[self::state_key][$key])) {
+					throw new Exception("$key is expected to be an array");
 				}
 			}
-
-			// For items like checkboxes we also have a hidden field set
-			// so we can know for sure that an item is blank.
-			if (isset($this->form_data[self::state_key][self::blanks_key])) {
-				$blanks = $this->form_data[self::state_key][self::blanks_key];
-			}
-			else
-			{
-				$blanks = array();
-			}
-
-			// All items are stored as hidden fields in hidden_state_key
-			// so we preserve the values during pagination or filtering rows
-			if (isset($this->form_data[self::state_key][self::hidden_state_key])) {
-				$history = $this->form_data[self::state_key][self::hidden_state_key];
-			}
-			else
-			{
-				$history = array();
-			}
-
-			// This is trying to solve the problem of keeping track of unchecked items
-			// even when $history references the item. Unchecked items aren't sent in $_POST at all
-			// so if we just copied $history it would overwrite the unchecked items, leaving it checked.
-
-			// First this copies $blanks over $form_data as long as it doesn't overwrite anything.
-			// This puts empty strings in the form data to take place of unchecked items.
-			$form_data_with_blanks = self::copy_over_array($blanks, $form_data, $form_data);
-			// Then we make a copy of history with all current form data removed.
-			$form_data_history_only = self::copy_over_array($history, $form_data_with_blanks, array());
-			// Then we copy history_only over the current data
-			$this->form_data = self::copy_over_array($form_data_history_only, array(), $this->form_data);
 		}
+
+		// For items like checkboxes we also have a hidden field set
+		// so we can know for sure that an item is blank.
+		if (isset($this->form_data[self::state_key][self::blanks_key])) {
+			$blanks = $this->form_data[self::state_key][self::blanks_key];
+		} else {
+			$blanks = array();
+		}
+
+		// All items are stored as hidden fields in hidden_state_key
+		// so we preserve the values during pagination or filtering rows
+		if (isset($this->form_data[self::state_key][self::hidden_state_key])) {
+			$history = $this->form_data[self::state_key][self::hidden_state_key];
+		} else {
+			$history = array();
+		}
+
+		// This is trying to solve the problem of keeping track of unchecked items
+		// even when $history references the item. Unchecked items aren't sent in $_POST at all
+		// so if we just copied $history it would overwrite the unchecked items, leaving it checked.
+
+		// First this copies $blanks over $form_data as long as it doesn't overwrite anything.
+		// This puts empty strings in the form data to take place of unchecked items.
+		$form_data_with_blanks = self::copy_over_array($blanks, $form_data, $form_data);
+		// Then we make a copy of history with all current form data removed.
+		$form_data_history_only = self::copy_over_array($history, $form_data_with_blanks, array());
+		// Then we copy history_only over the current data
+		$this->form_data = self::copy_over_array($form_data_history_only, array(), $this->form_data);
 	}
+
 
 	/**
 	 * Copy everything from $src to $dest, overwriting whatever is in $dest
