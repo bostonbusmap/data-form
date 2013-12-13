@@ -16,7 +16,7 @@ require_once FILE_BASE_PATH . "/www/browser/lib/data_table/data_form.php";
 require_once "data.php";
 
 try {
-	$current_state = new DataFormState("select_3", $_POST);
+	$current_state = new DataFormState("select_3", $_GET);
 
 	// Get numbers from current_state and print them
 	gfy_header("Show results", "");

@@ -13,7 +13,7 @@ require_once "../../../../../lib/main_lib.php";
 require_once FILE_BASE_PATH . "/www/browser/lib/data_table/data_form.php";
 require_once FILE_BASE_PATH . "/www/browser/lib/data_table/sql_builder.php";
 
-$state = new DataFormState("browse_organisms", $_POST);
+$state = new DataFormState("browse_organisms", $_GET);
 
 gfy_header("Browse organisms", "");
 
