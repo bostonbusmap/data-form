@@ -65,7 +65,7 @@ class DataFormState
 
 	const pagination_key = "_p";
 
-	const form_exists = "_ex";
+	const form_exists = "_e";
 
 	const only_validate_key = "_v";
 

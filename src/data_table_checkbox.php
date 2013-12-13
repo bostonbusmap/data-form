@@ -61,9 +61,20 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 			}
 		}
 
+		$name_array = array($column_header, $rowid);
 		$input_name = DataFormState::make_field_name($form_name, array($column_header, $rowid));
 		$ret = '<input type="checkbox" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" ' . $checked . ' />';
-		$ret .= DataTableHidden::display_hidden($form_name, $state, array(DataFormState::state_key, DataFormState::blanks_key, $column_header, $rowid), "");
+
+		// Create hidden field to allow detection of unchecked
+		if ($state) {
+			$hidden_key = array_merge(DataFormState::get_hidden_state_key(), $name_array);
+			if ($state->has_item($hidden_key)) {
+				// Item is defined in history
+				// We need this blank hidden field to prevent history overwriting a missing value
+				$blank_name = array_merge(DataFormState::get_blanks_key(), $name_array);
+				$ret .= DataTableHidden::display_hidden($form_name, $state, $blank_name, "");
+			}
+		}
 
 		return $ret;
 	}
