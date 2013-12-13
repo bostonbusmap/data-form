@@ -29,45 +29,45 @@ class DataFormState
 	/**
 	 * All special hidden fields should go under form_name[state_key]
 	 */
-	const state_key = "_state";
+	const state_key = "_s";
 
 	/**
 	 * Holds ordering information for columns
 	 */
-	const sorting_state_key = "_sorting_state";
+	const sorting_state_key = "_srt";
 	const sorting_state_asc = "asc";
 	const sorting_state_desc = "desc";
 
 	/**
 	 * Holds filtering information for columns
 	 */
-	const searching_state_key = "_searching_state";
+	const searching_state_key = "_sch";
 	/**
 	 * If form_name[state_key][only_display_form] is set, page should render only the form HTML, not the whole page
 	 */
-	const only_display_form = "_only_display_form";
+	const only_display_form = "_d";
 
 	/**
 	 * form_name[state_key][forwarded_state_key] contains form state from previous pages
 	 */
-	const forwarded_state_key = "_forwarded_state";
+	const forwarded_state_key = "_f";
 	/**
 	 * form_name[state_key][hidden_state_key] contains form state for hidden rows or other items
 	 */
-	const hidden_state_key = "_hidden_state";
+	const hidden_state_key = "_h";
 	/**
 	 * form_name[state_key][blanks_key] contains fields which exist elsewhere in the form
 	 * but whose information may not be sent if field is unselected. For example checkboxes
 	 * would define a blank item under this key which would always be sent even if checkbox is
 	 * unchecked.
 	 */
-	const blanks_key = "_blanks";
+	const blanks_key = "_b";
 
-	const pagination_key = "_pagination";
+	const pagination_key = "_p";
 
-	const form_exists = "_form_exists";
+	const form_exists = "_ex";
 
-	const only_validate_key = "_validate";
+	const only_validate_key = "_v";
 
 	/**
 	 * The piece of $_POST or $_GET that's relevant to this form, slightly modified

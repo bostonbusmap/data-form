@@ -26,24 +26,24 @@ class DataTableSearchState {
 	const rlike = "RLIKE";
 
 	/** Filter to display numbers less than the number specified */
-	const less_than = "less";
+	const less_than = "<";
 	/** Filter to display numbers greater than the number specified */
-	const greater_than = "greater";
+	const greater_than = ">";
 	/** Filter to display numbers less or requal to the number specified */
-	const less_or_equal = "less_or_equal";
+	const less_or_equal = "<=";
 	/** Filter to display numbers greater or equal to number specified */
-	const greater_or_equal = "greater_or_equal";
+	const greater_or_equal = ">=";
 	/** Filter to display numbers equal to number specified */
-	const equal = "equal";
+	const equal = "=";
 
 	/**
 	 * Field specifying type of search
 	 */
-	const type_key = "_type";
+	const type_key = "_t";
 	/**
 	 * Field specifying array of parameters for search
 	 */
-	const params_key = "_params";
+	const params_key = "_p";
 
 	/**
 	 * @var string Type of search
