@@ -76,7 +76,7 @@ function paginate_sql($query, $state, &$settings, $conn_type=null) {
 	$count_row = gfy_db::fetch_row($count_res);
 	$num_rows = (int)$count_row[0];
 
-	if (!$settings) {
+	if ($settings) {
 		$settings = $settings->make_builder()->total_rows($num_rows)->build();
 	}
 	else
