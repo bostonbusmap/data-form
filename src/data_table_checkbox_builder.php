@@ -32,6 +32,10 @@ class DataTableCheckboxBuilder {
 	 * @var string URL for behavior's action
 	 */
 	protected $form_action;
+	/**
+	 * @var string HTML label
+	 */
+	protected $label;
 
 	public static function create() {
 		return new DataTableCheckboxBuilder();
@@ -91,6 +95,15 @@ class DataTableCheckboxBuilder {
 	}
 
 	/**
+	 * @param $label string HTML
+	 * @return DataTableCheckboxBuilder
+	 */
+	public function label($label) {
+		$this->label = $label;
+		return $this;
+	}
+
+	/**
 	 * @return string Field name
 	 */
 	public function get_name() {
@@ -134,6 +147,13 @@ class DataTableCheckboxBuilder {
 		return $this->form_action;
 	}
 
+	/**
+	 * @return string HTML label
+	 */
+	public function get_label() {
+		return $this->label;
+	}
+
 
 	public function build() {
 		if (!is_string($this->name) || trim($this->name) === "") {
@@ -168,6 +188,13 @@ class DataTableCheckboxBuilder {
 		}
 		if (!is_string($this->form_action)) {
 			throw new Exception("form action must be string");
+		}
+
+		if (is_null($this->label)) {
+			$this->label = "";
+		}
+		if (!is_string($this->label)) {
+			throw new Exception("label must be a string");
 		}
 
 		return new DataTableCheckbox($this);
