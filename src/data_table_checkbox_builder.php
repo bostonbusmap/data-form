@@ -155,6 +155,10 @@ class DataTableCheckboxBuilder {
 	}
 
 
+	/**
+	 * @return DataTableCheckbox
+	 * @throws Exception
+	 */
 	public function build() {
 		if (!is_string($this->name) || trim($this->name) === "") {
 			throw new Exception("name must be a non-empty string");
