@@ -32,7 +32,7 @@ class DataTableRadioFormatter implements IDataTableCellFormatter {
 		{
 			$name_array = array();
 		}
-		return DataTableRadio::format_radio($form_name, "POST", $name_array, $column_data, false, $state, "");
+		return DataTableRadio::format_radio($form_name, "POST", $name_array, "", $column_data, false, $state, "");
 	}
 }
 
@@ -60,6 +60,10 @@ class DataTableRadio implements IDataTableWidget {
 	 * @var string HTML label
 	 */
 	protected $label;
+	/**
+	 * @var string ID name
+	 */
+	protected $id;
 
 	/**
 	 * @param $builder DataTableRadioBuilder
@@ -75,21 +79,26 @@ class DataTableRadio implements IDataTableWidget {
 		$this->checked_by_default = $builder->get_checked_by_default();
 		$this->placement = $builder->get_placement();
 		$this->label = $builder->get_label();
+		$this->id = $builder->get_id();
 	}
 
 	/**
 	 * Write out radio buttons
 	 *
+	 * Unlike other elements this has a different field name than the id name. Radio buttons must have the same field name
+	 * to match with each other but also must have different IDs because that's how IDs work
+	 *
 	 * @param $form_name string Name of form
 	 * @param $form_method string POST or GET
-	 * @param $name_array string[] Name array
+	 * @param $name_array string[] Name array for name attribute
+	 * @param $id_name string ID name
 	 * @param $column_data object Value for radio button
 	 * @param $checked_by_default bool Is this item selected by default?
 	 * @param $state DataFormState
 	 * @param $label string HTML
 	 * @return string
 	 */
-	public static function format_radio($form_name, $form_method, $name_array, $column_data, $checked_by_default, $state, $label)
+	public static function format_radio($form_name, $form_method, $name_array, $id_name, $column_data, $checked_by_default, $state, $label)
 	{
 		if ($state && !is_null($state->find_item($name_array))) {
 			$selected_item = $state->find_item($name_array);
@@ -113,9 +122,9 @@ class DataTableRadio implements IDataTableWidget {
 
 		$ret = "";
 		if ($label !== "") {
-			$ret .= '<label for="' . htmlspecialchars($input_name) . '">';
+			$ret .= '<label for="' . htmlspecialchars($id_name) . '">';
 		}
-		$ret .= '<input type="radio" id="' . htmlspecialchars($input_name) . '" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" ' . $checked . ' />';
+		$ret .= '<input type="radio" id="' . htmlspecialchars($id_name) . '" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" ' . $checked . ' />';
 		if ($label !== "") {
 			$ret .= "</label>";
 		}
@@ -124,7 +133,7 @@ class DataTableRadio implements IDataTableWidget {
 
 	public function display($form_name, $form_method, $state)
 	{
-		return self::format_radio($form_name, $form_method, array($this->name), $this->value, $this->checked_by_default, $state, $this->label);
+		return self::format_radio($form_name, $form_method, array($this->name), $this->id, $this->value, $this->checked_by_default, $state, $this->label);
 	}
 
 	public function get_placement()

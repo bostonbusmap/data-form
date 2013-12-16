@@ -35,9 +35,13 @@ class DataTableRadioBuilder {
 	 * @var string HTML label
 	 */
 	protected $label;
+	/**
+	 * @var string ID attribute
+	 */
+	protected $id;
 
 	public static function create() {
-		return new DataTableCheckboxBuilder();
+		return new DataTableRadioBuilder();
 	}
 
 	/**
@@ -86,6 +90,15 @@ class DataTableRadioBuilder {
 	}
 
 	/**
+	 * @param $id string ID attribute
+	 * @return DataTableCheckboxBuilder
+	 */
+	public function id($id) {
+		$this->id = $id;
+		return $this;
+	}
+
+	/**
 	 * @return string Field name
 	 */
 	public function get_name() {
@@ -98,8 +111,6 @@ class DataTableRadioBuilder {
 	public function get_value() {
 		return $this->value;
 	}
-
-
 
 	/**
 	 * @return string Checked by default?
@@ -121,6 +132,13 @@ class DataTableRadioBuilder {
 	 */
 	public function get_label() {
 		return $this->label;
+	}
+
+	/**
+	 * @return string Id name
+	 */
+	public function get_id() {
+		return $this->id;
 	}
 
 	/**
@@ -156,6 +174,13 @@ class DataTableRadioBuilder {
 		}
 		if (!is_string($this->label)) {
 			throw new Exception("label must be a string");
+		}
+
+		if (is_null($this->id)) {
+			$this->id = "";
+		}
+		if (!is_string($this->id)) {
+			throw new Exception("id must be a string");
 		}
 
 		return new DataTableRadio($this);
