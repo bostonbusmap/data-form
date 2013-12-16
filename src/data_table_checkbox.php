@@ -94,8 +94,11 @@ class DataTableCheckbox implements IDataTableWidget {
 		}
 		else
 		{
-			if (($column_data instanceof Selected) || $checked_by_default) {
+			if ($column_data instanceof Selected) {
 				$checked = ($column_data->is_selected() ? "checked" : "");
+			}
+			elseif ($checked_by_default) {
+				$checked = "checked";
 			}
 			else
 			{
