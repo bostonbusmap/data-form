@@ -14,7 +14,7 @@
 class DataTableRadioFormatter implements IDataTableCellFormatter {
 
 	/**
-	 * Writes out radio buttons corresponding to the row id
+	 * Writes out radio buttons
 	 *
 	 * @param string $form_name Name of HTML form
 	 * @param string $column_header Column key
@@ -25,10 +25,75 @@ class DataTableRadioFormatter implements IDataTableCellFormatter {
 	 */
 	public function format($form_name, $column_header, $column_data, $rowid, $state)
 	{
-		// TODO: sanitize for HTML
-		if ($state && !is_null($state->find_item(array($column_header)))) {
-			$selected_item = $state->find_item(array($column_header));
-			$checked = ($selected_item === $column_data ? "checked" : "");
+		if ($state) {
+			$name_array = array($column_header);
+		}
+		else
+		{
+			$name_array = array();
+		}
+		return DataTableRadio::format_radio($form_name, "POST", $name_array, $column_data, false, $state, "");
+	}
+}
+
+/**
+ * Radio button
+ */
+class DataTableRadio implements IDataTableWidget {
+	/**
+	 * @var string Field name
+	 */
+	protected $name;
+	/**
+	 * @var string Checkbox value
+	 */
+	protected $value;
+	/**
+	 * @var bool Checked by default?
+	 */
+	protected $checked_by_default;
+	/**
+	 * @var string Either 'top' or 'bottom'
+	 */
+	protected $placement;
+	/**
+	 * @var string HTML label
+	 */
+	protected $label;
+
+	/**
+	 * @param $builder DataTableRadioBuilder
+	 * @throws Exception
+	 */
+	public function __construct($builder) {
+		if (!($builder instanceof DataTableRadioBuilder)) {
+			throw new Exception("builder must be of type DataTableRadioBuilder");
+		}
+
+		$this->name = $builder->get_name();
+		$this->value = $builder->get_value();
+		$this->checked_by_default = $builder->get_checked_by_default();
+		$this->placement = $builder->get_placement();
+		$this->label = $builder->get_label();
+	}
+
+	/**
+	 * Write out radio buttons
+	 *
+	 * @param $form_name string Name of form
+	 * @param $form_method string POST or GET
+	 * @param $name_array string[] Name array
+	 * @param $column_data object Value for radio button
+	 * @param $checked_by_default bool Is this item selected by default?
+	 * @param $state DataFormState
+	 * @param $label string HTML
+	 * @return string
+	 */
+	public static function format_radio($form_name, $form_method, $name_array, $column_data, $checked_by_default, $state, $label)
+	{
+		if ($state && !is_null($state->find_item($name_array))) {
+			$selected_item = $state->find_item($name_array);
+			$checked = ($selected_item === $column_data) ? "checked" : "";
 		}
 		else
 		{
@@ -36,11 +101,35 @@ class DataTableRadioFormatter implements IDataTableCellFormatter {
 			if ($column_data instanceof Selected) {
 				$checked = ($column_data->is_selected() ? "checked" : "");
 			}
+			elseif ($checked_by_default) {
+				$checked = "checked";
+			}
 			else
 			{
 				$checked = "";
 			}
 		}
-		return '<input type="radio" name="' . htmlspecialchars($form_name . "[$column_header]") . '" value="' . htmlspecialchars($column_data) . '" ' . $checked . ' />';
+		$input_name = DataFormState::make_field_name($form_name, $name_array);
+
+		$ret = "";
+		if ($label !== "") {
+			$ret .= '<label for="' . htmlspecialchars($input_name) . '">';
+		}
+		$ret .= '<input type="radio" id="' . htmlspecialchars($input_name) . '" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" ' . $checked . ' />';
+		if ($label !== "") {
+			$ret .= "</label>";
+		}
+		return $ret;
 	}
+
+	public function display($form_name, $form_method, $state)
+	{
+		return self::format_radio($form_name, $form_method, array($this->name), $this->value, $this->checked_by_default, $state, $this->label);
+	}
+
+	public function get_placement()
+	{
+		return $this->placement;
+	}
+
 }

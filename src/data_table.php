@@ -27,6 +27,7 @@ require_once "data_table_options_builder.php";
 require_once "data_table_options.php";
 require_once "data_table_pagination_state.php";
 require_once "data_table_radio.php";
+require_once "data_table_radio_builder.php";
 require_once "data_table_search_formatter.php";
 require_once "data_table_search_widget.php";
 require_once "data_table_search_widget_builder.php";
