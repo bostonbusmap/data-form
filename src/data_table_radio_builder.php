@@ -46,7 +46,7 @@ class DataTableRadioBuilder {
 
 	/**
 	 * @param $name string Field name
-	 * @return DataTableCheckboxBuilder
+	 * @return DataTableRadioBuilder
 	 */
 	public function name($name) {
 		$this->name = $name;
@@ -55,7 +55,7 @@ class DataTableRadioBuilder {
 
 	/**
 	 * @param $value string Checkbox value
-	 * @return DataTableCheckboxBuilder
+	 * @return DataTableRadioBuilder
 	 */
 	public function value($value) {
 		$this->value = $value;
@@ -64,7 +64,7 @@ class DataTableRadioBuilder {
 
 	/**
 	 * @param $checked_by_default bool Checked by default?
-	 * @return DataTableCheckboxBuilder
+	 * @return DataTableRadioBuilder
 	 */
 	public function checked_by_default($checked_by_default) {
 		$this->checked_by_default = $checked_by_default;
@@ -73,7 +73,7 @@ class DataTableRadioBuilder {
 
 	/**
 	 * @param $placement string Either 'top' or 'bottom'
-	 * @return DataTableCheckboxBuilder
+	 * @return DataTableRadioBuilder
 	 */
 	public function placement($placement) {
 		$this->placement = $placement;
@@ -82,7 +82,7 @@ class DataTableRadioBuilder {
 
 	/**
 	 * @param $label string HTML
-	 * @return DataTableCheckboxBuilder
+	 * @return DataTableRadioBuilder
 	 */
 	public function label($label) {
 		$this->label = $label;
@@ -91,7 +91,7 @@ class DataTableRadioBuilder {
 
 	/**
 	 * @param $id string ID attribute
-	 * @return DataTableCheckboxBuilder
+	 * @return DataTableRadioBuilder
 	 */
 	public function id($id) {
 		$this->id = $id;
