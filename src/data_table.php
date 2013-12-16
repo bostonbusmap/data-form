@@ -14,6 +14,7 @@ require_once "data_table_button_builder.php";
 require_once "data_table_button.php";
 require_once "data_table_cell_formatter.php";
 require_once "data_table_checkbox.php";
+require_once "data_table_checkbox_builder.php";
 require_once "data_table_column_builder.php";
 require_once "data_table_column.php";
 require_once "data_table_header_formatter.php";
