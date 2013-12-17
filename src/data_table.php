@@ -136,7 +136,7 @@ class DataTable
 		// display top buttons
 		foreach ($this->widgets as $widget) {
 			if ($widget->get_placement() == DataTableButton::placement_top) {
-				$ret .= $widget->display($form_name, $form_method, $state) . "<br />";
+				$ret .= $widget->display($form_name, $form_method, $state) . " ";
 			}
 		}
 
@@ -174,7 +174,7 @@ class DataTable
 		// write buttons at bottom of table
 		foreach ($this->widgets as $widget) {
 			if ($widget->get_placement() == DataTableButton::placement_bottom) {
-				$ret .= $widget->display($form_name, $form_method, $state) . "<br />";
+				$ret .= $widget->display($form_name, $form_method, $state) . " ";
 			}
 		}
 

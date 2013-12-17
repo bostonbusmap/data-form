@@ -77,6 +77,7 @@ function make_organisms_form($state, $this_url) {
 	// then sets the form action to sql_export.php, then submits the form.
 	$widgets[] = DataTableLinkBuilder::create()->text("Export all rows")->link("sql_export.php")->
 		behavior(new DataTableBehaviorSetParamsThenSubmit(array($selected_only_name => false)))->build();
+	$widgets[] = CustomWidget::create("<br />");
 	$widgets[] = DataTableLinkBuilder::create()->text("Export selected rows")->link("sql_export.php")->
 		behavior(new DataTableBehaviorSetParamsThenSubmit(array($selected_only_name => true)))->build();
 
