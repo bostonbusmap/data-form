@@ -122,12 +122,9 @@ class DataTableRadio implements IDataTableWidget {
 
 		$ret = "";
 		if ($label !== "") {
-			$ret .= '<label for="' . htmlspecialchars($id_name) . '">';
+			$ret .= '<label for="' . htmlspecialchars($id_name) . '">' . $label . '</label>';
 		}
 		$ret .= '<input type="radio" id="' . htmlspecialchars($id_name) . '" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" ' . $checked . ' />';
-		if ($label !== "") {
-			$ret .= "</label>";
-		}
 		return $ret;
 	}
 

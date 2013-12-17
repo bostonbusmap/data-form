@@ -116,13 +116,10 @@ class DataTableCheckbox implements IDataTableWidget {
 
 		$ret = "";
 		if ($label !== "") {
-			$ret .= '<label for="' . htmlspecialchars($input_name) . '">';
+			$ret .= '<label for="' . htmlspecialchars($input_name) . '">' . $label . '</label>';
 		}
 
 		$ret .= '<input type="checkbox" id="' . htmlspecialchars($input_name) . '" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" onclick="' . htmlspecialchars($onclick) . '" ' . $checked . ' />';
-		if ($label !== "") {
-			$ret .= '</label>';
-		}
 
 		// Create hidden field to allow detection of unchecked
 		if ($state) {
