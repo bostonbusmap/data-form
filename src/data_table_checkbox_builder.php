@@ -178,7 +178,7 @@ class DataTableCheckboxBuilder {
 			throw new Exception("checked_by_default must be a bool");
 		}
 
-		if (!($this->behavior instanceof IDataTableBehavior)) {
+		if (!is_null($this->behavior) && !($this->behavior instanceof IDataTableBehavior)) {
 			throw new Exception("behavior must be type of IDataTableBehavior");
 		}
 
