@@ -40,8 +40,10 @@ class TextboxSearchFormatter implements IDataTableSearchFormatter {
 	 */
 	protected $type;
 	public function __construct($type) {
-		if ($type !== DataTableSearchState::like && $type !== DataTableSearchState::rlike) {
-			throw new Exception("This search formatter only supports LIKE and RLIKE searches");
+		if ($type !== DataTableSearchState::like &&
+			$type !== DataTableSearchState::rlike &&
+			$type !== DataTableSearchState::equal) {
+			throw new Exception("This search formatter only supports LIKE, RLIKE and EQUAL searches");
 		}
 		$this->type = $type;
 	}

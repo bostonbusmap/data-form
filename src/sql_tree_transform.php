@@ -327,7 +327,13 @@ class FilterTreeTransform  implements ISQLTreeTransform
 									$phrase = " $column_key >= $escaped_value ";
 								}
 								elseif ($obj->get_type() === DataTableSearchState::equal) {
-									$phrase = " $column_key = $escaped_value ";
+									if (is_numeric($escaped_value)) {
+										$phrase = " $column_key = $escaped_value ";
+									}
+									else
+									{
+										$phrase = " $column_key = '$escaped_value' ";
+									}
 								}
 								else {
 									throw new Exception("Unimplemented for search type " . $obj->get_type());
