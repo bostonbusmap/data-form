@@ -20,10 +20,14 @@ class DataTableLinkBuilder {
 	protected $link;
 	/** @var  string Name of form element */
 	protected $name;
-	/** @var  IDataTableBehavior */
+	/** @var  IDataTableBehavior What happens when link is clicked */
 	protected $behavior;
-	/** @var  string */
+	/** @var  string Where link goes relative to DataTable */
 	protected $placement;
+	/**
+	 * @var string Title attribute, used for mouseover text
+	 */
+	protected $title;
 
 	/**
 	 * @return DataTableLinkBuilder
@@ -85,6 +89,15 @@ class DataTableLinkBuilder {
 	}
 
 	/**
+	 * @param $title string
+	 * @return DataTableLinkBuilder
+	 */
+	public function title($title) {
+		$this->title = $title;
+		return $this;
+	}
+
+	/**
 	 * @return string
 	 */
 	public function get_link() {
@@ -117,6 +130,13 @@ class DataTableLinkBuilder {
 	 */
 	public function get_placement() {
 		return $this->placement;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function get_title() {
+		return $this->title;
 	}
 
 	/**
@@ -155,6 +175,13 @@ class DataTableLinkBuilder {
 		}
 		if ($this->placement != IDataTableWidget::placement_top && $this->placement != IDataTableWidget::placement_bottom) {
 			throw new Exception("placement must be 'top' or 'bottom'");
+		}
+
+		if (is_null($this->title)) {
+			$this->title = "";
+		}
+		if (!is_string($this->title)) {
+			throw new Exception("title must be a string");
 		}
 
 		return new DataTableLink($this);

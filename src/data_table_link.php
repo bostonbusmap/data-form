@@ -25,6 +25,10 @@ class DataTableLink implements IDataTableWidget {
 	protected $behavior;
 	/** @var string Where link goes relative to DataTable */
 	protected $placement;
+	/**
+	 * @var string Mouseover text
+	 */
+	protected $title;
 
 	// add other parameters as appropriate
 
@@ -40,6 +44,7 @@ class DataTableLink implements IDataTableWidget {
 		$this->text = $builder->get_text();
 		$this->behavior = $builder->get_behavior();
 		$this->placement = $builder->get_placement();
+		$this->title = $builder->get_title();
 	}
 
 	public function get_link() {
@@ -50,9 +55,13 @@ class DataTableLink implements IDataTableWidget {
 		return $this->text;
 	}
 
+	public function get_title() {
+		return $this->title;
+	}
+
 	public function display($form_name, $form_method, $state)
 	{
-		return self::display_link($form_name, $form_method, $this->link, $this->text, $this->behavior);
+		return self::display_link($form_name, $form_method, $this->link, $this->text, $this->behavior, $this->title);
 	}
 
 	/**
@@ -63,9 +72,10 @@ class DataTableLink implements IDataTableWidget {
 	 * @param $link string URL for link
 	 * @param $text string Text of link
 	 * @param $behavior IDataTableBehavior What happens when link is clicked
+	 * @param $title string Mouseover title
 	 * @return string HTML
 	 */
-	public static function display_link($form_name, $form_method, $link, $text, $behavior) {
+	public static function display_link($form_name, $form_method, $link, $text, $behavior, $title) {
 		if ($behavior) {
 			$onclick = $behavior->action($form_name, $link, $form_method);
 		}
@@ -73,7 +83,7 @@ class DataTableLink implements IDataTableWidget {
 		{
 			$onclick = "";
 		}
-		return '<a href="' . htmlspecialchars($link) . '" onclick="' . htmlspecialchars($onclick) . '">' . $text . '</a>';
+		return '<a href="' . htmlspecialchars($link) . '" onclick="' . htmlspecialchars($onclick) . '" title="' . htmlspecialchars($title) . '">' . $text . '</a>';
 	}
 
 	public function get_placement()
@@ -104,6 +114,7 @@ class DataTableLinkFormatter implements IDataTableCellFormatter {
 		}
 		$text = $column_data->get_text();
 		$link = $column_data->get_link();
-		return DataTableLink::display_link($form_name, "POST", $link, $text, null);
+		$title = $column_data->get_title();
+		return DataTableLink::display_link($form_name, "POST", $link, $text, null, $title);
 	}
 }
