@@ -164,6 +164,9 @@ class DataTableRadioBuilder {
 			throw new Exception("checked_by_default must be a bool");
 		}
 
+		if (is_null($this->placement)) {
+			$this->placement = IDataTableWidget::placement_top;
+		}
 		if ($this->placement !== IDataTableWidget::placement_top &&
 			$this->placement !== IDataTableWidget::placement_bottom) {
 			throw new Exception("placement must be either top or bottom");

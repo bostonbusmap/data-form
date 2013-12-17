@@ -182,6 +182,9 @@ class DataTableCheckboxBuilder {
 			throw new Exception("behavior must be type of IDataTableBehavior");
 		}
 
+		if (is_null($this->placement)) {
+			$this->placement = IDataTableWidget::placement_top;
+		}
 		if ($this->placement !== IDataTableWidget::placement_top &&
 			$this->placement !== IDataTableWidget::placement_bottom) {
 			throw new Exception("placement must be either top or bottom");
