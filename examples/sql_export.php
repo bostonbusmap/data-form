@@ -14,7 +14,7 @@ require_once "sql_lib.php";
 
 try {
 	// see export_rows() in sql_lib.php for more information
-	$state = new DataFormState("searches", $_GET);
+	$state = new DataFormState("organisms", $_GET);
 	export_rows($state);
 }
 catch (Exception $e) {

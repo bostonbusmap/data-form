@@ -20,48 +20,8 @@ require_once FILE_BASE_PATH . "/lib/database_iterator.php";
  * @return string SQL
  * @throws Exception
  */
-function make_searches_query() {
-	verify_login();
-
-	$current_user = user::get_current_user();
-	if (!$current_user) {
-		throw new Exception("user is not logged in");
-	}
-	$user_id = (int)$current_user->get_id();
-	$browse_searches_query = "SELECT DISTINCT
-		s.search_perscan_table_name,
-		s.search_date,
-		s.run_id AS rid,
-		s.search_id,
-		s.search_name AS search_name,
-		sa.search_algorithm_type AS stype,
-		s.search_notes AS snotes,
-		sc.scans_name AS scans_name,
-		sc.scans_id AS scid,
-		r.run_name AS run_name,
-		r.run_status as run_status,
-		s.search_peptide_mass_units as mass_units,
-		a.access_type AS acc_type,
-		u.user_name,
-		GROUP_CONCAT(DISTINCT run_conn_table_type) AS tables
-	FROM
-		`access` AS a,
-		`scans` AS sc,
-		`runs` AS r,
-		`search_algorithm` AS sa,
-		users AS u,
-		`searches` AS s LEFT JOIN runs_connector AS rc ON s.run_id = rc.run_id
-	WHERE
-		a.user_id = $user_id AND
-		a.access_id = s.access_id
-		AND s.scans_id = sc.scans_id
-		AND u.user_id=a.user_id
-		AND sa.search_algorithm_id = s.search_algorithm_id
-		AND s.run_id = r.run_id
-		AND s.search_perscan_table_name IS NOT NULL
-		AND s.search_perhit_table_name IS NOT NULL
-	GROUP BY s.search_id
-";
+function make_organisms_query() {
+	$browse_searches_query = "SELECT * FROM organisms";
 	return $browse_searches_query;
 }
 
@@ -70,9 +30,9 @@ function make_searches_query() {
  * @param string $this_url
  * @return DataForm
  */
-function make_searches_form($state, $this_url) {
+function make_organisms_form($state, $this_url) {
 	// generate some SQL
-	$browse_searches_query = make_searches_query();
+	$browse_searches_query = make_organisms_query();
 
 	// SQLBuilder will parse the SQL (using PHP-SQL-Parser) and store it for future manipulation
 	$sql_builder = new SQLBuilder($browse_searches_query);
@@ -86,18 +46,18 @@ function make_searches_form($state, $this_url) {
 	$num_rows = (int)$row[0];
 
 	// Tell DataTable how many rows we have. This is needed for pagination.
-	$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
+	$settings = DataTableSettingsBuilder::create()->default_limit(10)->total_rows($num_rows)->build();
 
-	// Create three columns: search_id which is checkboxes to select rows,
-	// search_date and search_name.
-	// Set search_date to be sortable so we can show off this feature
-	// search_name is set to be searchable
+	// Create three columns: organism_id which is checkboxes to select rows,
+	// organism_name and organism_scientific
+	// Set organism_name to be sortable so we can show off this feature
+	// organism_scientific is set to be searchable
 	$columns = array();
-	$columns[] = DataTableColumnBuilder::create()->column_key("search_id")->
+	$columns[] = DataTableColumnBuilder::create()->column_key("organism_id")->
 		cell_formatter(new DataTableCheckboxCellFormatter())->
 		header_formatter(new DataTableCheckboxHeaderFormatter())->build();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Date created")->column_key("search_date")->sortable(true)->build();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Search name")->column_key("search_name")->searchable(true)->build();
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Organism name")->column_key("organism_name")->sortable(true)->build();
+	$columns[] = DataTableColumnBuilder::create()->display_header_name("Scientific name")->column_key("organism_scientific")->searchable(true)->build();
 
 	// Make a SQL query which takes into account pagination, filtering and sorting. This will be like our original
 	// query but with a LIMIT clause, the search text added in a WHERE clause, and maybe an ORDER BY clause.
@@ -131,7 +91,7 @@ function make_searches_form($state, $this_url) {
 
 	// Specifying the row key parameter is important because it allows the DataForm to uniquely identify
 	// checkboxes and other input fields, even on different pages.
-	$table = DataTableBuilder::create()->columns($columns)->rows(new DatabaseIterator($query, null, "search_id"))->settings($settings)->widgets($widgets)->build();
+	$table = DataTableBuilder::create()->columns($columns)->rows(new DatabaseIterator($query, null, "organism_id"))->settings($settings)->widgets($widgets)->build();
 	$form = DataFormBuilder::create($state->get_form_name())->remote($this_url)->tables(array($table))->build();
 	return $form;
 }
@@ -145,14 +105,14 @@ function export_rows($state) {
 	$selected_only = filter_var($state->find_item(array("selected_only")), FILTER_VALIDATE_BOOLEAN);
 
 	// selected_items is a list of search ids
-	$selected_items = $state->find_item(array("search_id"));
+	$selected_items = $state->find_item(array("organism_id"));
 	if (!$selected_items) {
 		$selected_items = array();
 	}
 
 	// We need to filter the data the way it's filtered in the previous page
 	// to get a correct data set
-	$browse_searches_query = make_searches_query();
+	$browse_searches_query = make_organisms_query();
 	// SQLBuilder parses the query and makes it ready for manipulation
 	$sql_builder = new SQLBuilder($browse_searches_query);
 	// Tell SQLBuilder what filtering, pagination, and sorting we did in the previous page
@@ -172,14 +132,14 @@ function export_rows($state) {
 
 	// Make data set, filtering selected rows manually
 	// We could filter in SQL instead if the number of rows became a problem
-	$headers = array("search_date", "search_name");
+	$headers = array("organism_name", "organism_scientific");
 	$rows = array();
 	foreach (new DatabaseIterator($query) as $row) {
-		$search_id = (string)$row["search_id"];
+		$search_id = (string)$row["organism_id"];
 
 		// if 'Export all rows' or if nothing is selected, or if we're on a selected item
-		if (!$selected_only || ($selected_items && in_array($search_id, $selected_items))) {
-			$rows[] = array($row["search_date"], $row["search_name"]);
+		if (!$selected_only || !$selected_items || in_array($search_id, $selected_items)) {
+			$rows[] = array($row["organism_name"], $row["organism_scientific"]);
 		}
 	}
 

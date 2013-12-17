@@ -13,9 +13,9 @@
 require_once "sql_lib.php";
 
 try {
-	// See make_searches_form in sql_lib.php for more information
-	$state = new DataFormState("searches", $_GET);
-	$form = make_searches_form($state, "sql.php");
+	// See make_organisms_form in sql_lib.php for more information
+	$state = new DataFormState("organisms", $_GET);
+	$form = make_organisms_form($state, "sql.php");
 	if ($state->only_display_form()) {
 		echo $form->display_form($state);
 	}
