@@ -75,6 +75,9 @@ class DataTableBehaviorSubmit implements IDataTableBehavior {
 		$form_params = $this->form_params;
 		$form_params["action"] = $form_action;
 		$form_params["method"] = $form_method;
+		if (!array_key_exists("target", $form_params)) {
+			$form_params["target"] = "";
+		}
 		return 'return DataForm.submit(this, event, ' . json_encode($form_params) . ', ' . json_encode($this->params) . ');';
 	}
 }
