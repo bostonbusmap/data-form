@@ -30,22 +30,17 @@ class DataTableBehaviorNone implements IDataTableBehavior {
 }
 
 /**
- * Set hidden fields to certain values then submit form.
+ * Here for backwards compatibility. Use DataTableBehaviorSubmit instead
  */
 class DataTableBehaviorSetParamsThenSubmit implements IDataTableBehavior {
-	/** @var array */
-	protected $params;
-	public function __construct($params) {
-		if (!is_array($params)) {
-			throw new Exception("params must be array");
-		}
-		$this->params = $params;
+	/** @var  IDataTableBehavior */
+	protected $behavior;
+	public function __construct($params=array(), $form_params=array()) {
+		$this->behavior = new DataTableBehaviorSubmit($params, $form_params);
 	}
-	function action($form_name, $form_action, $form_method) {
-		if (!$form_action) {
-			throw new Exception("form_action is empty");
-		}
-		return 'return DataForm.setParamsThenSubmit(this, event, ' . json_encode($form_action) . ', ' . json_encode($this->params) . ');';
+	function action($form_name, $form_action, $form_method)
+	{
+		return $this->behavior->action($form_name, $form_action, $form_method);
 	}
 }
 
@@ -53,11 +48,34 @@ class DataTableBehaviorSetParamsThenSubmit implements IDataTableBehavior {
  * Set form action for form then submit form
  */
 class DataTableBehaviorSubmit implements IDataTableBehavior {
+	/** @var  array */
+	protected $form_params;
+	/** @var array */
+	protected $params;
+
+	/**
+	 * @param array $form_params parameters where key is attribute name on form, value is value for attribute
+	 * @param array $params parameters where key is ID of hidden input field, value is the value attribute
+	 * @throws Exception
+	 */
+	public function __construct($params=array(), $form_params=array()) {
+		if (!is_array($params)) {
+			throw new Exception("params must be array");
+		}
+		if (!is_array($form_params)) {
+			throw new Exception("form_params must be an array");
+		}
+		$this->form_params = $form_params;
+		$this->params = $params;
+	}
 	function action($form_name, $form_action, $form_method) {
 		if (!$form_action) {
 			throw new Exception("form_action is empty");
 		}
-		return 'return DataForm.submit(this, event, ' . json_encode($form_action) . ');';
+		$form_params = $this->form_params;
+		$form_params["action"] = $form_action;
+		$form_params["method"] = $form_method;
+		return 'return DataForm.submit(this, event, ' . json_encode($form_params) . ', ' . json_encode($this->params) . ');';
 	}
 }
 
