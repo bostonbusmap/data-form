@@ -87,14 +87,15 @@ class DataTableButton implements IDataTableWidget {
 				$ret .= '<label for="' . htmlspecialchars($qualified_name) . '">' . $label . '</label>';
 			}
 
-			$ret .= '<input type="' . htmlspecialchars($type) . '" id="' . htmlspecialchars($qualified_name) .
+			// TODO: value attribute
+			$ret .= '<button type="' . htmlspecialchars($type) . '" id="' . htmlspecialchars($qualified_name) .
 				'" name="' . htmlspecialchars($qualified_name) . '" value="' . htmlspecialchars($text) .
-				'" onclick="' . htmlspecialchars($onchange) . '"/>';
+				'" onclick="' . htmlspecialchars($onchange) . '">' . htmlspecialchars($text) . '</button>';
 		}
 		else
 		{
-			$ret .= '<input type="' . htmlspecialchars($type) . '" value="' . htmlspecialchars($text) .
-				'" onclick="' . htmlspecialchars($onchange) . '"/>';
+			$ret .= '<button type="' . htmlspecialchars($type) . '" value="' . htmlspecialchars($text) .
+				'" onclick="' . htmlspecialchars($onchange) . '">' . htmlspecialchars($text) . '</button>';
 		}
 
 		$ret .= "</select>";
