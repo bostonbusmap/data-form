@@ -122,14 +122,17 @@ class DataTableCheckbox implements IDataTableWidget {
 		$ret .= '<input type="checkbox" id="' . htmlspecialchars($input_name) . '" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" onclick="' . htmlspecialchars($onclick) . '" ' . $checked . ' />';
 
 		// Create hidden field to allow detection of unchecked
-		if ($state) {
-			$hidden_key = array_merge(DataFormState::get_hidden_state_key(), $name_array);
-			if ($state->has_item($hidden_key)) {
-				// Item is defined in history
-				// We need this blank hidden field to prevent history overwriting a missing value
-				$blank_name = array_merge(DataFormState::get_blanks_key(), $name_array);
-				$ret .= DataTableHidden::display_hidden($form_name, $state, $blank_name, "");
-			}
+		if ($checked) {
+			// $blank_name is meant to convey that the name existed in form even if the checkbox is unchecked
+			// It says to not use any hidden state, just the checkbox value if present or null if not present.
+
+			// Note that all of history is already incorporated into $state in DataFormState's constructor
+			// so we don't need to consider it here.
+
+			// If not checked we don't want to display this because it's unnecessary and will add many hidden fields
+			// to a form. We only want to cover the case where a checked item is unchecked.
+			$blank_name = array_merge(DataFormState::get_blanks_key(), $name_array);
+			$ret .= DataTableHidden::display_hidden($form_name, $state, $blank_name, "");
 		}
 
 		return $ret;
