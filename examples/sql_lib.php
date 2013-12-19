@@ -34,19 +34,12 @@ function make_organisms_form($state, $this_url) {
 	// generate some SQL
 	$browse_searches_query = make_organisms_query();
 
-	// SQLBuilder will parse the SQL (using PHP-SQL-Parser) and store it for future manipulation
-	$sql_builder = new SQLBuilder($browse_searches_query);
-	// Let SQLBuilder know about $state which contains our search text, pagination and sorting information
-	$sql_builder->state($state);
-	// Ask SQLBuilder for SQL to count the rows
-	$count_query = $sql_builder->build_count();
-
-	$count_res = gfy_db::query($count_query, null, true);
-	$row = gfy_db::fetch_row($count_res);
-	$num_rows = (int)$row[0];
-
 	// Tell DataTable how many rows we have. This is needed for pagination.
-	$settings = DataTableSettingsBuilder::create()->default_limit(10)->total_rows($num_rows)->build();
+	$settings = DataTableSettingsBuilder::create()->default_limit(10)->build();
+
+	// Make a SQL query which takes into account pagination, filtering and sorting. This will be like our original
+	// query but with a LIMIT clause, the search text added in a WHERE clause, and maybe an ORDER BY clause.
+	$query = paginate_sql($browse_searches_query, $state, $settings);
 
 	// Create three columns: organism_id which is checkboxes to select rows,
 	// organism_name and organism_scientific
@@ -59,9 +52,6 @@ function make_organisms_form($state, $this_url) {
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Organism name")->column_key("organism_name")->sortable(true)->build();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Scientific name")->column_key("organism_scientific")->searchable(true)->build();
 
-	// Make a SQL query which takes into account pagination, filtering and sorting. This will be like our original
-	// query but with a LIMIT clause, the search text added in a WHERE clause, and maybe an ORDER BY clause.
-	$query = $sql_builder->build();
 
 	// Define the pieces of HTML which surround the DataTable
 	$widgets = array();
