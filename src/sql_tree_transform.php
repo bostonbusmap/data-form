@@ -69,12 +69,12 @@ class LimitPaginationTreeTransform implements ISQLTreeTransform
 				$limit = $pagination_state->get_limit();
 			}
 
-			if (is_null($pagination_state->get_current_page())) {
+			if (is_null($pagination_state->get_current_page($settings))) {
 				$current_page = 0;
 			}
 			else
 			{
-				$current_page = $pagination_state->get_current_page();
+				$current_page = $pagination_state->get_current_page($settings);
 			}
 
 			$offset = $current_page * $limit;
@@ -132,12 +132,12 @@ class BoundedPaginationTreeTransform implements ISQLTreeTransform
 				$limit = $pagination_state->get_limit();
 			}
 
-			if (is_null($pagination_state->get_current_page())) {
+			if (is_null($pagination_state->get_current_page($settings))) {
 				$current_page = 0;
 			}
 			else
 			{
-				$current_page = $pagination_state->get_current_page();
+				$current_page = $pagination_state->get_current_page($settings);
 			}
 
 			$start = $limit * $current_page;

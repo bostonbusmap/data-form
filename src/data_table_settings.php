@@ -16,7 +16,7 @@ class DataTableSettings {
 
 	/** @var  int Default number of rows per page */
 	protected $default_limit;
-	/** @var  int Number of rows in data set. Used to calculate pagination */
+	/** @var  int|null Number of rows in data set. Used to calculate pagination. May be null if not specified */
 	protected $total_rows;
 
 	/** @var string[] Mapping of limit number to text to display for that limit number */
@@ -168,7 +168,7 @@ class DataTableSettings {
 		$window = 5;
 
 		if ($pagination_state) {
-			$current_page = $pagination_state->get_current_page();
+			$current_page = $pagination_state->get_current_page($this);
 		}
 		else
 		{
@@ -280,9 +280,9 @@ class DataTableSettings {
 	}
 
 	/**
-	 * Number of rows in data set
+	 * Number of rows in data set. May be null if unspecified
 	 *
-	 * @return int
+	 * @return int|null
 	 */
 	public function get_total_rows() {
 		return $this->total_rows;

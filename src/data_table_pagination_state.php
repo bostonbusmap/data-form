@@ -53,11 +53,57 @@ class DataTablePaginationState {
 	}
 
 	/**
-	 * @return int
-	 * The current page (starting from 0)
+	 * @param $settings DataTableSettings May be null if unspecified
+	 * @return int The current page (starting from 0). If $settings is specified and page is past the end, return the last valid page
 	 */
-	public function get_current_page()
-	{
-		return $this->current_page;
+	public function get_current_page($settings) {
+		if ($settings === null) {
+			return $this->current_page;
+		}
+		else
+		{
+			$total_rows = $settings->get_total_rows();
+			if ($total_rows === null) {
+				return $this->current_page;
+			}
+			elseif ($this->current_page === null) {
+				return $this->current_page;
+			}
+			else
+			{
+				if ($this->limit === null) {
+					$limit = $settings->get_default_limit();
+				}
+				else
+				{
+					$limit = $this->limit;
+				}
+
+				if ($limit == 0) {
+					$num_pages = 1;
+				}
+				elseif (($total_rows % $limit) !== 0) {
+					$num_pages = (int)(($total_rows / $limit) + 1);
+				}
+				else
+				{
+					$num_pages = (int)($total_rows / $limit);
+				}
+
+				if ($this->current_page >= $num_pages) {
+					if ($num_pages > 1) {
+						return $num_pages - 1;
+					}
+					else
+					{
+						return 0;
+					}
+				}
+				else
+				{
+					return $this->current_page;
+				}
+			}
+		}
 	}
 }

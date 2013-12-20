@@ -59,7 +59,6 @@ function make_form($state) {
 
 	// The pagination state stores things like the current limit and page number
 	$pagination_state = $state->get_pagination_state();
-	$current_page = $pagination_state->get_current_page();
 
 	// just one column here, a list of numbers, highlighted with PrimeFormatter if prime, and sortable
 	$columns = array();
@@ -72,6 +71,7 @@ function make_form($state) {
 	// Note that total_rows needs to be set here so that the DataTable
 	// can calculate how many pages there are.
 	$settings = DataTableSettingsBuilder::create()->total_rows($total_count)->default_limit(25)->build();
+	$current_page = $pagination_state->get_current_page($settings);
 
 	// A limit of 0 means display all rows
 	$limit = $pagination_state->get_limit();
