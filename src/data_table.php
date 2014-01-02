@@ -142,11 +142,11 @@ class DataTable
 
 		// show blue header on top of table. May contain pagination controls
 		if ($this->is_sortable()) {
-			$ret .= '<table class="table-autosort table-stripeclass:shadedbg table-altstripeclass:shadedbg" style="width: 400px;">';
+			$ret .= '<table class="table-autosort">';
 		}
 		else
 		{
-			$ret .= '<table class="table-stripeclass:shadedbg table-altstripeclass:shadedbg" style="width: 400px;">';
+			$ret .= '<table>';
 		}
 
 		// write pagination controls
@@ -234,7 +234,7 @@ class DataTable
 	protected function display_table_header($form_name, $form_method, $remote_url, $state)
 	{
 		$ret = "<thead>";
-		$ret .= "<tr class='standard-table-header'>";
+		$ret .= "<tr>";
 
 		// figure out sorting state
 		/** @var string[] $old_sorting_state mapping of column key to 'asc' or 'desc' */
@@ -273,7 +273,7 @@ class DataTable
 			if ($column->get_sortable()) {
 				if ($remote_url) {
 					// draw sorting arrow and set hidden field
-					$ret .= '<th class="column_' . htmlspecialchars($column_key) . '">';
+					$ret .= '<th class="column-' . htmlspecialchars($column_key) . '">';
 					if (array_key_exists($column_key, $old_sorting_state)) {
 						// set sorting state in form
 						// Note that the code at $this->remote is responsible for reading sorting state
@@ -292,13 +292,13 @@ class DataTable
 				else
 				{
 					// let Javascript handle it
-					$ret .= '<th class="column_' . htmlspecialchars($column_key) . ' table-sortable:' . htmlspecialchars($column->get_sortable()) . ' table-sortable" title="Click to sort">';
+					$ret .= '<th class="column-' . htmlspecialchars($column_key) . ' table-sortable:' . htmlspecialchars($column->get_sortable()) . ' table-sortable" title="Click to sort">';
 				}
 			}
 			else
 			{
 				// no sorting
-				$ret .= '<th class="column_' . htmlspecialchars($column_key) . '">';
+				$ret .= '<th class="column-' . htmlspecialchars($column_key) . '">';
 			}
 
 			// If sortable, make header text a link which flips sorting
@@ -331,7 +331,7 @@ class DataTable
 
 		// if searchable, write a second header row with text fields
 		if ($this->is_searchable()) {
-			$ret .= "<tr class='standard-table-header'>";
+			$ret .= "<tr>";
 			foreach ($this->columns as $column) {
 				$column_key = $column->get_column_key();
 				$ret .= "<th>";
@@ -393,13 +393,19 @@ class DataTable
 			}
 			$row_id = (string)$row_id;
 
-			if ($this->row_classes && array_key_exists($row_id, $this->row_classes)) {
-				$row_class = $this->row_classes[$row_id];
+			if ($this->row_classes) {
+				if (array_key_exists($row_id, $this->row_classes)) {
+					$row_class = $this->row_classes[$row_id];
+				}
+				else
+				{
+					$row_class = "";
+				}
 			} else {
 				if ($row_count % 2 == 0) {
-					$row_class = "shadedbg";
+					$row_class = "row-even";
 				} else {
-					$row_class = "unshadedbg";
+					$row_class = "row-odd";
 				}
 			}
 
@@ -410,8 +416,7 @@ class DataTable
 			// if the data exists in $row
 			foreach ($this->columns as $column) {
 				$column_key = $column->get_column_key();
-				$col_css = $column->get_css();
-				$ret .= '<td class="column_' . htmlspecialchars($column_key) . " " . htmlspecialchars($col_css) . '">';
+				$ret .= '<td class="column-' . htmlspecialchars($column_key) . '">';
 				/** @var DataTableColumn $column */
 				if (array_key_exists($column_key, $row)) {
 					$cell = $row[$column_key];

@@ -33,7 +33,7 @@ class DefaultCellFormatter implements IDataTableCellFormatter {
 }
 
 /**
- * Default column header formatter. Adds strong tags around header_data
+ * Default column header formatter.
  */
 class DefaultHeaderFormatter implements IDataTableHeaderFormatter {
 
@@ -48,7 +48,7 @@ class DefaultHeaderFormatter implements IDataTableHeaderFormatter {
 	 */
 	public function format($form_name, $column_key, $header_data, $state)
 	{
-		return "<strong>" . $header_data . "</strong>";
+		return $header_data;
 	}
 }
 
@@ -94,11 +94,6 @@ class DataTableColumn {
 	protected $column_key;
 
 	/**
-	 * @var string CSS for this column
-	 */
-	protected $css;
-
-	/**
 	 * Use DataTableColumnBuilder::build()
 	 *
 	 * @param $builder DataTableColumnBuilder
@@ -115,7 +110,6 @@ class DataTableColumn {
 		$this->search_formatter = $builder->get_search_formatter();
 		$this->display_header_name = $builder->get_display_header_name();
 		$this->column_key = $builder->get_column_key();
-		$this->css = $builder->get_css();
 	}
 
 	/**
@@ -175,15 +169,5 @@ class DataTableColumn {
 	 */
 	public function get_column_key() {
 		return $this->column_key;
-	}
-
-	/**
-	 * The css class applied to this column
-	 *
-	 * @return string
-	 */
-	public function get_css()
-	{
-		return $this->css;
 	}
 }

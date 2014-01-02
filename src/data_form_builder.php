@@ -205,7 +205,7 @@ class DataFormBuilder {
 		}
 
 		if (is_null($this->div_class)) {
-			$this->div_class = "";
+			$this->div_class = "data-form";
 		}
 		if (!is_string($this->div_class)) {
 			throw new Exception("div_class must be a string");

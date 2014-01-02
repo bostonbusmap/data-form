@@ -248,8 +248,7 @@ class DataForm {
 		foreach ($this->validator_rules as $rule) {
 			$error = $rule->validate($this, $state);
 			if ($error) {
-				// TODO: css class
-				$errors[] = '<span style="color: red;">' . htmlspecialchars($error) . "</span>";
+				$errors[] = '<span class="error">' . htmlspecialchars($error) . "</span>";
 			}
 		}
 		return join("<br />", $errors);

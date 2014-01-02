@@ -43,11 +43,6 @@ class DataTableColumnBuilder {
 	 */
 	protected $column_key;
 
-	/**
-	 * @var string CSS for this column
-	 */
-	protected $css;
-
 	public static function create() {
 		return new DataTableColumnBuilder();
 	}
@@ -115,15 +110,6 @@ class DataTableColumnBuilder {
 		return $this;
 	}
 
-	/**
-	 * @param $css string
-	 * @return DataTableColumnBuilder
-	 */
-	public function css($css) {
-		$this->css = $css;
-		return $this;
-	}
-
 	public function get_header_formatter() {
 		return $this->header_formatter;
 	}
@@ -150,10 +136,6 @@ class DataTableColumnBuilder {
 
 	public function get_column_key() {
 		return $this->column_key;
-	}
-
-	public function get_css() {
-		return $this->css;
 	}
 
 	/**
@@ -216,12 +198,6 @@ class DataTableColumnBuilder {
 		}
 		if (!is_string($this->display_header_name)) {
 			throw new Exception("display_header_name must be a string");
-		}
-		if (is_null($this->css)) {
-			$this->css = "";
-		}
-		if (!is_string($this->css)) {
-			throw new Exception("css must be a string");
 		}
 
 		return new DataTableColumn($this);
