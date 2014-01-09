@@ -108,6 +108,19 @@ class DataForm {
 	 * @return string HTML
 	 */
 	public function display($state=null) {
+		$writer = new StringWriter();
+		$this->display_using_writer($writer, $state);
+		return $writer->get_contents();
+	}
+
+	/**
+	 * Returns HTML for a div wrapping a form
+	 * @param IWriter $writer Where to output HTML
+	 * @param DataFormState $state
+	 * @throws Exception
+	 * @return void
+	 */
+	public function display_using_writer($writer, $state=null) {
 		if ($state && !($state instanceof DataFormState)) {
 			throw new Exception("state must be instance of DataFormState");
 		}
@@ -115,42 +128,54 @@ class DataForm {
 			throw new Exception("If form is a remote form, state must be specified");
 		}
 
-		$ret =  '<div class="' . htmlspecialchars($this->div_class) . '" id="' . htmlspecialchars($this->form_name) . '">';
-		$ret .=  $this->display_form($state);
-		$ret .= '</div>';
-		return $ret;
+		$writer->write('<div class="' . htmlspecialchars($this->div_class) . '" id="' . htmlspecialchars($this->form_name) . '">');
+		$this->display_form_using_writer($writer, $state);
+		$writer->write('</div>');
 	}
+
 
 	/**
 	 * Returns HTML for just the form element
 	 * @param DataFormState $state The state which holds what the user is working on
-	 * @return string HTML for form
+	 * @return string HTML
 	 * @throws Exception
 	 */
 	public function display_form($state=null) {
+		$writer = new StringWriter();
+		$this->display_form_using_writer($writer, $state);
+		return $writer->get_contents();
+	}
+
+	/**
+	 * Returns HTML for just the form element
+	 * @param IWriter $writer Where to output HTML to
+	 * @param DataFormState $state The state which holds what the user is working on
+	 * @return void
+	 * @throws Exception
+	 */
+	public function display_form_using_writer($writer, $state=null) {
 		if ($state && !($state instanceof DataFormState)) {
 			throw new Exception("state must be instance of DataFormState");
 		}
 		if (!$state && $this->remote) {
 			throw new Exception("If form is a remote form, state must be specified");
 		}
-		$ret = "";
 
 		// flash space for messages
-		$ret .= '<div id="' . htmlspecialchars($this->form_name . "_flash") . '"></div>';
+		$writer->write('<div id="' . htmlspecialchars($this->form_name . "_flash") . '"></div>');
 
 		// form action is set in javascript
-		$ret .= '<form accept-charset="utf-8" name="' . htmlspecialchars($this->form_name) . '" method="' . htmlspecialchars($this->method) . '">';
+		$writer->write('<form accept-charset="utf-8" name="' . htmlspecialchars($this->form_name) . '" method="' . htmlspecialchars($this->method) . '">');
 
 		$exists_field_name = DataFormState::make_field_name($this->form_name, DataFormState::exists_key());
-		$ret .= '<input type="hidden" name="' . htmlspecialchars($exists_field_name) . '" value="true" />';
+		$writer->write('<input type="hidden" name="' . htmlspecialchars($exists_field_name) . '" value="true" />');
 
 		$state_prefix = $this->form_name . "[" . DataFormState::state_key .  "]";
 
 		foreach ($this->forwarded_state as $forwarded_state) {
-			$ret .= self::make_hidden_inputs_from_array($forwarded_state->get_form_data(),
+			$writer->write(self::make_hidden_inputs_from_array($forwarded_state->get_form_data(),
 				DataFormState::make_field_name($this->form_name,
-					array(DataFormState::state_key, DataFormState::forwarded_state_key, $forwarded_state->get_form_name())));
+					array(DataFormState::state_key, DataFormState::forwarded_state_key, $forwarded_state->get_form_name()))));
 		}
 
 		if ($state && $state->exists()) {
@@ -159,16 +184,14 @@ class DataForm {
 			$new_hidden_data = $state->get_form_data();
 			unset($new_hidden_data[DataFormState::state_key]);
 
-			$ret .= self::make_hidden_inputs_from_array($new_hidden_data,
-				DataFormState::make_field_name($this->form_name, array(DataFormState::state_key, DataFormState::hidden_state_key)));
+			$writer->write(self::make_hidden_inputs_from_array($new_hidden_data,
+				DataFormState::make_field_name($this->form_name, array(DataFormState::state_key, DataFormState::hidden_state_key))));
 		}
 
 		foreach ($this->tables as $table) {
-			$ret .= $table->display_table($this->form_name, $this->method, $this->remote, $state);
+			$table->display_table_using_writer($this->form_name, $this->method, $this->remote, $writer, $state);
 		}
-		$ret .= "</form>";
-
-		return $ret;
+		$writer->write("</form>");
 	}
 
 	/**

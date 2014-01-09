@@ -42,6 +42,7 @@ require_once "selected.php";
 require_once "sql_builder.php";
 require_once "util.php";
 require_once "validator_rule.php";
+require_once "writer.php";
 
 /**
  * This displays an HTML table of data. Rows can be selectable and results are submitted to $form_action
@@ -118,6 +119,25 @@ class DataTable
 	 * @return string HTML
 	 */
 	public function display_table($form_name, $form_method, $remote_url, $state = null) {
+		$writer = new StringWriter();
+		$this->display_table_using_writer($form_name, $form_method, $remote_url, $writer, $state);
+		return $writer->get_contents();
+	}
+
+	/**
+	 * Returns HTML for table. Meant for use by DataForm, users should call DataForm::display() instead
+	 *
+	 * May display empty message instead of empty_message is set and there are no rows
+	 *
+	 * @param string $form_name The name of the form
+	 * @param string $form_method Either GET or POST
+	 * @param $remote_url string The URL to refresh from via AJAX
+	 * @param IWriter $writer Writer to output HTML
+	 * @param DataFormState $state Optional state which contains form data. If null defaults are used
+	 * @throws Exception
+	 * @return void
+	 */
+	public function display_table_using_writer($form_name, $form_method, $remote_url, $writer, $state = null) {
 		if (!is_string($form_name)) {
 			throw new Exception("form_name must be a string");
 		}
@@ -127,58 +147,56 @@ class DataTable
 		if ($state && !($state instanceof DataFormState)) {
 			throw new Exception("state must be instance of DataFormState");
 		}
-		$ret = "";
 
 		if (!$this->rows && $this->empty_message) {
-			return $this->empty_message;
+			$writer->write($this->empty_message);
+			return;
 		}
 
 		// display top buttons
 		foreach ($this->widgets as $widget) {
 			if ($widget->get_placement() == DataTableButton::placement_top) {
-				$ret .= $widget->display($form_name, $form_method, $state) . " ";
+				$writer->write($widget->display($form_name, $form_method, $state) . " ");
 			}
 		}
 
 		// show blue header on top of table. May contain pagination controls
 		if ($this->is_sortable()) {
-			$ret .= '<table class="table-autosort">';
+			$writer->write('<table class="table-autosort">');
 		}
 		else
 		{
-			$ret .= '<table>';
+			$writer->write('<table>');
 		}
 
 		// write pagination controls
 		if ($this->header || ($this->settings && $this->settings->uses_pagination())) {
-			$ret .= "<caption>";
+			$writer->write("<caption>");
 
 			if ($this->header) {
 				$ret .= $this->header;
 			}
 			if ($this->settings && $this->settings->uses_pagination())
 			{
-				$ret .= $this->settings->display_controls($form_name, $form_method, $state,
-					$remote_url, $this->table_name);
+				$writer->write($this->settings->display_controls($form_name, $form_method, $state,
+					$remote_url, $this->table_name));
 			}
-			$ret .= "</caption>";
+			$writer->write("</caption>");
 		}
 
 		// write header, which may include sorting and filtering HTML
-		$ret .= $this->display_table_header($form_name, $form_method, $remote_url, $state);
+		$writer->write($this->display_table_header($form_name, $form_method, $remote_url, $state));
 
 		// write data
-		$ret .= $this->display_table_body($form_name, $form_method, $state);
-		$ret .= "</table>";
+		$this->display_table_body($form_name, $form_method, $state, $writer);
+		$writer->write("</table>");
 
 		// write buttons at bottom of table
 		foreach ($this->widgets as $widget) {
 			if ($widget->get_placement() == DataTableButton::placement_bottom) {
-				$ret .= $widget->display($form_name, $form_method, $state) . " ";
+				$writer->write($widget->display($form_name, $form_method, $state) . " ");
 			}
 		}
-
-		return $ret;
 	}
 
 	/**
@@ -365,15 +383,18 @@ class DataTable
 	/**
 	 * Display the table body HTML
 	 *
+	 * Note: most display functions just return a string, but this uses $writer because this may produce a huge amount of HTML
+	 *
 	 * @param $form_name string Name of form
 	 * @param $form_method string GET or POST
 	 * @param $state DataFormState State of form
-	 * @return string HTML
+	 * @param $writer IWriter Writer to output HTML to
+	 * @return void
 	 * @throws Exception
 	 */
-	public function display_table_body($form_name, $form_method, $state)
+	public function display_table_body($form_name, $form_method, $state, $writer)
 	{
-		$ret = "<tbody>";
+		$writer->write("<tbody>");
 
 		// user can either have field names as keys for each row, or set them in $this->sql_field_names
 		// and map them to indexes
@@ -409,14 +430,14 @@ class DataTable
 				}
 			}
 
-			$ret .= '<tr class="' . htmlspecialchars($row_class) . '">';
+			$writer->write('<tr class="' . htmlspecialchars($row_class) . '">');
 
 
 			// We are writing each column in order and only matching it up with data
 			// if the data exists in $row
 			foreach ($this->columns as $column) {
 				$column_key = $column->get_column_key();
-				$ret .= '<td class="column-' . htmlspecialchars($column_key) . '">';
+				$writer->write('<td class="column-' . htmlspecialchars($column_key) . '">');
 				/** @var DataTableColumn $column */
 				if (array_key_exists($column_key, $row)) {
 					$cell = $row[$column_key];
@@ -435,15 +456,14 @@ class DataTable
 					// the row selection checkbox
 					$cell = null;
 				}
-				$ret .= $column->get_display_data($form_name, $column_key, $cell, $row_id, $state);
-				$ret .= "</td>";
+				$writer->write($column->get_display_data($form_name, $column_key, $cell, $row_id, $state));
+				$writer->write("</td>");
 			}
 
-			$ret .= "</tr>";
+			$writer->write("</tr>");
 			$row_count++;
 		}
-		$ret .= "</tbody>";
-		return $ret;
+		$writer->write("</tbody>");
 	}
 
 	/**
