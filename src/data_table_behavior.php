@@ -252,3 +252,17 @@ class DataTableBehaviorCustom implements IDataTableBehavior {
 		return $this->javascript;
 	}
 }
+
+/**
+ * Refresh and ignore the previous state
+ */
+class DataTableBehaviorReset implements IDataTableBehavior {
+
+	function action($form_name, $form_action, $form_method)
+	{
+		$reset_key = DataFormState::make_field_name($form_name, DataFormState::get_reset_key());
+
+		$refresh = new DataTableBehaviorRefresh(array($reset_key => "true"));
+		return $refresh->action($form_name, $form_action, $form_method);
+	}
+}

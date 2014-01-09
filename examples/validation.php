@@ -116,6 +116,8 @@ function make_form($state) {
 	$widgets = array();
 	$widgets[] = DataTableButtonBuilder::create()->text("Validate and submit")->form_action("validation_submit.php")->behavior(new DataTableBehaviorSubmitAndValidate($this_url))->build();
 	$widgets[] = DataTableTextboxBuilder::create()->text("Enter text without spaces")->name("text")->build();
+	$widgets[] = new CustomWidget("<br />");
+	$widgets[] = DataTableButtonBuilder::create()->text("Reset form")->behavior(new DataTableBehaviorReset())->build();
 
 	// Add validator rules
 	$validator_rules = array();

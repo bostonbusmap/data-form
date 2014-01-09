@@ -70,6 +70,8 @@ function make_organisms_form($state, $this_url) {
 	$widgets[] = CustomWidget::create("<br />");
 	$widgets[] = DataTableLinkBuilder::create()->text("Export selected rows")->link("sql_export.php")->
 		behavior(new DataTableBehaviorSetParamsThenSubmit(array($selected_only_name => true)))->build();
+	$widgets[] = CustomWidget::create("<br />");
+	$widgets[] = DataTableButtonBuilder::create()->text("Reset")->behavior(new DataTableBehaviorReset())->build();
 
 	// We need to have a hidden field to set so the value is passed when submitting the form.
 	$widgets[] = DataTableHiddenBuilder::create()->name("selected_only")->build();

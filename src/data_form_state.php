@@ -69,6 +69,8 @@ class DataFormState
 
 	const only_validate_key = "_v";
 
+	const reset_key = "_r";
+
 	/**
 	 * The piece of $_POST or $_GET that's relevant to this form, slightly modified
 	 * @var array
@@ -120,6 +122,22 @@ class DataFormState
 		}
 		if (!is_array($this->form_data)) {
 			throw new Exception("form_data was expected to be an array");
+		}
+
+		if (array_key_exists(self::state_key, $this->form_data)) {
+			$old_form_state = $this->form_data[self::state_key];
+			if (array_key_exists(self::reset_key, $this->form_data[self::state_key])) {
+				// Reset form
+				$this->form_data = array();
+
+				$special_keys = array(self::form_exists, self::only_display_form);
+				// preserve these keys since they don't refer to the data, just how we are accessing the DataForm
+				foreach ($special_keys as $special_key) {
+					if (array_key_exists(self::form_exists, $old_form_state)) {
+						$this->form_data[self::state_key][$special_key] = $old_form_state[$special_key];
+					}
+				}
+			}
 		}
 
 		// just some validation
@@ -493,6 +511,22 @@ class DataFormState
 	 */
 	public static function exists_key() {
 		return array(self::state_key, self::form_exists);
+	}
+
+	/**
+	 * Should we ignore the state and use defaults, effectively resetting the form?
+	 *
+	 * @return bool
+	 */
+	public function get_reset() {
+		return $this->has_item(self::get_reset_key());
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public static function get_reset_key() {
+		return array(self::state_key, self::reset_key);
 	}
 
 	/**
