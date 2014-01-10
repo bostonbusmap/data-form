@@ -51,10 +51,11 @@ function create_columns_from_database($res) {
  * @param $settings DataTableSettings Table settings. This will become a copy of the input with total_rows
  * set to the number of rows. New default object will be created if this is null.
  * @param $conn_type string Connection type, used for querying for count
+ * @param $table_name string Name of table, if more than one table in form
  * @return string SQL
  * @throws Exception
  */
-function paginate_sql($query, $state, &$settings, $conn_type=null) {
+function paginate_sql($query, $state, &$settings, $conn_type=null, $table_name="") {
 	if (!is_string($query)) {
 		throw new Exception("query must be a string");
 	}
@@ -67,11 +68,14 @@ function paginate_sql($query, $state, &$settings, $conn_type=null) {
 	if (($conn_type !== null) && !is_string($conn_type)) {
 		throw new Exception("conn_type must be a string or null");
 	}
+	if (!is_string($table_name)) {
+		throw new Exception("table_name must be a string");
+	}
 
 	// There's a cost to parsing SQL so this object is used twice
 	$sql_builder = SQLBuilder::create($query);
 
-	$count_sql = $sql_builder->state($state)->settings($settings)->build_count();
+	$count_sql = $sql_builder->state($state)->settings($settings)->table_name($table_name)->build_count();
 	$count_res = gfy_db::query($count_sql, $conn_type, true);
 	$count_row = gfy_db::fetch_row($count_res);
 	$num_rows = (int)$count_row[0];
@@ -86,6 +90,48 @@ function paginate_sql($query, $state, &$settings, $conn_type=null) {
 
 	$paginated_sql = $sql_builder->settings($settings)->build();
 	return $paginated_sql;
+}
+
+/**
+ * Return a subset of an array given the current pagination state and settings
+ *
+ * @param $array array Full set of rows to be paginated
+ * @param $state DataFormState
+ * @param $settings DataTableSettings Table settings. This will become a copy of the input with total_rows
+ * set to the number of rows. New default object will be created if this is null.
+ * @param $table_name string Name of table to paginate, if more than one table in form
+ * @return array Paginated subset of array
+ * @throws Exception
+ */
+function paginate_array($array, $state, &$settings, $table_name="") {
+	if (!is_array($array)) {
+		throw new Exception("array must be an array");
+	}
+	if (!($state instanceof DataFormState)) {
+		throw new Exception("state must be instance of DataFormState");
+	}
+	if ($settings !== null && !($settings instanceof DataTableSettings)) {
+		throw new Exception("settings must be instance of DataTableSettings, or null to create a new object");
+	}
+	if (!is_string($table_name)) {
+		throw new Exception("table_name must be a string");
+	}
+
+	$num_rows = count($array);
+	if ($settings) {
+		$settings = $settings->make_builder()->total_rows($num_rows)->build();
+	}
+	else
+	{
+		$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
+	}
+
+	$pagination_state = $state->get_pagination_state($table_name);
+	$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
+	$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
+
+
+	return array_slice($array, $current_page * $limit, $limit);
 }
 
 /**

@@ -71,7 +71,7 @@ function make_form($state) {
 	// Note that total_rows needs to be set here so that the DataTable
 	// can calculate how many pages there are.
 	$settings = DataTableSettingsBuilder::create()->total_rows($total_count)->default_limit(25)->build();
-	$current_page = $pagination_state->get_current_page($settings);
+	$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
 
 	// A limit of 0 means display all rows
 	$limit = $pagination_state->get_limit();

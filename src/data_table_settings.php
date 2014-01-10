@@ -167,32 +167,9 @@ class DataTableSettings {
 		// TODO: make this a parameter
 		$window = 5;
 
-		if ($pagination_state) {
-			$current_page = $pagination_state->get_current_page($this);
-		}
-		else
-		{
-			$current_page = 0;
-		}
+		$current_page = self::calculate_current_page($this, $pagination_state);
 
-		if (!$pagination_state || is_null($pagination_state->get_limit())) {
-			$limit = $this->default_limit;
-		}
-		else {
-			$limit = $pagination_state->get_limit();
-		}
-
-		$num_rows = $this->total_rows;
-		if ($limit == 0) {
-			$num_pages = 1;
-		}
-		elseif (($num_rows % $limit) !== 0) {
-			$num_pages = (int)(($num_rows / $limit) + 1);
-		}
-		else
-		{
-			$num_pages = (int)($num_rows / $limit);
-		}
+		$num_pages = self::calculate_num_pages($this, $pagination_state);
 
 		// note that current_page is 0-indexed
 		if ($current_page > 0) {
@@ -305,6 +282,94 @@ class DataTableSettings {
 	 */
 	public function get_default_filtering() {
 		return $this->filtering;
+	}
+
+	/**
+	 * @param $settings DataTableSettings
+	 * @param $pagination_state DataTablePaginationState
+	 * @throws Exception
+	 * @return int
+	 */
+	public static function calculate_current_page($settings, $pagination_state)
+	{
+		if ($settings !== null && !($settings instanceof DataTableSettings)) {
+			throw new Exception("settings must be instance of DataTableSettings");
+		}
+		if ($pagination_state !== null && !($pagination_state instanceof DataTablePaginationState)) {
+			throw new Exception("pagination_state must be instance of DataTablePaginationState");
+		}
+		if ($pagination_state) {
+			$page = $pagination_state->get_current_page($settings);
+			if ($page !== null) {
+				$current_page = $page;
+			} else {
+				$current_page = 0;
+			}
+		} else {
+			$current_page = 0;
+		}
+		return $current_page;
+	}
+
+	/**
+	 * @param $settings DataTableSettings
+	 * @param $pagination_state DataTablePaginationState
+	 * @throws Exception
+	 * @return int
+	 */
+	public static function calculate_limit($settings, $pagination_state)
+	{
+		if ($settings !== null && !($settings instanceof DataTableSettings)) {
+			throw new Exception("settings must be instance of DataTableSettings");
+		}
+		if ($pagination_state !== null && !($pagination_state instanceof DataTablePaginationState)) {
+			throw new Exception("pagination_state must be instance of DataTablePaginationState");
+		}
+		if (!$pagination_state || is_null($pagination_state->get_limit())) {
+			if ($settings === null) {
+				$limit = DataTableSettings::default_limit;
+			}
+			else
+			{
+				$limit = $settings->default_limit;
+			}
+
+		} else {
+			$limit = $pagination_state->get_limit();
+		}
+		return $limit;
+	}
+
+	/**
+	 * @param $settings DataTableSettings
+	 * @param $pagination_state DataTablePaginationState
+	 * @throws Exception
+	 * @return int
+	 */
+	public static function calculate_num_pages($settings, $pagination_state)
+	{
+		if ($settings === null) {
+			throw new Exception("settings must not be null since it has the number of rows");
+		}
+		if (!($settings instanceof DataTableSettings)) {
+			throw new Exception("settings must be instance of DataTableSettings");
+		}
+		if ($pagination_state !== null && !($pagination_state instanceof DataTablePaginationState)) {
+			throw new Exception("pagination_state must be instance of DataTablePaginationState");
+		}
+
+		$limit = self::calculate_limit($settings, $pagination_state);
+
+		$num_rows = $settings->total_rows;
+
+		if ($limit == 0) {
+			$num_pages = 1;
+		} elseif (($num_rows % $limit) !== 0) {
+			$num_pages = (int)(($num_rows / $limit) + 1);
+		} else {
+			$num_pages = (int)($num_rows / $limit);
+		}
+		return $num_pages;
 	}
 
 }

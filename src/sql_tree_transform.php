@@ -45,37 +45,8 @@ class LimitPaginationTreeTransform implements ISQLTreeTransform
 		if ($state) {
 			$pagination_state = $state->get_pagination_state($table_name);
 
-			if (is_null($pagination_state->get_limit())) {
-				if ($settings) {
-					$limit = $settings->get_default_limit();
-				}
-				else
-				{
-					$limit = DataTableSettings::default_limit;
-				}
-			}
-			elseif ($pagination_state->get_limit() == 0) {
-				// all rows
-				if ($settings && is_int($settings->get_total_rows())) {
-					$limit = $settings->get_total_rows();
-				}
-				else
-				{
-					$limit = DataTableSettings::default_limit;
-				}
-			}
-			else
-			{
-				$limit = $pagination_state->get_limit();
-			}
-
-			if (is_null($pagination_state->get_current_page($settings))) {
-				$current_page = 0;
-			}
-			else
-			{
-				$current_page = $pagination_state->get_current_page($settings);
-			}
+			$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
+			$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
 
 			$offset = $current_page * $limit;
 			$tree["LIMIT"] = array("offset" => $offset,
@@ -108,37 +79,8 @@ class BoundedPaginationTreeTransform implements ISQLTreeTransform
 		if ($state) {
 			$pagination_state = $state->get_pagination_state($table_name);
 
-			if (is_null($pagination_state->get_limit())) {
-				if ($settings) {
-					$limit = $settings->get_default_limit();
-				}
-				else
-				{
-					$limit = DataTableSettings::default_limit;
-				}
-			}
-			elseif ($pagination_state->get_limit() == 0) {
-				// all rows
-				if ($settings && is_int($settings->get_total_rows())) {
-					$limit = $settings->get_total_rows();
-				}
-				else
-				{
-					$limit = DataTableSettings::default_limit;
-				}
-			}
-			else
-			{
-				$limit = $pagination_state->get_limit();
-			}
-
-			if (is_null($pagination_state->get_current_page($settings))) {
-				$current_page = 0;
-			}
-			else
-			{
-				$current_page = $pagination_state->get_current_page($settings);
-			}
+			$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
+			$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
 
 			$start = $limit * $current_page;
 			$end = $limit * ($current_page + 1);
