@@ -8,6 +8,7 @@
  * @copyright  2013 Above Authors and the President and Fellows of Harvard University
  */
 
+require_once "array_manager.php";
 require_once "data_table_behavior.php";
 require_once "data_table_builder.php";
 require_once "data_table_button_builder.php";
