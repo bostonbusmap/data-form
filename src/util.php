@@ -93,7 +93,8 @@ function paginate_sql($query, $state, &$settings, $conn_type=null, $table_name="
 }
 
 /**
- * Return a subset of an array given the current pagination state and settings
+ * Return a subset of an array given the current pagination state and settings.
+ * This also creates a new $settings (or copies the old one) with total_rows set properly
  *
  * @param $array array Full set of rows to be paginated
  * @param $state DataFormState
@@ -117,8 +118,18 @@ function paginate_array($array, $state, &$settings, $table_name="") {
 		throw new Exception("table_name must be a string");
 	}
 
-	$num_rows = count($array);
+	// ArrayManager doesn't use the total_rows property of $settings, it gets
+	// that information from count($array)
+	$manager = new ArrayManager($array);
+	$manager->state($state);
+	$manager->settings($settings);
+	$manager->table_name($table_name);
 
+	list($num_rows, $subset) = $manager->make_filtered_subset();
+
+	// This sets total_rows to give the DataTable information to show pagination controls
+
+	// TODO: move total_rows property somewhere that makes more sense
 	if ($settings) {
 		$settings = $settings->make_builder()->total_rows($num_rows)->build();
 	}
@@ -127,11 +138,8 @@ function paginate_array($array, $state, &$settings, $table_name="") {
 		$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
 	}
 
-	$manager = new ArrayManager($array);
-	$manager->state($state);
-	$manager->settings($settings);
-	$manager->table_name($table_name);
-	return $manager->make_filtered_subset();
+
+	return $subset;
 }
 
 /**

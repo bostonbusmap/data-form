@@ -100,20 +100,29 @@ class ArrayManager {
 	}
 
 	/**
-	 * TODO: better name
-	 * @return array
+	 * Filters, sorts, and paginates (in that order) the input data. Returns the row count of the filtered items
+	 * and a paginated set of data
+	 * @return int, array
 	 */
 	public function make_filtered_subset() {
 		$this->validate_input();
 
 		$array = $this->array;
-		$settings = $this->settings;
 
-		$array = self::filter($array, $this->state, $settings, $this->table_name);
+		// Order is important here
+		$array = self::filter($array, $this->state, $this->settings, $this->table_name);
+		$num_rows = count($array);
+		if ($this->settings) {
+			$settings = $this->settings->make_builder()->total_rows($num_rows)->build();
+		}
+		else
+		{
+			$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
+		}
 		$array = self::sort($array, $this->state, $settings, $this->table_name);
 		$array = self::paginate($array, $this->state, $settings, $this->table_name);
 
-		return $array;
+		return array($num_rows, $array);
 	}
 
 	/**
@@ -266,6 +275,7 @@ class ArrayManager {
 	 */
 	protected static function paginate($array, $state, $settings, $table_name) {
 		$pagination_state = $state->get_pagination_state($table_name);
+
 		$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
 		$page = DataTableSettings::calculate_current_page($settings, $pagination_state);
 
