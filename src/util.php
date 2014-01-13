@@ -118,6 +118,7 @@ function paginate_array($array, $state, &$settings, $table_name="") {
 	}
 
 	$num_rows = count($array);
+
 	if ($settings) {
 		$settings = $settings->make_builder()->total_rows($num_rows)->build();
 	}
@@ -126,12 +127,11 @@ function paginate_array($array, $state, &$settings, $table_name="") {
 		$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
 	}
 
-	$pagination_state = $state->get_pagination_state($table_name);
-	$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
-	$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
-
-
-	return array_slice($array, $current_page * $limit, $limit);
+	$manager = new ArrayManager($array);
+	$manager->state($state);
+	$manager->settings($settings);
+	$manager->table_name($table_name);
+	return $manager->make_filtered_subset();
 }
 
 /**

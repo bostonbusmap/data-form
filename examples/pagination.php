@@ -73,13 +73,20 @@ function make_form($state) {
 	$settings = DataTableSettingsBuilder::create()->total_rows($total_count)->default_limit(25)->build();
 	$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
 
-	// A limit of 0 means display all rows
 	$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
 
-	// fill in the data within the page boundaries
-	$start = $limit * $current_page;
-	$end = $limit * ($current_page + 1);
-	if ($end > $total_count) {
+	if ($limit !== 0) {
+		// fill in the data within the page boundaries
+		$start = $limit * $current_page;
+		$end = $limit * ($current_page + 1);
+		if ($end > $total_count) {
+			$end = $total_count;
+		}
+	}
+	else
+	{
+		// A limit of 0 means display all rows
+		$start = 0;
 		$end = $total_count;
 	}
 	$rows = array();

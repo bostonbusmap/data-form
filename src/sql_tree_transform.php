@@ -46,11 +46,14 @@ class LimitPaginationTreeTransform implements ISQLTreeTransform
 			$pagination_state = $state->get_pagination_state($table_name);
 
 			$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
-			$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
+			if ($limit !== 0) {
+				$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
 
-			$offset = $current_page * $limit;
-			$tree["LIMIT"] = array("offset" => $offset,
-				"rowcount" => $limit);
+				$offset = $current_page * $limit;
+				$tree["LIMIT"] = array("offset" => $offset,
+					"rowcount" => $limit);
+			}
+			// else the limit is zero and we don't paginate at all
 		}
 		return $tree;
 	}
@@ -82,11 +85,14 @@ class BoundedPaginationTreeTransform implements ISQLTreeTransform
 			$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
 			$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
 
-			$start = $limit * $current_page;
-			$end = $limit * ($current_page + 1);
+			if ($limit !== 0) {
+				$start = $limit * $current_page;
+				$end = $limit * ($current_page + 1);
 
-			$tree = self::add_where_clause($tree, $this->column_key . " >= " . $start);
-			$tree = self::add_where_clause($tree, $this->column_key . " < " . $end);
+				$tree = self::add_where_clause($tree, $this->column_key . " >= " . $start);
+				$tree = self::add_where_clause($tree, $this->column_key . " < " . $end);
+			}
+			// if limit is 0, don't paginate at all
 		}
 
 		return $tree;

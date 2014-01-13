@@ -45,16 +45,16 @@ class ArrayManager {
 	/**
 	 * Same as constructor, allows chaining of method calls
 	 *
-	 * @param $sql string SQL
-	 * @return SQLBuilder
+	 * @param $array array
+	 * @return ArrayManager
 	 */
-	public static function create($sql) {
-		return new SQLBuilder($sql);
+	public static function create($array) {
+		return new ArrayManager($array);
 	}
 
 	/**
 	 * @param $table_name string
-	 * @return SQLBuilder
+	 * @return ArrayManager
 	 */
 	public function table_name($table_name) {
 		$this->table_name = $table_name;
@@ -63,7 +63,7 @@ class ArrayManager {
 
 	/**
 	 * @param $state DataFormState
-	 * @return SQLBuilder
+	 * @return ArrayManager
 	 */
 	public function state($state) {
 		$this->state = $state;
@@ -72,7 +72,7 @@ class ArrayManager {
 
 	/**
 	 * @param $settings DataTableSettings
-	 * @return SQLBuilder
+	 * @return ArrayManager
 	 */
 	public function settings($settings) {
 		$this->settings = $settings;
@@ -103,7 +103,7 @@ class ArrayManager {
 	 * TODO: better name
 	 * @return array
 	 */
-	public function make_altered_copy() {
+	public function make_filtered_subset() {
 		$this->validate_input();
 
 		$array = $this->array;
@@ -111,7 +111,7 @@ class ArrayManager {
 
 		$array = self::filter($array, $this->state, $settings, $this->table_name);
 		$array = self::sort($array, $this->state, $settings, $this->table_name);
-		$array = paginate_array($array, $this->state, $settings, $this->table_name);
+		$array = self::paginate($array, $this->state, $settings, $this->table_name);
 
 		return $array;
 	}
@@ -255,6 +255,28 @@ class ArrayManager {
 			}
 		}
 		return $array;
+	}
+
+	/**
+	 * @param $array array
+	 * @param $state DataFormState
+	 * @param $settings DataTableSettings
+	 * @param $table_name string
+	 * @return array
+	 */
+	protected static function paginate($array, $state, $settings, $table_name) {
+		$pagination_state = $state->get_pagination_state($table_name);
+		$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
+		$page = DataTableSettings::calculate_current_page($settings, $pagination_state);
+
+		if ($limit === 0) {
+			return $array;
+		}
+		else
+		{
+			$start = $limit * $page;
+			return array_slice($array, $start, $limit);
+		}
 	}
 }
 

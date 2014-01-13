@@ -315,7 +315,7 @@ class DataTableSettings {
 	 * @param $settings DataTableSettings
 	 * @param $pagination_state DataTablePaginationState
 	 * @throws Exception
-	 * @return int
+	 * @return int Either the limit or zero for everything on one page. You shouldn't see null here
 	 */
 	public static function calculate_limit($settings, $pagination_state)
 	{
@@ -362,7 +362,7 @@ class DataTableSettings {
 
 		$num_rows = $settings->total_rows;
 
-		if ($limit == 0) {
+		if ($limit === 0) {
 			$num_pages = 1;
 		} elseif (($num_rows % $limit) !== 0) {
 			$num_pages = (int)(($num_rows / $limit) + 1);
