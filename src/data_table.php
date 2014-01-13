@@ -149,9 +149,16 @@ class DataTable
 			throw new Exception("state must be instance of DataFormState");
 		}
 
-		if (!$this->rows && $this->empty_message) {
-			$writer->write($this->empty_message);
-			return;
+		// If rows is empty and it's not empty just because we're filtering them, then display the empty message if it exists
+		if (!$this->rows) {
+			if ($this->empty_message && ($state === null || !$state->has_item(array(DataFormState::state_key, DataFormState::searching_state_key)))) {
+				$writer->write($this->empty_message);
+				return;
+			}
+			else
+			{
+				$this->rows = array();
+			}
 		}
 
 		// display top buttons

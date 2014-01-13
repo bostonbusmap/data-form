@@ -154,49 +154,49 @@ class ArrayManager {
 								if ($obj->get_type() === DataTableSearchState::like) {
 									foreach ($array as $key => $rows) {
 										if (stripos($rows[$column_key], $value) !== false) {
-											$copy[$key] = $rows[$column_key];
+											$copy[$key] = $rows;
 										}
 									}
 								}
 								elseif ($obj->get_type() === DataTableSearchState::rlike) {
 									foreach ($array as $key => $rows) {
 										if (preg_match('/' . $value . '/i', $rows[$column_key]) !== false) {
-											$copy[$key] = $rows[$column_key];
+											$copy[$key] = $rows;
 										}
 									}
 								}
 								elseif ($obj->get_type() === DataTableSearchState::less_than) {
 									foreach ($array as $key => $rows) {
 										if ($rows[$column_key] < $value) {
-											$copy[$key] = $rows[$column_key];
+											$copy[$key] = $rows;
 										}
 									}
 								}
 								elseif ($obj->get_type() === DataTableSearchState::less_or_equal) {
 									foreach ($array as $key => $rows) {
 										if ($rows[$column_key] <= $value) {
-											$copy[$key] = $rows[$column_key];
+											$copy[$key] = $rows;
 										}
 									}
 								}
 								elseif ($obj->get_type() === DataTableSearchState::greater_than) {
 									foreach ($array as $key => $rows) {
 										if ($rows[$column_key] > $value) {
-											$copy[$key] = $rows[$column_key];
+											$copy[$key] = $rows;
 										}
 									}
 								}
 								elseif ($obj->get_type() === DataTableSearchState::greater_or_equal) {
 									foreach ($array as $key => $rows) {
 										if ($rows[$column_key] >= $value) {
-											$copy[$key] = $rows[$column_key];
+											$copy[$key] = $rows;
 										}
 									}
 								}
 								elseif ($obj->get_type() === DataTableSearchState::equal) {
 									foreach ($array as $key => $rows) {
 										if ($rows[$column_key] == $value) {
-											$copy[$key] = $rows[$column_key];
+											$copy[$key] = $rows;
 										}
 									}
 								}
