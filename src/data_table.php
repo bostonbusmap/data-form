@@ -170,12 +170,16 @@ class DataTable
 
 		// show blue header on top of table. May contain pagination controls
 		if ($this->is_sortable()) {
-			$writer->write('<table class="table-autosort">');
+			$writer->write('<table class="table-autosort"');
 		}
 		else
 		{
-			$writer->write('<table>');
+			$writer->write('<table');
 		}
+		if ($this->table_name) {
+			$writer->write(' id="' . htmlspecialchars($this->table_name) . '_table"');
+		}
+		$writer->write('>');
 
 		// write pagination controls
 		if ($this->header || ($this->settings && $this->settings->uses_pagination())) {
