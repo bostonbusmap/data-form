@@ -76,6 +76,11 @@ class DataFormState
 	 * @var array
 	 */
 	private $form_data;
+	/**
+	 * The same as $this->form_data but with blank values included
+	 * @var array
+	 */
+	private $form_data_with_blanks;
 
 	/**
 	 * @var string Name of form
@@ -173,9 +178,9 @@ class DataFormState
 
 		// First this copies $blanks over $form_data as long as it doesn't overwrite anything.
 		// This puts empty strings in the form data to take place of unchecked items.
-		$form_data_with_blanks = self::copy_over_array($blanks, $form_data, $form_data);
+		$this->form_data_with_blanks = self::copy_over_array($blanks, $form_data, $form_data);
 		// Then we make a copy of history with all current form data removed.
-		$form_data_history_only = self::copy_over_array($history, $form_data_with_blanks, array());
+		$form_data_history_only = self::copy_over_array($history, $this->form_data_with_blanks, array());
 		// Then we copy history_only over the current data
 		$this->form_data = self::copy_over_array($form_data_history_only, array(), $this->form_data);
 	}
@@ -245,14 +250,18 @@ class DataFormState
 	 * whatever's at {'a' : {'b' : ???}}, or null
 	 *
 	 * @param $path string[] an array of keys to drill down with
+	 * @param $start_array array Array to search inside. Either this->form_data or this->form_data_with_blanks
 	 * @return array|string|number null if nothing found, else whatever value was found
 	 * @throws Exception
 	 */
-	public function find_item($path) {
+	protected static function do_find_item($path, $start_array) {
 		if (!is_array($path)) {
 			throw new Exception("path must be an array of string keys");
 		}
-		$current = $this->form_data;
+		if (!is_array($start_array)) {
+			throw new Exception("start_array must be an array");
+		}
+		$current = $start_array;
 		foreach ($path as $key) {
 			if (!is_string($key)) {
 				throw new Exception("Each item in path must be a string");
@@ -275,6 +284,21 @@ class DataFormState
 	}
 
 	/**
+	 * Searches array for item that matches path. If $path = array("a", "b"), then this returns
+	 * whatever's at {'a' : {'b' : ???}}, or null
+	 *
+	 * Be careful to use has_item if you only care if an item exists, since it will take into account
+	 * blank values
+	 *
+	 * @param $path string[] an array of keys to drill down with
+	 * @return array|string|number null if nothing found, else whatever value was found
+	 * @throws Exception
+	 */
+	public function find_item($path) {
+		return self::do_find_item($path, $this->form_data);
+	}
+
+	/**
 	 * Checks if the lookup path has an item
 	 *
 	 * This is different than just find_item($path) === null because that will not distinguish between
@@ -293,11 +317,11 @@ class DataFormState
 		}
 
 		if (count($path) === 1) {
-			return array_key_exists($path[0], $this->form_data);
+			return array_key_exists($path[0], $this->form_data_with_blanks);
 		}
 		else {
 			$subset = array_slice($path, 0, count($path) - 1);
-			$remainder = $this->find_item($subset);
+			$remainder = self::do_find_item($subset, $this->form_data_with_blanks);
 			if (is_array($remainder)) {
 				return array_key_exists($path[count($path) - 1], $remainder);
 			}
