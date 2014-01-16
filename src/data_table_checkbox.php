@@ -122,7 +122,7 @@ class DataTableCheckbox implements IDataTableWidget {
 		$ret .= '<input type="checkbox" id="' . htmlspecialchars($input_name) . '" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" onclick="' . htmlspecialchars($onclick) . '" ' . $checked . ' />';
 
 		// Create hidden field to allow detection of unchecked
-		if ($checked) {
+		if ($checked || $checked_by_default) {
 			// $blank_name is meant to convey that the name existed in form even if the checkbox is unchecked
 			// It says to not use any hidden state, just the checkbox value if present or null if not present.
 
