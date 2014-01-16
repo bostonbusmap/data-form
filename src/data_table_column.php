@@ -84,9 +84,13 @@ class DataTableColumn {
 	 */
 	protected $search_formatter;
 	/**
-	 * @var object Column header data to be displayed
+	 * @var string Column header data to be displayed
 	 */
 	protected $display_header_name;
+	/**
+	 * @var string Column footer data to be displayed
+	 */
+	protected $display_footer_name;
 
 	/**
 	 * @var string Key which matches column to data
@@ -104,11 +108,13 @@ class DataTableColumn {
 			throw new Exception("builder expected to be instance of DataTableColumnBuilder");
 		}
 		$this->header_formatter = $builder->get_header_formatter();
+		$this->footer_formatter = $builder->get_footer_formatter();
 		$this->cell_formatter = $builder->get_cell_formatter();
 		$this->sortable = $builder->get_sortable();
 		$this->searchable = $builder->get_searchable();
 		$this->search_formatter = $builder->get_search_formatter();
 		$this->display_header_name = $builder->get_display_header_name();
+		$this->display_footer_name = $builder->get_display_footer_name();
 		$this->column_key = $builder->get_column_key();
 	}
 
@@ -122,6 +128,18 @@ class DataTableColumn {
 	 */
 	public function get_display_header($form_name, $column_key, $state) {
 		return $this->header_formatter->format($form_name, $column_key, $this->display_header_name, $state);
+	}
+
+	/**
+	 * Returns HTML formatted column footer
+	 *
+	 * @param string $form_name Name of HTML form
+	 * @param $column_key string Column key
+	 * @param $state DataFormState State of form
+	 * @return string
+	 */
+	public function get_display_footer($form_name, $column_key, $state) {
+		return $this->footer_formatter->format($form_name, $column_key, $this->display_footer_name, $state);
 	}
 
 	/**

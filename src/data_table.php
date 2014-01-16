@@ -201,6 +201,7 @@ class DataTable
 
 		// write data
 		$this->display_table_body($form_name, $form_method, $state, $writer);
+		$writer->write($this->display_table_footer($form_name, $form_method, $remote_url, $state));
 		$writer->write("</table>");
 
 		// write buttons at bottom of table
@@ -250,6 +251,40 @@ class DataTable
 	/** @return string HTML shown in place of table if no text. If falsey, table is shown anyway */
 	public function get_empty_message() {
 		return $this->empty_message;
+	}
+
+	/**
+	 * Display footer
+	 *
+	 * @param $form_name string Name of form
+	 * @param $form_method string GET or POSt
+	 * @param $remote_url string URL to refresh from
+	 * @param $state DataFormState State with form information
+	 * @return string HTML
+	 */
+	protected function display_table_footer($form_name, $form_method, $remote_url, $state) {
+		$row = array();
+		$do_display = false;
+		foreach ($this->columns as $column) {
+			$column_key = $column->get_column_key();
+			$value = $column->get_display_footer($form_name, $column_key, $state);
+			if ($value) {
+				$do_display = true;
+			}
+			$row[$column_key] = $value;
+		}
+
+		$ret = "";
+		if ($do_display) {
+			$ret .= "<tfoot>";
+			foreach ($row as $k => $v) {
+				$ret .= "<th>";
+				$ret .= $v;
+				$ret .= "</th>";
+			}
+			$ret .= "</tfoot>";
+		}
+		return $ret;
 	}
 
 	/**
