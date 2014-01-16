@@ -182,7 +182,7 @@ class DataTable
 			$writer->write("<caption>");
 
 			if ($this->header) {
-				$ret .= $this->header;
+				$writer->write($this->header);
 			}
 			if ($this->settings && $this->settings->uses_pagination())
 			{
