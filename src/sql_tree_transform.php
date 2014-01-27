@@ -262,7 +262,7 @@ class FilterTreeTransform  implements ISQLTreeTransform
 									$phrase = " $column_key LIKE '%$like_escaped_value%' ESCAPE '\\\\' ";
 								}
 								elseif ($obj->get_type() === DataTableSearchState::rlike) {
-									$phrase = " $column_key RLIKE '$escaped_value' ESCAPE '\\\\' '";
+									$phrase = " $column_key RLIKE '$escaped_value' ESCAPE '\\\\' ";
 								}
 								elseif ($obj->get_type() === DataTableSearchState::less_than) {
 									$phrase = " $column_key < $escaped_value ";
