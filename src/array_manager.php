@@ -30,6 +30,10 @@ class ArrayManager {
 	 * @var DataTableSettings
 	 */
 	protected $settings;
+	/**
+	 * @var bool
+	 */
+	protected $ignore_pagination;
 
 	/**
 	 * @param $array array
@@ -79,6 +83,11 @@ class ArrayManager {
 		return $this;
 	}
 
+	public function ignore_pagination($ignore_pagination) {
+		$this->ignore_pagination = $ignore_pagination;
+		return $this;
+	}
+
 	public function validate_input() {
 		if (!is_array($this->array)) {
 			throw new Exception("array must be an array");
@@ -88,6 +97,12 @@ class ArrayManager {
 		}
 		if (!is_string($this->table_name)) {
 			throw new Exception("table_name must be a string");
+		}
+		if ($this->ignore_pagination === null) {
+			$this->ignore_pagination = false;
+		}
+		if (!is_bool($this->ignore_pagination)) {
+			throw new Exception("ignore_pagination must be a bool");
 		}
 
 		if ($this->state && !($this->state instanceof DataFormState)) {
@@ -120,7 +135,9 @@ class ArrayManager {
 			$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
 		}
 		$array = self::sort($array, $this->state, $settings, $this->table_name);
-		$array = self::paginate($array, $this->state, $settings, $this->table_name);
+		if ($this->ignore_pagination) {
+			$array = self::paginate($array, $this->state, $settings, $this->table_name);
+		}
 
 		return array($num_rows, $array);
 	}
