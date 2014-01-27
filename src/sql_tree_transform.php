@@ -253,14 +253,16 @@ class FilterTreeTransform  implements ISQLTreeTransform
 							$obj->get_type() === DataTableSearchState::greater_than ||
 							$obj->get_type() === DataTableSearchState::greater_or_equal ||
 							$obj->get_type() === DataTableSearchState::equal) {
-							$escaped_value = str_replace("'", "''", $params[0]);
+							$escaped_value = mysql_real_escape_string($params[0]);
 							// TODO: check is_numeric for numeric comparisons
 							if ($escaped_value !== "") {
 								if ($obj->get_type() === DataTableSearchState::like) {
-									$phrase = " $column_key LIKE '%$escaped_value%' ";
+									$like_escaped_value = str_replace("%", "\\%", $escaped_value);
+									$like_escaped_value = str_replace("_", "\\_", $like_escaped_value);
+									$phrase = " $column_key LIKE '%$like_escaped_value%' ESCAPE '\\\\' ";
 								}
 								elseif ($obj->get_type() === DataTableSearchState::rlike) {
-									$phrase = " $column_key RLIKE '$escaped_value' ";
+									$phrase = " $column_key RLIKE '$escaped_value' ESCAPE '\\\\' '";
 								}
 								elseif ($obj->get_type() === DataTableSearchState::less_than) {
 									$phrase = " $column_key < $escaped_value ";
