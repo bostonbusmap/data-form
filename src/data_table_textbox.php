@@ -64,7 +64,7 @@ class DataTableTextbox implements IDataTableWidget {
 	 * Display textbox HTML
 	 *
 	 * @param $form_name string Name of form
-	 * @param $name_array string[] Name for select. Each item will be surrounded by square brackets and concatenated
+	 * @param $name_array string[] Name for textarea. Each item will be surrounded by square brackets and concatenated
 	 * @param $action string URL to submit to
 	 * @param $form_method string GET or POST
 	 * @param $behavior IDataTableBehavior What happens when enter is pressed
@@ -107,7 +107,6 @@ class DataTableTextbox implements IDataTableWidget {
 			$ret .= '<input type="text" onkeypress="' . htmlspecialchars($onchange) . '" value="' . htmlspecialchars($text) . '" />';
 		}
 
-		$ret .= "</select>";
 		return $ret;
 	}
 }
