@@ -102,7 +102,7 @@ class DataTableRadio implements IDataTableWidget {
 	{
 		if ($state && !is_null($state->find_item($name_array))) {
 			$selected_item = $state->find_item($name_array);
-			$checked = ($selected_item === $column_data) ? "checked" : "";
+			$checked = ((string)$selected_item === (string)$column_data) ? "checked" : "";
 		}
 		else
 		{
