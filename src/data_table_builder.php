@@ -239,7 +239,7 @@ class DataTableBuilder {
 		}
 
 		if (is_null($this->columns)) {
-			throw new Exception("columns must have at least one column");
+			$this->columns = array();
 		}
 		if (!is_array($this->columns)) {
 			throw new Exception("columns must be an array of DataTableColumn");
