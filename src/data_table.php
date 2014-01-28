@@ -35,6 +35,8 @@ require_once "data_table_search_widget_builder.php";
 require_once "data_table_search_state.php";
 require_once "data_table_settings_builder.php";
 require_once "data_table_settings.php";
+require_once "data_table_textarea_builder.php";
+require_once "data_table_textarea.php";
 require_once "data_table_textbox_builder.php";
 require_once "data_table_textbox.php";
 require_once "data_form_state.php";
