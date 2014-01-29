@@ -228,9 +228,40 @@ class SortTreeTransform  implements ISQLTreeTransform
  */
 class FilterTreeTransform  implements ISQLTreeTransform
 {
+	/**
+	 * Make a map of column key aliases -> what they alias to. We need this because the WHERE clause can't use aliases,
+	 * which are usually what we're using for column keys.
+	 *
+	 * @param $tree array
+	 * @return array
+	 */
+	function make_alias_lookup($tree) {
+		$lookup = array();
+
+		if (array_key_exists("SELECT", $tree)) {
+			$select = $tree["SELECT"];
+			foreach ($select as $select_item) {
+				if (array_key_exists("base_expr", $select_item)) {
+					$base_expr = $select_item["base_expr"];
+					if (array_key_exists("alias", $select_item)) {
+						$alias = $select_item["alias"];
+						if (is_array($alias) && array_key_exists("no_quotes", $alias)) {
+							$no_quotes = $alias["no_quotes"];
+							$lookup[$no_quotes] = $base_expr;
+						}
+					}
+				}
+			}
+		}
+
+		return $lookup;
+	}
+
 	function alter($input_tree, $state, $settings, $table_name)
 	{
 		$tree = $input_tree;
+
+		$alias_lookup = $this->make_alias_lookup($tree);
 
 		// TODO: make this less ugly
 		if ($state) {
@@ -244,6 +275,15 @@ class FilterTreeTransform  implements ISQLTreeTransform
 			if (is_array($searching_state)) {
 				foreach (array_keys($searching_state) as $column_key) {
 					$obj = $state->get_searching_state($column_key, $table_name);
+
+					if (array_key_exists($column_key, $alias_lookup)) {
+						$column_base_expr = $alias_lookup[$column_key];
+					}
+					else
+					{
+						$column_base_expr = $column_key;
+					}
+
 					if ($obj) {
 						$params = $obj->get_params();
 						if ($obj->get_type() === DataTableSearchState::like ||
@@ -259,30 +299,30 @@ class FilterTreeTransform  implements ISQLTreeTransform
 								if ($obj->get_type() === DataTableSearchState::like) {
 									$like_escaped_value = str_replace("%", "\\%", $escaped_value);
 									$like_escaped_value = str_replace("_", "\\_", $like_escaped_value);
-									$phrase = " $column_key LIKE '%$like_escaped_value%' ESCAPE '\\\\' ";
+									$phrase = " $column_base_expr LIKE '%$like_escaped_value%' ESCAPE '\\\\' ";
 								}
 								elseif ($obj->get_type() === DataTableSearchState::rlike) {
-									$phrase = " $column_key RLIKE '$escaped_value' ";
+									$phrase = " $column_base_expr RLIKE '$escaped_value' ";
 								}
 								elseif ($obj->get_type() === DataTableSearchState::less_than) {
-									$phrase = " $column_key < $escaped_value ";
+									$phrase = " $column_base_expr < $escaped_value ";
 								}
 								elseif ($obj->get_type() === DataTableSearchState::less_or_equal) {
-									$phrase = " $column_key <= $escaped_value ";
+									$phrase = " $column_base_expr <= $escaped_value ";
 								}
 								elseif ($obj->get_type() === DataTableSearchState::greater_than) {
-									$phrase = " $column_key > $escaped_value ";
+									$phrase = " $column_base_expr > $escaped_value ";
 								}
 								elseif ($obj->get_type() === DataTableSearchState::greater_or_equal) {
-									$phrase = " $column_key >= $escaped_value ";
+									$phrase = " $column_base_expr >= $escaped_value ";
 								}
 								elseif ($obj->get_type() === DataTableSearchState::equal) {
 									if (is_numeric($escaped_value)) {
-										$phrase = " $column_key = $escaped_value ";
+										$phrase = " $column_base_expr = $escaped_value ";
 									}
 									else
 									{
-										$phrase = " $column_key = '$escaped_value' ";
+										$phrase = " $column_base_expr = '$escaped_value' ";
 									}
 								}
 								else {
