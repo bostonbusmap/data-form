@@ -135,7 +135,7 @@ class DataFormState
 				// Reset form
 				$this->form_data = array();
 
-				$special_keys = array(self::form_exists, self::only_display_form,
+				$special_keys = array(self::form_exists, self::only_display_form, self::sorting_state_key, self::searching_state_key,
 					self::forwarded_state_key);
 
 				// preserve these keys since they don't refer to the data, just how we are accessing the DataForm
