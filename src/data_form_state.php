@@ -178,11 +178,13 @@ class DataFormState
 
 		// First this copies $blanks over $form_data as long as it doesn't overwrite anything.
 		// This puts empty strings in the form data to take place of unchecked items.
-		$this->form_data_with_blanks = self::copy_over_array($blanks, $form_data, $form_data);
+		$form_data_with_blanks_without_history = self::copy_over_array($blanks, $form_data, $form_data);
 		// Then we make a copy of history with all current form data removed.
-		$form_data_history_only = self::copy_over_array($history, $this->form_data_with_blanks, array());
+		$form_data_history_only = self::copy_over_array($history, $form_data_with_blanks_without_history, array());
 		// Then we copy history_only over the current data
 		$this->form_data = self::copy_over_array($form_data_history_only, array(), $this->form_data);
+		// Make an array with blanks included
+		$this->form_data_with_blanks = self::copy_over_array($form_data_history_only, array(), $form_data_with_blanks_without_history);
 	}
 
 
