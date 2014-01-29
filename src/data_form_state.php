@@ -172,7 +172,11 @@ class DataFormState
 			$history = array();
 		}
 
-		// This is trying to solve the problem of keeping track of unchecked items
+		// Blanks are empty values for fields which exist but don't explicitly send their empty
+		// values in HTTP requests, like checkboxes. A blank item has a key but a null value, which
+		// makes it useful to test for existence of items.
+
+		// Blanks are trying to solve the problem of keeping track of unchecked items
 		// even when $history references the item. Unchecked items aren't sent in $_POST at all
 		// so if we just copied $history it would overwrite the unchecked items, leaving it checked.
 
@@ -183,7 +187,7 @@ class DataFormState
 		$form_data_history_only = self::copy_over_array($history, $form_data_with_blanks_without_history, array());
 		// Then we copy history_only over the current data
 		$this->form_data = self::copy_over_array($form_data_history_only, array(), $this->form_data);
-		// Make an array with blanks included
+		// Make an array with blanks included so we can test for existance properly
 		$this->form_data_with_blanks = self::copy_over_array($form_data_history_only, array(), $form_data_with_blanks_without_history);
 	}
 
