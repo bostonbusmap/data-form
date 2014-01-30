@@ -120,28 +120,27 @@ class DataFormState
 				$form_data = array();
 			}
 		}
-		$this->form_data = $form_data;
 
-		if (is_null($this->form_data)) {
-			$this->form_data = array();
+		if (is_null($form_data)) {
+			$form_data = array();
 		}
-		if (!is_array($this->form_data)) {
+		if (!is_array($form_data)) {
 			throw new Exception("form_data was expected to be an array");
 		}
 
-		if (array_key_exists(self::state_key, $this->form_data)) {
-			$old_form_state = $this->form_data[self::state_key];
-			if (array_key_exists(self::reset_key, $this->form_data[self::state_key])) {
+		if (array_key_exists(self::state_key, $form_data)) {
+			$old_form_state = $form_data[self::state_key];
+			if (array_key_exists(self::reset_key, $form_data[self::state_key])) {
 				// Reset form
-				$this->form_data = array();
+				$form_data = array();
 
-				$special_keys = array(self::form_exists, self::only_display_form, self::sorting_state_key, self::searching_state_key, self::pagination_key,
+				$special_keys = array(self::form_exists, self::only_display_form,
 					self::forwarded_state_key);
 
 				// preserve these keys since they don't refer to the data, just how we are accessing the DataForm
 				foreach ($special_keys as $special_key) {
 					if (array_key_exists($special_key, $old_form_state)) {
-						$this->form_data[self::state_key][$special_key] = $old_form_state[$special_key];
+						$form_data[self::state_key][$special_key] = $old_form_state[$special_key];
 					}
 				}
 			}
@@ -149,8 +148,8 @@ class DataFormState
 
 		// just some validation
 		foreach (array(self::sorting_state_key, self::searching_state_key, self::pagination_key) as $key) {
-			if (isset($this->form_data[self::state_key][$key])) {
-				if (!is_array($this->form_data[self::state_key][$key])) {
+			if (isset($form_data[self::state_key][$key])) {
+				if (!is_array($form_data[self::state_key][$key])) {
 					throw new Exception("$key is expected to be an array");
 				}
 			}
@@ -158,16 +157,16 @@ class DataFormState
 
 		// For items like checkboxes we also have a hidden field set
 		// so we can know for sure that an item is blank.
-		if (isset($this->form_data[self::state_key][self::blanks_key])) {
-			$blanks = $this->form_data[self::state_key][self::blanks_key];
+		if (isset($form_data[self::state_key][self::blanks_key])) {
+			$blanks = $form_data[self::state_key][self::blanks_key];
 		} else {
 			$blanks = array();
 		}
 
 		// All items are stored as hidden fields in hidden_state_key
 		// so we preserve the values during pagination or filtering rows
-		if (isset($this->form_data[self::state_key][self::hidden_state_key])) {
-			$history = $this->form_data[self::state_key][self::hidden_state_key];
+		if (isset($form_data[self::state_key][self::hidden_state_key])) {
+			$history = $form_data[self::state_key][self::hidden_state_key];
 		} else {
 			$history = array();
 		}
@@ -186,9 +185,11 @@ class DataFormState
 		// Then we make a copy of history with all current form data removed.
 		$form_data_history_only = self::copy_over_array($history, $form_data_with_blanks_without_history, array());
 		// Then we copy history_only over the current data
-		$this->form_data = self::copy_over_array($form_data_history_only, array(), $this->form_data);
+		$form_data = self::copy_over_array($form_data_history_only, array(), $form_data);
 		// Make an array with blanks included so we can test for existance properly
 		$this->form_data_with_blanks = self::copy_over_array($form_data_history_only, array(), $form_data_with_blanks_without_history);
+
+		$this->form_data = $form_data;
 	}
 
 
