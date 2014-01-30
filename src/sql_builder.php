@@ -185,9 +185,6 @@ class SQLBuilder {
 		if (!is_array($this->sql_tree)) {
 			throw new Exception("sql_tree has not been defined");
 		}
-		if (!array_key_exists("SELECT", $this->sql_tree)) {
-			throw new Exception("SQL statement must be a SELECT statement");
-		}
 		if (array_key_exists("LIMIT", $this->sql_tree) && $this->settings && $this->settings->uses_pagination()) {
 			throw new Exception("The LIMIT clause is added automatically when paginating so it shouldn't be present in statement yet");
 		}
