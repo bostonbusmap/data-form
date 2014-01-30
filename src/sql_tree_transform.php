@@ -26,6 +26,33 @@ interface ISQLTreeTransform {
 }
 
 /**
+ * Returns top-most clause with SELECT in SQL parse tree, or null if none found
+ *
+ * @param $tree array
+ * @return array
+ */
+function &find_select_root_clause(&$tree) {
+	$current =& $tree;
+
+	if (!is_array($current)) {
+		return null;
+	}
+	if (array_key_exists("SELECT", $tree)) {
+		return $tree;
+	}
+
+
+	foreach ($tree as $k => &$v) {
+		if (is_array($v)) {
+			$ret =& find_select_root_clause($v);
+			if ($ret !== null) {
+				return $ret;
+			}
+		}
+	}
+	return null;
+}
+/**
  * Does no transformation, just returns input tree
  */
 class IdentityTreeTransform implements ISQLTreeTransform {
@@ -59,119 +86,21 @@ class LimitPaginationTreeTransform implements ISQLTreeTransform
 	}
 }
 
-/**
- * Paginate based on contents of database column using WHERE clauses
- */
-class BoundedPaginationTreeTransform implements ISQLTreeTransform
-{
-	/** @var  string */
-	protected $column_key;
-
-	public function __construct($column_key) {
-		if (!is_string($column_key) || trim($column_key) === "") {
-			throw new Exception("expected column_key to be a string");
-		}
-		$this->column_key = $column_key;
-	}
-
-	function alter($input_tree, $state, $settings, $table_name)
-	{
-		$tree = $input_tree;
-
-
-		if ($state) {
-			$pagination_state = $state->get_pagination_state($table_name);
-
-			$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
-			$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
-
-			if ($limit !== 0) {
-				$start = $limit * $current_page;
-				$end = $limit * ($current_page + 1);
-
-				$tree = self::add_where_clause($tree, $this->column_key . " >= " . $start);
-				$tree = self::add_where_clause($tree, $this->column_key . " < " . $end);
-			}
-			// if limit is 0, don't paginate at all
-		}
-
-		return $tree;
-	}
-
-	/**
-	 * Add WHERE clause to $tree.
-	 *
-	 * @param $tree array
-	 * @param $clause string (Not escaped!)
-	 * @return array SQL tree
-	 * @throws Exception
-	 */
-	public static function add_where_clause($tree, $clause) {
-		$phrase = "SELECT * FROM xyz WHERE $clause ";
-		$parser = new PHPSQLParser();
-		$where_clause = $parser->parse($phrase);
-		if (!$where_clause) {
-			throw new Exception("Error parsing SQL phrase");
-		}
-
-		if (!array_key_exists("WHERE", $tree)) {
-			$tree["WHERE"] = array();
-		}
-		if (!array_key_exists("WHERE", $where_clause)) {
-			throw new Exception("SQL clause is lacking WHERE piece");
-		}
-		if ($tree["WHERE"]) {
-			// add AND
-			$tree["WHERE"][] = array("expr_type" => "operator",
-				"base_expr" => "and",
-				"sub_tree" => false);
-		}
-		foreach ($where_clause["WHERE"] as $where_piece) {
-			$tree["WHERE"][] = $where_piece;
-		}
-		return $tree;
-	}
-}
 
 /**
- * Count distinct items
- */
-class DistinctCountTreeTransform  implements ISQLTreeTransform
-{
-	/** @var  string */
-	protected $column_key;
-
-	public function __construct($column_key) {
-		if (!is_string($column_key) || trim($column_key) === "") {
-			throw new Exception("expected column_key to be a string");
-		}
-		if (strpos($column_key, "`") !== false) {
-			throw new Exception("Found backtick in column key");
-		}
-		$this->column_key = $column_key;
-	}
-
-	function alter($input_tree, $state, $settings, $table_name)
-	{
-		$tree = $input_tree;
-
-		$count_parser = new PHPSQLParser();
-		$select_count_all = $count_parser->parse("SELECT COUNT(DISTINCT `" . $this->column_key . "`)");
-		$tree["SELECT"] = $select_count_all["SELECT"];
-
-		return $tree;
-	}
-}
-
-/**
- * Put query into subquery and count all rows. This is probably what you want.
+ * Put query into subquery and count all rows.
  */
 class CountTreeTransform implements ISQLTreeTransform {
 	function alter($input_tree, $state, $settings, $table_name)
 	{
+		$root = find_select_root_clause($input_tree);
+		if ($root === null) {
+			throw new Exception("Could not find SELECT clause");
+		}
+
 		$count_parser = new PHPSQLParser();
 		$select_count_all = $count_parser->parse("SELECT COUNT(*) FROM (SELECT 3, 4, 5) as t");
-		$select_count_all["FROM"][0]["sub_tree"] = $input_tree;
+		$select_count_all["FROM"][0]["sub_tree"] = $root;
 
 		return $select_count_all;
 	}
@@ -238,32 +167,61 @@ class FilterTreeTransform  implements ISQLTreeTransform
 	private static function make_alias_lookup($tree) {
 		$lookup = array();
 
-		foreach ($tree as $k => $v) {
-			if ($k === "SELECT") {
-				$select = $tree["SELECT"];
-				foreach ($select as $select_item) {
-					if (array_key_exists("base_expr", $select_item)) {
-						$base_expr = $select_item["base_expr"];
-						if (array_key_exists("alias", $select_item)) {
-							$alias = $select_item["alias"];
-							if (is_array($alias) && array_key_exists("no_quotes", $alias)) {
-								$no_quotes = $alias["no_quotes"];
-								$lookup[$no_quotes] = $base_expr;
-							}
+		$root = find_select_root_clause($tree);
+		if ($root !== null && array_key_exists("SELECT", $root)) {
+			$select = $root["SELECT"];
+			foreach ($select as $select_item) {
+				if (array_key_exists("base_expr", $select_item)) {
+					$base_expr = $select_item["base_expr"];
+					if (array_key_exists("alias", $select_item)) {
+						$alias = $select_item["alias"];
+						if (is_array($alias) && array_key_exists("no_quotes", $alias)) {
+							$no_quotes = $alias["no_quotes"];
+							$lookup[$no_quotes] = $base_expr;
 						}
 					}
-				}
-			}
-			elseif (is_array($v)) {
-				// don't recurse if we've already found the SELECT since we don't care about subqueries here
-				foreach (self::make_alias_lookup($v) as $lookup_k => $lookup_v) {
-					$lookup[$lookup_k] = $lookup_v;
 				}
 			}
 		}
 
 
 		return $lookup;
+	}
+
+	/**
+	 * Add WHERE clause to $tree.
+	 *
+	 * @param $input_tree array
+	 * @param $clause string (Not escaped!)
+	 * @return array SQL tree
+	 * @throws Exception
+	 */
+	private static function add_where_clause($input_tree, $clause) {
+		$phrase = "SELECT * FROM xyz WHERE $clause ";
+		$parser = new PHPSQLParser();
+		$where_clause = $parser->parse($phrase);
+		if (!$where_clause) {
+			throw new Exception("Error parsing SQL phrase");
+		}
+
+		$tree =& find_select_root_clause($input_tree);
+
+		if (!array_key_exists("WHERE", $tree)) {
+			$tree["WHERE"] = array();
+		}
+		if (!array_key_exists("WHERE", $where_clause)) {
+			throw new Exception("SQL clause is lacking WHERE piece");
+		}
+		if ($tree["WHERE"]) {
+			// add AND
+			$tree["WHERE"][] = array("expr_type" => "operator",
+				"base_expr" => "and",
+				"sub_tree" => false);
+		}
+		foreach ($where_clause["WHERE"] as $where_piece) {
+			$tree["WHERE"][] = $where_piece;
+		}
+		return $input_tree;
 	}
 
 	function alter($input_tree, $state, $settings, $table_name)
@@ -338,7 +296,7 @@ class FilterTreeTransform  implements ISQLTreeTransform
 									throw new Exception("Unimplemented for search type " . $obj->get_type());
 								}
 
-								$tree = BoundedPaginationTreeTransform::add_where_clause($tree, $phrase);
+								$tree = self::add_where_clause($tree, $phrase);
 							}
 						}
 					}
