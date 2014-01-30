@@ -132,7 +132,8 @@ class SortTreeTransform  implements ISQLTreeTransform
 							$value == DataFormState::sorting_state_asc) {
 							// create new ORDER clause
 							$tree["ORDER"][] = array("expr_type" => "colref",
-								"base_expr" => $column_key,
+								"base_expr" => "`$column_key`",
+								"no_quotes" => $column_key,
 								"subtree" => false,
 								"direction" => strtoupper($value));
 						}
