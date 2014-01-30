@@ -9,8 +9,8 @@
  */
 require_once "data_form.php";
 require_once "sql_tree_transform.php";
-require_once FILE_BASE_PATH . "/lib/PHP-SQL-Parser/php-sql-creator.php";
-require_once FILE_BASE_PATH . "/lib/PHP-SQL-Parser/php-sql-parser.php";
+require_once FILE_BASE_PATH . "/lib/PHP-SQL-Parser/PHPSQLCreator.php";
+require_once FILE_BASE_PATH . "/lib/PHP-SQL-Parser/PHPSQLParser.php";
 
 /**
  * Alters SQL using information from special fields in DataFormState for pagination, sorting and filtering
