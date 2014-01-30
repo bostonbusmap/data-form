@@ -235,24 +235,33 @@ class FilterTreeTransform  implements ISQLTreeTransform
 	 * @param $tree array
 	 * @return array
 	 */
-	function make_alias_lookup($tree) {
+	private static function make_alias_lookup($tree) {
 		$lookup = array();
 
-		if (array_key_exists("SELECT", $tree)) {
-			$select = $tree["SELECT"];
-			foreach ($select as $select_item) {
-				if (array_key_exists("base_expr", $select_item)) {
-					$base_expr = $select_item["base_expr"];
-					if (array_key_exists("alias", $select_item)) {
-						$alias = $select_item["alias"];
-						if (is_array($alias) && array_key_exists("no_quotes", $alias)) {
-							$no_quotes = $alias["no_quotes"];
-							$lookup[$no_quotes] = $base_expr;
+		foreach ($tree as $k => $v) {
+			if ($k === "SELECT") {
+				$select = $tree["SELECT"];
+				foreach ($select as $select_item) {
+					if (array_key_exists("base_expr", $select_item)) {
+						$base_expr = $select_item["base_expr"];
+						if (array_key_exists("alias", $select_item)) {
+							$alias = $select_item["alias"];
+							if (is_array($alias) && array_key_exists("no_quotes", $alias)) {
+								$no_quotes = $alias["no_quotes"];
+								$lookup[$no_quotes] = $base_expr;
+							}
 						}
 					}
 				}
 			}
+			elseif (is_array($v)) {
+				// don't recurse if we've already found the SELECT since we don't care about subqueries here
+				foreach (self::make_alias_lookup($v) as $lookup_k => $lookup_v) {
+					$lookup[$lookup_k] = $lookup_v;
+				}
+			}
 		}
+
 
 		return $lookup;
 	}
