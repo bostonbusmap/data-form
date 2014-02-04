@@ -66,10 +66,10 @@ function make_organisms_form($state, $this_url) {
 	// Each link sets the hidden field with that field name to the given value,
 	// then sets the form action to sql_export.php, then submits the form.
 	$widgets[] = DataTableLinkBuilder::create()->text("Export all rows")->link("sql_export.php")->
-		behavior(new DataTableBehaviorSetParamsThenSubmit(array($selected_only_name => false)))->build();
+		behavior(new DataTableBehaviorSubmit(array($selected_only_name => false)))->build();
 	$widgets[] = CustomWidget::create("<br />");
 	$widgets[] = DataTableLinkBuilder::create()->text("Export selected rows")->link("sql_export.php")->
-		behavior(new DataTableBehaviorSetParamsThenSubmit(array($selected_only_name => true)))->build();
+		behavior(new DataTableBehaviorSubmit(array($selected_only_name => true)))->build();
 	$widgets[] = CustomWidget::create("<br />");
 	$widgets[] = DataTableButtonBuilder::create()->text("Reset")->behavior(new DataTableBehaviorReset())->build();
 
