@@ -46,6 +46,9 @@ class DataTableBehaviorSetParamsThenSubmit implements IDataTableBehavior {
 
 /**
  * Set form action for form then submit form
+ *
+ * Important: parameters set via the constructor must already exist
+ * as hidden fields on the form for them to be set
  */
 class DataTableBehaviorSubmit implements IDataTableBehavior {
 	/** @var  array */
