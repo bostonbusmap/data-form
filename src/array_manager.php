@@ -135,7 +135,7 @@ class ArrayManager {
 			$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
 		}
 		$array = self::sort($array, $this->state, $settings, $this->table_name);
-		if ($this->ignore_pagination) {
+		if (!$this->ignore_pagination) {
 			$array = self::paginate($array, $this->state, $settings, $this->table_name);
 		}
 
