@@ -261,7 +261,7 @@ class FilterTreeTransform  implements ISQLTreeTransform
 							$obj->get_type() === DataTableSearchState::greater_than ||
 							$obj->get_type() === DataTableSearchState::greater_or_equal ||
 							$obj->get_type() === DataTableSearchState::equal) {
-							$escaped_value = mysql_real_escape_string($params[0]);
+							$escaped_value = gfy_db::escape_string($params[0]);
 							// TODO: check is_numeric for numeric comparisons
 							if ($escaped_value !== "") {
 								if ($obj->get_type() === DataTableSearchState::like) {
