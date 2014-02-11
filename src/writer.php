@@ -29,3 +29,27 @@ class OutputWriter implements IWriter {
 	}
 
 }
+
+class StdoutWriter implements IWriter {
+	protected $stdout;
+	public function __construct() {
+		$this->stdout = fopen("php://output", "w");
+	}
+
+	public function write($s) {
+		fwrite($this->stdout, $s);
+	}
+}
+class ResourceWriter implements IWriter {
+	protected $resource;
+	public function __construct($resource) {
+		if (!is_resource($resource)) {
+			throw new Exception("f must be a resource");
+		}
+		$this->resource = $resource;
+	}
+
+	public function write($s) {
+		fwrite($this->resource, $s);
+	}
+}
