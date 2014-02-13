@@ -164,8 +164,8 @@ class DataTableBehaviorRefreshImage implements IDataTableBehavior {
 	 */
 	protected $div_overlay;
 
-	const height_key = "_height";
-	const width_key = "_width";
+	const height_key = "height";
+	const width_key = "width";
 
 	public function __construct($div, $div_overlay, $extra_params=array()) {
 		if (!is_array($extra_params)) {
