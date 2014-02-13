@@ -34,6 +34,10 @@ class ArrayManager {
 	 * @var bool
 	 */
 	protected $ignore_pagination;
+	/**
+	 * @var bool
+	 */
+	protected $ignore_filtering;
 
 	/**
 	 * @param $array array
@@ -88,6 +92,11 @@ class ArrayManager {
 		return $this;
 	}
 
+	public function ignore_filtering($ignore_filtering) {
+		$this->ignore_filtering = $ignore_filtering;
+		return $this;
+	}
+
 	public function validate_input() {
 		if (!is_array($this->array)) {
 			throw new Exception("array must be an array");
@@ -103,6 +112,13 @@ class ArrayManager {
 		}
 		if (!is_bool($this->ignore_pagination)) {
 			throw new Exception("ignore_pagination must be a bool");
+		}
+
+		if ($this->ignore_filtering === null) {
+			$this->ignore_filtering = false;
+		}
+		if (!is_bool($this->ignore_filtering)) {
+			throw new Exception("ignore_filtering must be a bool");
 		}
 
 		if ($this->state && !($this->state instanceof DataFormState)) {
@@ -125,7 +141,9 @@ class ArrayManager {
 		$array = $this->array;
 
 		// Order is important here
-		$array = self::filter($array, $this->state, $this->settings, $this->table_name);
+		if (!$this->ignore_filtering) {
+			$array = self::filter($array, $this->state, $this->settings, $this->table_name);
+		}
 		$num_rows = count($array);
 		if ($this->settings) {
 			$settings = $this->settings->make_builder()->total_rows($num_rows)->build();
