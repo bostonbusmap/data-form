@@ -87,13 +87,13 @@ class ArrayManager {
 		return $this;
 	}
 
-	public function ignore_pagination($ignore_pagination) {
-		$this->ignore_pagination = $ignore_pagination;
+	public function ignore_pagination() {
+		$this->ignore_pagination = true;
 		return $this;
 	}
 
-	public function ignore_filtering($ignore_filtering) {
-		$this->ignore_filtering = $ignore_filtering;
+	public function ignore_filtering() {
+		$this->ignore_filtering = true;
 		return $this;
 	}
 
