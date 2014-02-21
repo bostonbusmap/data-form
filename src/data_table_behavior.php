@@ -81,7 +81,13 @@ class DataTableBehaviorSubmit implements IDataTableBehavior {
 		if (!array_key_exists("target", $form_params)) {
 			$form_params["target"] = "";
 		}
-		return 'return DataForm.submit(this, event, ' . json_encode($form_params) . ', ' . json_encode($this->params) . ');';
+
+		$options = array(
+			"form_params" => $form_params,
+			"params" => $this->params
+		);
+
+		return 'return DataForm.submit(this, event, ' . json_encode($options) . ');';
 	}
 }
 
@@ -111,11 +117,20 @@ class DataTableBehaviorSubmitAndValidate implements IDataTableBehavior {
 		}
 		$flash_name = $form_name . "_flash";
 
+		// form_action, method, validation_url, flash_name, params
+		$options = array(
+			"form_action" => $form_action,
+			"form_method" => $form_method,
+			"validation_url" => $this->validation_url,
+			"flash_name" => $flash_name,
+			"params" => $params
+		);
+
+
 		// first submit data with validation parameter to validation url
 		// If a non-empty result is received (which would be errors), put it in flash div,
 		// else do the submit
-		return 'return DataForm.submitThenValidate(this, event, ' . json_encode($form_action) . ', ' . json_encode($method) .
-			', ' . json_encode($this->validation_url) . ', ' . json_encode($flash_name) . ', ' . json_encode($params) . ');';
+		return 'return DataForm.validateThenSubmit(this, event, ' . json_encode($options) . ');';
 	}
 }
 
@@ -147,8 +162,16 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 		}
 		$flash_name = $form_name . "_flash";
 
-		return 'return DataForm.refresh(this, event, ' . json_encode($form_action) . ', ' . json_encode($form_method) . ', ' .
-			json_encode($form_name) . ', ' . json_encode($flash_name) . ', ' . json_encode($params) . ');';
+		// form_action, method, form_name, flash_name, params
+		$options = array(
+			"form_action" => $form_action,
+			"form_method" => $form_method,
+			"form_name" => $form_name,
+			"flash_name" => $flash_name,
+			"params" => $params
+		);
+
+		return 'return DataForm.refresh(this, event, ' . json_encode($options) . ');';
 	}
 }
 
@@ -207,10 +230,17 @@ class DataTableBehaviorRefreshImage implements IDataTableBehavior {
 		$height_name = DataFormState::make_field_name($form_name, array(self::height_key));
 		$width_name = DataFormState::make_field_name($form_name, array(self::width_key));
 
-		return 'return DataForm.refreshImage(this, event, ' . json_encode($form_action) . ', ' . json_encode($form_method) . ', ' .
-		json_encode($div) . ', ' . json_encode($this->div_overlay) . ', ' .
-		json_encode($height_name) . ', ' . json_encode($width_name) . ', ' .
-		json_encode($params) . ');';
+		$options = array(
+			"form_action" => $form_action,
+			"form_method" => $form_method,
+			"div_name" => $div,
+			"div_overlay_name" => $this->div_overlay,
+			"height_name" => $height_name,
+			"width_name" => $width_name,
+			"params" => $params
+		);
+
+		return 'return DataForm.refreshImage(this, event, ' . json_encode($options) . ');';
 	}
 }
 
@@ -234,8 +264,16 @@ class DataTableBehaviorClearSortThenRefresh implements IDataTableBehavior {
 			throw new Exception("Unknown method '$method'");
 		}
 
-		return 'return DataForm.clearSortThenRefresh(this, event, ' . json_encode($form_action) . ', ' . json_encode($form_method) . ', ' .
-		json_encode($form_name) . ', ' . json_encode($params) . ');';
+		$flash_name = $form_name . "_flash";
+
+		$options = array(
+			"form_action" => $form_action,
+			"form_method" => $form_method,
+			"form_name" => $form_name,
+			"flash_name" => $flash_name,
+			"params" => $params
+		);
+		return 'return DataForm.clearSortThenRefresh(this, event, ' . json_encode($options) . ');';
 
 	}
 }
