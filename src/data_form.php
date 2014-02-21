@@ -297,10 +297,10 @@ class DataForm {
 	}
 
 	/**
-	 * Runs validation rules and returns a string with validation errors if any were found
+	 * Runs validation rules and returns a JSON string with validation errors if any were found
 	 *
 	 * @param $state DataFormState What the user was working on
-	 * @return string HTML with validation errors. Must be an empty string if no errors found
+	 * @return string JSON with validation errors as HTML. Must be an empty string if no errors found
 	 * @throws Exception
 	 */
 	public function validate($state)
@@ -315,7 +315,19 @@ class DataForm {
 				$errors[] = '<span class="error">' . htmlspecialchars($error) . "</span>";
 			}
 		}
-		return join("<br />", $errors);
+		if ($errors) {
+			$errors_html = join("<br />", $errors);
+			return json_encode(array(
+				"status" => "error",
+				"error" => $errors_html
+			));
+		}
+		else
+		{
+			return json_encode(array(
+				"status" => "success"
+			));
+		}
 	}
 
 }
