@@ -114,10 +114,20 @@ function make_form($state) {
 
 	// Two widgets: a button that validates the form then submits, and a textbox which will be validated
 	$widgets = array();
-	$widgets[] = DataTableButtonBuilder::create()->text("Validate and submit")->form_action("validation_submit.php")->behavior(new DataTableBehaviorSubmitAndValidate($this_url))->build();
-	$widgets[] = DataTableTextboxBuilder::create()->text("Enter text without spaces")->name("text")->build();
+	$widgets[] = DataTableButtonBuilder::create()->
+		text("Validate and submit")->
+		form_action("validation_submit.php")->
+		behavior(new DataTableBehaviorValidateThenSubmit($this_url))->
+		build();
+	$widgets[] = DataTableTextboxBuilder::create()->
+		text("Enter text without spaces")->
+		name("text")->
+		build();
 	$widgets[] = new CustomWidget("<br />");
-	$widgets[] = DataTableButtonBuilder::create()->text("Reset form")->behavior(new DataTableBehaviorReset())->build();
+	$widgets[] = DataTableButtonBuilder::create()->
+		text("Reset form")->
+		behavior(new DataTableBehaviorReset())->
+		build();
 
 	// Add validator rules
 	$validator_rules = array();

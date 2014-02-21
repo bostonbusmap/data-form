@@ -96,7 +96,7 @@ class DataTableBehaviorSubmit implements IDataTableBehavior {
  *
  * TODO: change name to ValidateAndSubmit when convenient
  */
-class DataTableBehaviorSubmitAndValidate implements IDataTableBehavior {
+class DataTableBehaviorValidateThenSubmit implements IDataTableBehavior {
 	/** @var  string */
 	protected $validation_url;
 	public function __construct($validation_url) {
