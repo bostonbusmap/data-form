@@ -131,8 +131,20 @@ class SortTreeTransform  implements ISQLTreeTransform
 						if ($value == DataFormState::sorting_state_desc ||
 							$value == DataFormState::sorting_state_asc) {
 							// create new ORDER clause
+
+							// TODO: proper handling of quotes such that something like
+							// `table`.`column` and `name with spaces` are handled correctly
+							// and consistently
+							if (strpos($column_key, ".") !== false) {
+								$quoted_column_key = "`$column_key`";
+							}
+							else
+							{
+								$quoted_column_key = $column_key;
+							}
+
 							$tree["ORDER"][] = array("expr_type" => "colref",
-								"base_expr" => "`$column_key`",
+								"base_expr" => $quoted_column_key,
 								"no_quotes" => $column_key,
 								"subtree" => false,
 								"direction" => strtoupper($value));
