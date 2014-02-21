@@ -129,15 +129,15 @@ class DataForm {
 		}
 
 		$writer->write('<div class="' . htmlspecialchars($this->div_class) . '" id="' . htmlspecialchars($this->form_name) . '">');
-		$this->display_form_using_writer($writer, $state);
+		$this->display_form_html_using_writer($writer, $state);
 		$writer->write('</div>');
 	}
 
 
 	/**
-	 * Returns HTML for just the form element
+	 * Returns JSON for just the form element
 	 * @param DataFormState $state The state which holds what the user is working on
-	 * @return string HTML
+	 * @return string JSON
 	 * @throws Exception
 	 */
 	public function display_form($state=null) {
@@ -147,13 +147,54 @@ class DataForm {
 	}
 
 	/**
-	 * Returns HTML for just the form element
+	 * Writes JSON for just the form element
 	 * @param IWriter $writer Where to output HTML to
 	 * @param DataFormState $state The state which holds what the user is working on
 	 * @return void
 	 * @throws Exception
 	 */
 	public function display_form_using_writer($writer, $state=null) {
+		if ($state && !($state instanceof DataFormState)) {
+			throw new Exception("state must be instance of DataFormState");
+		}
+		if (!$state && $this->remote) {
+			throw new Exception("If form is a remote form, state must be specified");
+		}
+
+		$writer->write('{"html" : "');
+		$error = null;
+		try
+		{
+			$json_writer = new JsonStringWriter($writer);
+			$this->display_form_html_using_writer($json_writer, $state);
+		}
+		catch (Exception $e) {
+			$error = $e->getMessage();
+		}
+		$writer->write('", "status" : ');
+
+
+		if ($error !== null) {
+			$writer->write(json_encode("error"));
+			$writer->write(', "error" : ');
+			$writer->write(json_encode($error));
+			$writer->write("}\n");
+		}
+		else
+		{
+			$writer->write(json_encode("success"));
+			$writer->write("}\n");
+		}
+	}
+
+	/**
+	 * Returns HTML for just the form element
+	 * @param IWriter $writer Where to output HTML to
+	 * @param DataFormState $state The state which holds what the user is working on
+	 * @return void
+	 * @throws Exception
+	 */
+	protected function display_form_html_using_writer($writer, $state=null) {
 		if ($state && !($state instanceof DataFormState)) {
 			throw new Exception("state must be instance of DataFormState");
 		}

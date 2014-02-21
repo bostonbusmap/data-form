@@ -87,6 +87,8 @@ class DataTableBehaviorSubmit implements IDataTableBehavior {
 
 /**
  * Use AJAX to validate form, then submit form if validation succeeded, else display errors in flash area.
+ *
+ * TODO: change name to ValidateAndSubmit when convenient
  */
 class DataTableBehaviorSubmitAndValidate implements IDataTableBehavior {
 	/** @var  string */
@@ -143,9 +145,10 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 		if ($method != "post" && $method != "get") {
 			throw new Exception("Unknown method '$method'");
 		}
+		$flash_name = $form_name . "_flash";
 
 		return 'return DataForm.refresh(this, event, ' . json_encode($form_action) . ', ' . json_encode($form_method) . ', ' .
-			json_encode($form_name) . ', ' . json_encode($params) . ');';
+			json_encode($form_name) . ', ' . json_encode($flash_name) . ', ' . json_encode($params) . ');';
 	}
 }
 
