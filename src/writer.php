@@ -59,3 +59,22 @@ class NullWriter implements IWriter {
 
 	}
 }
+class JsonStringWriter implements IWriter {
+	/** @var  IWriter */
+	protected $writer;
+	public function __construct($writer) {
+		if (!($writer instanceof IWriter)) {
+			throw new Exception("JsonStringWriter must connect to another writer");
+		}
+		$this->writer = $writer;
+	}
+
+	public function write($s) {
+		if (!is_string($s)) {
+			$s = (string)$s;
+		}
+		$escaped = json_encode($s);
+		$trimmed_escaped = substr($escaped, 1, count($escaped) - 2);
+		$this->writer->write($trimmed_escaped);
+	}
+}
