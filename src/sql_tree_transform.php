@@ -135,7 +135,7 @@ class SortTreeTransform  implements ISQLTreeTransform
 							// TODO: proper handling of quotes such that something like
 							// `table`.`column` and `name with spaces` are handled correctly
 							// and consistently
-							if (strpos($column_key, ".") !== false) {
+							if (strpos($column_key, ".") === false) {
 								$quoted_column_key = "`$column_key`";
 							}
 							else
