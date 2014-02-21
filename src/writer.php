@@ -53,3 +53,9 @@ class ResourceWriter implements IWriter {
 		fwrite($this->resource, $s);
 	}
 }
+
+class NullWriter implements IWriter {
+	public function write($s) {
+
+	}
+}
