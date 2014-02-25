@@ -277,8 +277,7 @@ class FilterTreeTransform  implements ISQLTreeTransform
 							// TODO: check is_numeric for numeric comparisons
 							if ($escaped_value !== "") {
 								if ($obj->get_type() === DataTableSearchState::like) {
-									$like_escaped_value = str_replace("%", "\\%", $escaped_value);
-									$like_escaped_value = str_replace("_", "\\_", $like_escaped_value);
+									$like_escaped_value = escape_like_parameter($escaped_value);
 									$phrase = " $column_base_expr LIKE '%$like_escaped_value%' ESCAPE '\\\\' ";
 								}
 								elseif ($obj->get_type() === DataTableSearchState::rlike) {
