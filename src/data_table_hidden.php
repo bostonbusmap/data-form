@@ -54,13 +54,10 @@ class DataTableHidden implements IDataTableWidget {
 	public static function display_hidden($form_name, $state, $name_array, $default_value) {
 		$qualified_name = DataFormState::make_field_name($form_name, $name_array);
 
-		if ($state->has_item($name_array)) {
-			$value = $state->find_item($name_array);
-		}
-		else
-		{
-			$value = $default_value;
-		}
+		// NOTE: if something uses Javascript to update a hidden field, we would need
+		// to rethink this, probably by adding some way to let user force using the default_value
+		// instead of what's in $state
+		$value = $default_value;
 
 		$ret = '<input type="hidden" id="' . htmlspecialchars($qualified_name) . '" name="' . htmlspecialchars($qualified_name) . '" value="' . htmlspecialchars($value) . '" />';
 		return $ret;
