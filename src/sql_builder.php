@@ -24,7 +24,7 @@ class SQLBuilder {
 	/** @var  DataFormState State containing table information */
 	protected $state;
 
-	/** @var  string Name of table, if any */
+	/** @var  string Name of HTML table, if any */
 	protected $table_name;
 
 	/** @var  DataTableSettings Default settings for table */
