@@ -237,11 +237,16 @@ class FilterTreeTransform  implements ISQLTreeTransform
 		return $input_tree;
 	}
 
-	function alter($input_tree, $state, $settings, $table_name)
-	{
-		$tree = $input_tree;
-
-		$alias_lookup = $this->make_alias_lookup($tree);
+	/**
+	 * @param $state DataFormState
+	 * @param $settings DataTableSettings
+	 * @param $table_name string
+	 * @param $alias_lookup array
+	 * @return string[] List of WHERE clauses, joined with AND
+	 * @throws Exception
+	 */
+	public static function make_where_clauses($state, $settings, $table_name, $alias_lookup) {
+		$ret = array();
 
 		// TODO: make this less ugly
 		if ($state) {
@@ -308,12 +313,27 @@ class FilterTreeTransform  implements ISQLTreeTransform
 									throw new Exception("Unimplemented for search type " . $obj->get_type());
 								}
 
-								$tree = self::add_where_clause($tree, $phrase);
+								$ret[] = $phrase;
 							}
 						}
 					}
 				}
 			}
+		}
+
+		return $ret;
+	}
+
+	function alter($input_tree, $state, $settings, $table_name)
+	{
+		$tree = $input_tree;
+
+		$alias_lookup = $this->make_alias_lookup($tree);
+
+		$where_clauses = self::make_where_clauses($state, $settings, $table_name, $alias_lookup);
+
+		foreach ($where_clauses as $where_clause) {
+			$tree = self::add_where_clause($tree, $where_clause);
 		}
 
 		return $tree;
