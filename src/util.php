@@ -9,7 +9,7 @@
  */
 
 require_once FILE_BASE_PATH . "/lib/database_iterator.php";
-require_once FILE_BASE_PATH . "/lib/sql_constructor.php";
+require_once FILE_BASE_PATH . "/www/browser/lib/data_table/sql_constructor.php";
 // Useful functions for working with DataForm and DataTable objects
 
 /**
