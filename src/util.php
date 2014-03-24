@@ -9,6 +9,7 @@
  */
 
 require_once FILE_BASE_PATH . "/lib/database_iterator.php";
+require_once FILE_BASE_PATH . "/lib/sql_constructor.php";
 // Useful functions for working with DataForm and DataTable objects
 
 /**
@@ -41,6 +42,54 @@ function create_columns_from_database($res) {
 	}
 
 	return $columns;
+}
+
+/**
+ * Return a paginated SQL query, and set number of rows on $settings (creating $settings if null)
+ *
+ * @param $constructor SqlConstructor
+ * @param $state DataFormState
+ * @param $settings DataTableSettings Table settings. This will become a copy of the input with total_rows
+ * set to the number of rows. New default object will be created if this is null.
+ * @param $conn_type string Connection type, used for querying for count
+ * @param $table_name string Name of table, if more than one table in form
+ * @return string SQL
+ * @throws Exception
+ */
+function paginate_sql_constructor($constructor, $state, &$settings, $conn_type=null, $table_name=null) {
+	if (!($constructor instanceof SqlConstructor)) {
+		throw new Exception("constructor must be instance of SqlConstructor");
+	}
+	if (!($state instanceof DataFormState)) {
+		throw new Exception("state must be instance of DataFormState");
+	}
+	if ($settings !== null && !($settings instanceof DataTableSettings)) {
+		throw new Exception("settings must be instance of DataTableSettings, or null to create a new object");
+	}
+	if (($conn_type !== null) && !is_string($conn_type)) {
+		throw new Exception("conn_type must be a string or null");
+	}
+	if (!is_string($table_name)) {
+		throw new Exception("table_name must be a string");
+	}
+
+	// There's a cost to parsing SQL so this object is used twice
+	$count_sql = $constructor->state($state)->settings($settings)->table_name($table_name)->build_count();
+	$count_res = gfy_db::query($count_sql, $conn_type, true);
+	$count_row = gfy_db::fetch_row($count_res);
+	$num_rows = (int)$count_row[0];
+
+	if ($settings) {
+		$settings = $settings->make_builder()->total_rows($num_rows)->build();
+	}
+	else
+	{
+		$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
+	}
+
+	$paginated_sql = $constructor->settings($settings)->build();
+	return $paginated_sql;
+
 }
 
 /**
