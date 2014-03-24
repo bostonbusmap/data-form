@@ -69,6 +69,9 @@ function paginate_sql_constructor($constructor, $state, &$settings, $conn_type=n
 	if (($conn_type !== null) && !is_string($conn_type)) {
 		throw new Exception("conn_type must be a string or null");
 	}
+	if ($table_name === null) {
+		$table_name = "";
+	}
 	if (!is_string($table_name)) {
 		throw new Exception("table_name must be a string");
 	}
