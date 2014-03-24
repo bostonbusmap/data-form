@@ -66,9 +66,13 @@ class IdentityTreeTransform implements ISQLTreeTransform {
  */
 class LimitPaginationTreeTransform implements ISQLTreeTransform
 {
-	function alter($input_tree, $state, $settings, $table_name)
-	{
-		$tree = $input_tree;
+	/**
+	 * @param $state DataFormState
+	 * @param $settings DataTableSettings
+	 * @param $table_name string
+	 * @return string
+	 */
+	public static function make_limit_offset_clause($state, $settings, $table_name) {
 		if ($state) {
 			$pagination_state = $state->get_pagination_state($table_name);
 
@@ -77,10 +81,32 @@ class LimitPaginationTreeTransform implements ISQLTreeTransform
 				$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
 
 				$offset = $current_page * $limit;
-				$tree["LIMIT"] = array("offset" => $offset,
-					"rowcount" => $limit);
+
+				return "LIMIT $limit OFFSET $offset";
 			}
 			// else the limit is zero and we don't paginate at all
+		}
+		return "";
+	}
+
+	/**
+	 * @param $tree array
+	 * @param $limit_order_clause string
+	 * @return array
+	 */
+	public static function add_limit_offset_clause($tree, $limit_order_clause) {
+		$limit_parser = new PHPSQLParser();
+		$limit_tree = $limit_parser->parse("SELECT a FROM x $limit_order_clause");
+		$tree["LIMIT"] = $limit_tree["LIMIT"];
+		return $tree;
+	}
+
+	function alter($input_tree, $state, $settings, $table_name)
+	{
+		$tree = $input_tree;
+		$limit_clause = self::make_limit_offset_clause($state, $settings, $table_name);
+		if ($limit_clause) {
+			$tree = self::add_limit_offset_clause($input_tree, $limit_clause);
 		}
 		return $tree;
 	}
@@ -110,12 +136,33 @@ class CountTreeTransform implements ISQLTreeTransform {
  */
 class SortTreeTransform  implements ISQLTreeTransform
 {
-	function alter($input_tree, $state, $settings, $table_name)
-	{
-		$tree = $input_tree;
+	/**
+	 * @param $tree array
+	 * @param $clause string
+	 * @return array
+	 */
+	public static function add_order_clause($tree, $clause) {
+		if (trim($clause) === "") {
+			unset($tree["ORDER"]);
+			return $tree;
+		}
+		$order_parser = new PHPSQLParser();
+		$order_tree = $order_parser->parse("SELECT z FROM x ORDER BY $clause");
+		$tree["ORDER"] = $order_tree["ORDER"];
+		return $tree;
+	}
 
+	/**
+	 * @param $state DataFormState
+	 * @param $settings DataTableSettings
+	 * @param $table_name string
+	 * @return string
+	 * @throws Exception
+	 */
+	public static function make_order_clause($state, $settings, $table_name) {
+		$ret = "";
 		if ($state) {
-			if ($table_name) {
+			if (trim($table_name) !== "") {
 				$sorting_data = $state->find_item(array(DataFormState::state_key, $table_name, DataFormState::sorting_state_key));
 			}
 			else
@@ -123,9 +170,6 @@ class SortTreeTransform  implements ISQLTreeTransform
 				$sorting_data = $state->find_item(array(DataFormState::state_key, DataFormState::sorting_state_key));
 			}
 			if (is_array($sorting_data)) {
-				// remove any ORDER clause already present
-				$tree["ORDER"] = array();
-
 				foreach ($sorting_data as $column_key => $value) {
 					if (is_string($value)) {
 						if ($value == DataFormState::sorting_state_desc ||
@@ -143,11 +187,7 @@ class SortTreeTransform  implements ISQLTreeTransform
 								$quoted_column_key = $column_key;
 							}
 
-							$tree["ORDER"][] = array("expr_type" => "colref",
-								"base_expr" => $quoted_column_key,
-								"no_quotes" => $column_key,
-								"subtree" => false,
-								"direction" => strtoupper($value));
+							$ret .= " " . $quoted_column_key . " " . $value;
 						}
 						elseif ($value)
 						{
@@ -161,6 +201,18 @@ class SortTreeTransform  implements ISQLTreeTransform
 				}
 			}
 		}
+		return $ret;
+	}
+
+	function alter($input_tree, $state, $settings, $table_name)
+	{
+		$tree = $input_tree;
+
+		$order_clause = self::make_order_clause($state, $settings, $table_name);
+		if ($order_clause) {
+			$tree = self::add_order_clause($tree, $order_clause);
+		}
+
 		return $tree;
 	}
 }
