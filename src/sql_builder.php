@@ -49,6 +49,15 @@ class SQLBuilder implements IPaginator {
 	protected $count_transform;
 
 	/**
+	 * @var bool
+	 */
+	protected $ignore_pagination;
+	/**
+	 * @var bool
+	 */
+	protected $ignore_filtering;
+
+	/**
 	 * Create SQLBuilder. This parses the SQL into a tree for further modification
 	 *
 	 * @param $sql string SQL to parse
@@ -147,13 +156,7 @@ class SQLBuilder implements IPaginator {
 	 */
 	public function ignore_pagination($ignore_pagination = true)
 	{
-		if ($ignore_pagination) {
-			$this->pagination_transform = new IdentityTreeTransform();
-		}
-		else
-		{
-			$this->pagination_transform = new LimitPaginationTreeTransform();
-		}
+		$this->ignore_pagination = $ignore_pagination;
 		return $this;
 	}
 
@@ -166,13 +169,7 @@ class SQLBuilder implements IPaginator {
 	 */
 	public function ignore_filtering($ignore_filtering = true)
 	{
-		if ($ignore_filtering) {
-			$this->filter_transform = new IdentityTreeTransform();
-		}
-		else
-		{
-			$this->filter_transform = new FilterTreeTransform();
-		}
+		$this->ignore_filtering = $ignore_filtering;
 		return $this;
 	}
 
@@ -231,6 +228,19 @@ class SQLBuilder implements IPaginator {
 			throw new Exception("Filter transform must be instance of ISQLTreeFilter");
 		}
 
+		if ($this->ignore_pagination === null) {
+			$this->ignore_pagination = false;
+		}
+		if (!is_bool($this->ignore_pagination)) {
+			throw new Exception("ignore_pagination must be a bool");
+		}
+
+		if ($this->ignore_filtering === null) {
+			$this->ignore_filtering = false;
+		}
+		if (!is_bool($this->ignore_filtering)) {
+			throw new Exception("ignore_filtering must be a bool");
+		}
 	}
 
 	/**
@@ -244,9 +254,13 @@ class SQLBuilder implements IPaginator {
 
 		$tree = $this->sql_tree;
 
-		$tree = $this->filter_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+		if (!$this->ignore_filtering) {
+			$tree = $this->filter_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+		}
 		$tree = $this->sort_transform->alter($tree, $this->state, $this->settings, $this->table_name);
-		$tree = $this->pagination_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+		if (!$this->ignore_pagination) {
+			$tree = $this->pagination_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+		}
 
 		$creator = new PHPSQLCreator();
 		return $creator->create($tree);
@@ -262,7 +276,9 @@ class SQLBuilder implements IPaginator {
 		$tree = $this->sql_tree;
 
 		// order is important here. The count transform puts everything within a subquery so it must go last
-		$tree = $this->filter_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+		if (!$this->ignore_filtering) {
+			$tree = $this->filter_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+		}
 		$tree = $this->count_transform->alter($tree, $this->state, $this->settings, $this->table_name);
 
 		$creator = new PHPSQLCreator();
