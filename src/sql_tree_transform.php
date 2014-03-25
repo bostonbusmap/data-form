@@ -190,6 +190,32 @@ class CountTreeTransform implements ISQLTreeTransform {
 		return $select_count_all;
 	}
 }
+
+/**
+ * Replace whole parse tree with a new one
+ */
+class ArbitraryTreeTransform implements ISQLTreeTransform {
+	/**
+	 * @var array
+	 */
+	protected $tree;
+	public function __construct($new_sql) {
+		if (!is_string($new_sql) || trim($new_sql) === "") {
+			throw new Exception("new_sql must be a non-empty string");
+		}
+		$parser = new PHPSQLParser();
+		$this->tree = $parser->parse($new_sql);
+		if (!$this->tree) {
+			throw new Exception("Unable to parse SQL");
+		}
+	}
+
+	function alter($input_tree, $state, $settings, $table_name)
+	{
+		return $this->tree;
+	}
+}
+
 /**
  * Create ORDER BY portion of SQL
  */
