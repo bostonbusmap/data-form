@@ -11,11 +11,13 @@
  * @copyright  2013 Above Authors and the President and Fellows of Harvard University
  */
 
+require_once "paginator.php";
+
 /**
  * Use sorting, pagination and filtering information to provide an altered 2D array
  * given pagination state and settings
  */
-class ArrayManager {
+class ArrayManager implements IPaginator {
 	/** @var  array */
 	protected $array;
 	/**
@@ -87,13 +89,13 @@ class ArrayManager {
 		return $this;
 	}
 
-	public function ignore_pagination() {
-		$this->ignore_pagination = true;
+	public function ignore_pagination($ignore_pagination = true) {
+		$this->ignore_pagination = $ignore_pagination;
 		return $this;
 	}
 
-	public function ignore_filtering() {
-		$this->ignore_filtering = true;
+	public function ignore_filtering($ignore_filtering = true) {
+		$this->ignore_filtering = $ignore_filtering;
 		return $this;
 	}
 
@@ -129,13 +131,26 @@ class ArrayManager {
 			throw new Exception("settings must be DataTableSettings");
 		}
 	}
+	// for backwards compat
+	public function make_filtered_subset() {
+		list($array, $num_rows) = $this->obtain_paginated_data_and_row_count();
+		return array($num_rows, $array);
+	}
+
+	public function obtain_paginated_data() {
+		throw new Exception("Unimplemented for performance reasons. Use obtain_paginated_data_and_row_count() instead");
+	}
+
+	public function obtain_row_count() {
+		throw new Exception("Unimplemented for performance reasons. Use obtain_paginated_data_and_row_count() instead");
+	}
 
 	/**
 	 * Filters, sorts, and paginates (in that order) the input data. Returns the row count of the filtered items
 	 * and a paginated set of data
-	 * @return int, array
+	 * @return array
 	 */
-	public function make_filtered_subset() {
+	public function obtain_paginated_data_and_row_count() {
 		$this->validate_input();
 
 		$array = $this->array;
@@ -157,7 +172,7 @@ class ArrayManager {
 			$array = self::paginate($array, $this->state, $settings, $this->table_name);
 		}
 
-		return array($num_rows, $array);
+		return array($array, $num_rows);
 	}
 
 	/**

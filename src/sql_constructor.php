@@ -1,11 +1,13 @@
 <?php
 
+require_once "paginator.php";
+
 /**
  * Class to build pieces of SQL and allow trivial manipulations, similar to ORM syntax
  *
  * This is just a quick and dirty SQL string concatenator to avoid the cost of parsing SQL
  */
-class SqlConstructor {
+class SqlConstructor implements IPaginator {
 	/**
 	 * @var array Each item is (clause, alias or null)
 	 */
@@ -319,7 +321,7 @@ class SqlConstructor {
 		}
 	}
 
-	public function build_count() {
+	public function obtain_row_count() {
 		$this->validate_input();
 
 		$constructor = new SqlConstructor($this);
@@ -335,12 +337,19 @@ class SqlConstructor {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function build_count() {
+		return $this->obtain_row_count();
+	}
+
+	/**
 	 * Make SQL string from object contents
 	 *
 	 * @return string SQL
 	 * @throws Exception
 	 */
-	public function build() {
+	public function obtain_paginated_data() {
 		$this->validate_input();
 
 		$constructor = new SqlConstructor($this);
@@ -365,6 +374,21 @@ class SqlConstructor {
 		return $constructor->make_sql();
 	}
 
+	/**
+	 * @return string
+	 */
+	public function build() {
+		return $this->obtain_paginated_data();
+	}
+
+	public function obtain_paginated_data_and_row_count() {
+		return array($this->obtain_paginated_data(), $this->obtain_row_count());
+	}
+
+	/**
+	 * Construct SQL without doing any filtering sorting or pagination
+	 * @return string
+	 */
 	protected function make_sql() {
 		$this->validate_input();
 		$ret = "SELECT ";

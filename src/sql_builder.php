@@ -9,13 +9,14 @@
  */
 require_once "data_form.php";
 require_once "sql_tree_transform.php";
+require_once "paginator.php";
 require_once FILE_BASE_PATH . "/lib/PHP-SQL-Parser/PHPSQLCreator.php";
 require_once FILE_BASE_PATH . "/lib/PHP-SQL-Parser/PHPSQLParser.php";
 
 /**
  * Alters SQL using information from special fields in DataFormState for pagination, sorting and filtering
  */
-class SQLBuilder {
+class SQLBuilder implements IPaginator {
 	/**
 	 * @var array Abstract syntax tree created by PHP-SQL-Parser. Must only be modified by constructor
 	 */
@@ -139,14 +140,20 @@ class SQLBuilder {
 	}
 
 	/**
-	 * If true, no LIMIT or OFFSET clauses will be added.
+	 * If true, no LIMIT or OFFSET clauses will be added
 	 *
-	 * Note that this just calls pagination_transform so make sure you aren't doing both
-	 * @return SQLBuilder
+	 * @param bool $ignore_pagination
+	 * @return $this|SQLBuilder
 	 */
-	public function ignore_pagination()
+	public function ignore_pagination($ignore_pagination = true)
 	{
-		$this->pagination_transform(new IdentityTreeTransform());
+		if ($ignore_pagination) {
+			$this->pagination_transform = new IdentityTreeTransform();
+		}
+		else
+		{
+			$this->pagination_transform = new LimitPaginationTreeTransform();
+		}
 		return $this;
 	}
 
@@ -154,11 +161,18 @@ class SQLBuilder {
 	 * If true, no filtering clauses will be added (typically WHERE clauses)
 	 *
 	 * Note that this just calls filter_transform so make sure you aren't doing both
+	 * @param $ignore_filtering bool
 	 * @return SQLBuilder
 	 */
-	public function ignore_filtering()
+	public function ignore_filtering($ignore_filtering = true)
 	{
-		$this->filter_transform(new IdentityTreeTransform());
+		if ($ignore_filtering) {
+			$this->filter_transform = new IdentityTreeTransform();
+		}
+		else
+		{
+			$this->filter_transform = new FilterTreeTransform();
+		}
 		return $this;
 	}
 
@@ -225,7 +239,7 @@ class SQLBuilder {
 	 * @return string SQL (not escaped!)
 	 * @throws Exception
 	 */
-	public function build() {
+	public function obtain_paginated_data() {
 		$this->validate_input();
 
 		$tree = $this->sql_tree;
@@ -242,7 +256,7 @@ class SQLBuilder {
 	 * Create SQL for counting the number of rows. This changes the SQL to 'SELECT COUNT(*) FROM ...'
 	 * @return string SQL
 	 */
-	public function build_count() {
+	public function obtain_row_count() {
 		$this->validate_input();
 
 		$tree = $this->sql_tree;
@@ -253,5 +267,23 @@ class SQLBuilder {
 
 		$creator = new PHPSQLCreator();
 		return $creator->create($tree);
+	}
+
+	public function obtain_paginated_data_and_row_count() {
+		return array($this->obtain_paginated_data(), $this->obtain_row_count());
+	}
+
+	/**
+	 * @return string
+	 */
+	public function build() {
+		return $this->obtain_paginated_data();
+	}
+
+	/**
+	 * @return string
+	 */
+	public function build_count() {
+		return $this->obtain_row_count();
 	}
 }
