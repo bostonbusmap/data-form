@@ -61,6 +61,65 @@ class IdentityTreeTransform implements ISQLTreeTransform {
 		return $input_tree;
 	}
 }
+
+/**
+ * Paginate on a column value
+ */
+class WherePaginationTreeTransform implements ISQLTreeTransform {
+	/**
+	 * @var string
+	 */
+	protected $column_key;
+	public function __construct($column_key) {
+		if (!is_string($column_key) || trim($column_key) === "") {
+			throw new Exception("column_key must be non-empty string");
+		}
+		$this->column_key = $column_key;
+	}
+
+	function alter($input_tree, $state, $settings, $table_name)
+	{
+		if ($state) {
+			$pagination_state = $state->get_pagination_state($table_name);
+
+			$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
+			if ($limit !== 0) {
+				$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
+
+				$offset = $current_page * $limit;
+
+				$alias_lookup = FilterTreeTransform::make_alias_lookup($input_tree);
+
+				if (array_key_exists($this->column_key, $alias_lookup)) {
+					$alias = $alias_lookup[$this->column_key];
+				}
+				else
+				{
+					$alias = $this->column_key;
+				}
+
+				// TODO: proper handling of quotes such that something like
+				// `table`.`column` and `name with spaces` are handled correctly
+				// and consistently
+				if (strpos($alias, ".") === false) {
+					$quoted_column_key = "`$alias`";
+				}
+				else
+				{
+					$quoted_column_key = $alias;
+				}
+
+				return FilterTreeTransform::add_where_clause($input_tree, "(" .
+					$quoted_column_key . " >= " . $offset . " AND " . $quoted_column_key .
+					" < " . ($offset + $limit) . ")");
+			}
+			// else the limit is zero and we don't paginate at all
+		}
+		return $input_tree;
+
+	}
+}
+
 /**
  * Add LIMIT and OFFSET clauses given pagination state and settings
  */
@@ -229,7 +288,7 @@ class FilterTreeTransform  implements ISQLTreeTransform
 	 * @param $tree array
 	 * @return array
 	 */
-	private static function make_alias_lookup($tree) {
+	public static function make_alias_lookup($tree) {
 		$lookup = array();
 
 		$root = find_select_root_clause($tree);
@@ -261,7 +320,7 @@ class FilterTreeTransform  implements ISQLTreeTransform
 	 * @return array SQL tree
 	 * @throws Exception
 	 */
-	private static function add_where_clause($input_tree, $clause) {
+	public static function add_where_clause($input_tree, $clause) {
 		$phrase = "SELECT * FROM xyz WHERE $clause ";
 		$parser = new PHPSQLParser();
 		$where_clause = $parser->parse($phrase);
@@ -380,7 +439,7 @@ class FilterTreeTransform  implements ISQLTreeTransform
 	{
 		$tree = $input_tree;
 
-		$alias_lookup = $this->make_alias_lookup($tree);
+		$alias_lookup = self::make_alias_lookup($tree);
 
 		$where_clauses = self::make_where_clauses($state, $settings, $table_name, $alias_lookup);
 
