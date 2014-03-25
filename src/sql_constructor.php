@@ -67,39 +67,16 @@ class SqlConstructor implements IPaginator {
 	 */
 	protected $ignore_filtering;
 
-	public function __construct($copy = null) {
-		if ($copy !== null && !($copy instanceof SqlConstructor)) {
-			throw new Exception("copy must be instance of SqlConstructor");
-		}
-
+	public function __construct() {
 		$this->select_items = array();
 		$this->where_items = array();
 		$this->joins = array();
 		$this->group_by_columns = array();
 		$this->alias_lookup = array();
-		if ($copy !== null) {
-			$this->table = $copy->table;
-			$this->state = $copy->state;
-			$this->settings = $copy->settings;
-			$this->order_by_clause = $copy->order_by_clause;
-			$this->group_by_columns = $copy->group_by_columns;
-			$this->limit_offset_clause = $copy->limit_offset_clause;
-			$this->joins = $copy->joins;
-			$this->where_items = $copy->where_items;
-			$this->select_items = $copy->select_items;
-			$this->is_distinct = $copy->is_distinct;
-			$this->from_table = $copy->from_table;
-			$this->ignore_filtering = $copy->ignore_filtering;
-			$this->ignore_pagination = $copy->ignore_pagination;
-		}
 	}
 
-	/**
-	 * @param SqlConstructor|null $copy
-	 * @return SqlConstructor
-	 */
-	public static function create($copy = null) {
-		return new SqlConstructor($copy);
+	public static function create() {
+		return new SqlConstructor();
 	}
 
 	/**
@@ -324,7 +301,8 @@ class SqlConstructor implements IPaginator {
 	public function obtain_row_count() {
 		$this->validate_input();
 
-		$constructor = new SqlConstructor($this);
+		// this is a shallow copy so the where clauses we add are only temporary
+		$constructor = clone $this;
 
 		if (!$this->ignore_filtering) {
 			$where_clauses = FilterTreeTransform::make_where_clauses($this->state,
@@ -352,7 +330,8 @@ class SqlConstructor implements IPaginator {
 	public function obtain_paginated_data() {
 		$this->validate_input();
 
-		$constructor = new SqlConstructor($this);
+		// this only performs a shallow copy
+		$constructor = clone $this;
 
 		if (!$this->ignore_filtering) {
 			$where_clauses = FilterTreeTransform::make_where_clauses($this->state,
