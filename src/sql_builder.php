@@ -239,7 +239,7 @@ class SQLBuilder implements IPaginator {
 	 * @return string SQL (not escaped!)
 	 * @throws Exception
 	 */
-	public function obtain_paginated_data() {
+	public function build() {
 		$this->validate_input();
 
 		$tree = $this->sql_tree;
@@ -256,7 +256,7 @@ class SQLBuilder implements IPaginator {
 	 * Create SQL for counting the number of rows. This changes the SQL to 'SELECT COUNT(*) FROM ...'
 	 * @return string SQL
 	 */
-	public function obtain_row_count() {
+	public function build_count() {
 		$this->validate_input();
 
 		$tree = $this->sql_tree;
@@ -269,21 +269,30 @@ class SQLBuilder implements IPaginator {
 		return $creator->create($tree);
 	}
 
-	public function obtain_paginated_data_and_row_count() {
-		return array($this->obtain_paginated_data(), $this->obtain_row_count());
-	}
-
 	/**
-	 * @return string
+	 * @param string $conn_type string
+	 * @param string $rowid_key string
+	 * @return array Iterator, num_rows
 	 */
-	public function build() {
-		return $this->obtain_paginated_data();
-	}
+	public function obtain_paginated_data_and_row_count($conn_type, $rowid_key) {
+		$count_sql = $this->build_count();
+		$count_res = gfy_db::query($count_sql, $conn_type, true);
+		$count_row = gfy_db::fetch_row($count_res);
+		$num_rows = (int)$count_row[0];
 
-	/**
-	 * @return string
-	 */
-	public function build_count() {
-		return $this->obtain_row_count();
+		$settings = $this->settings;
+		if ($settings) {
+			$settings = $settings->make_builder()->total_rows($num_rows)->build();
+		}
+		else
+		{
+			$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
+		}
+
+		$sql_builder = clone $this;
+		$paginated_sql = $sql_builder->settings($settings)->build();
+
+		$iterator = new DatabaseIterator($paginated_sql, $conn_type, $rowid_key);
+		return array($iterator, $num_rows);
 	}
 }

@@ -133,7 +133,7 @@ class ArrayManager implements IPaginator {
 	}
 	// for backwards compat
 	public function make_filtered_subset() {
-		list($array, $num_rows) = $this->obtain_paginated_data_and_row_count();
+		list($array, $num_rows) = $this->obtain_paginated_data_and_row_count(null, null);
 		return array($num_rows, $array);
 	}
 
@@ -145,12 +145,7 @@ class ArrayManager implements IPaginator {
 		throw new Exception("Unimplemented for performance reasons. Use obtain_paginated_data_and_row_count() instead");
 	}
 
-	/**
-	 * Filters, sorts, and paginates (in that order) the input data. Returns the row count of the filtered items
-	 * and a paginated set of data
-	 * @return array
-	 */
-	public function obtain_paginated_data_and_row_count() {
+	public function obtain_paginated_data_and_row_count($conn_type, $rowid_key) {
 		$this->validate_input();
 
 		$array = $this->array;
@@ -172,7 +167,11 @@ class ArrayManager implements IPaginator {
 			$array = self::paginate($array, $this->state, $settings, $this->table_name);
 		}
 
-		return array($array, $num_rows);
+		$iterator = new ArrayIterator($array);
+		if ($rowid_key !== null) {
+			$iterator = new ColumnAsKeyIterator($iterator, $rowid_key);
+		}
+		return array($iterator, $num_rows);
 	}
 
 	/**
@@ -372,5 +371,56 @@ class ArraySorter {
 		{
 			return 1;
 		}
+	}
+}
+
+/**
+ * Take existing iterator and return some cell within each row as the key for the row
+ */
+class ColumnAsKeyIterator implements Iterator {
+	/**
+	 * @var Iterator
+	 */
+	protected $iterator;
+	/**
+	 * @var string
+	 */
+	protected $column_key;
+
+	public function __construct($iterator, $column_key) {
+		if (!($iterator instanceof Iterator)) {
+			throw new Exception("iterator must be instanceof Iterator");
+		}
+		if (!is_string($column_key) || trim($column_key) === "") {
+			throw new Exception("column_key must be non-empty string");
+		}
+		$this->iterator = $iterator;
+		$this->column_key = $column_key;
+	}
+
+	public function current()
+	{
+		return $this->iterator->current();
+	}
+
+	public function next()
+	{
+		$this->iterator->next();
+	}
+
+	public function key()
+	{
+		$row = $this->iterator->current();
+		return $row[$this->column_key];
+	}
+
+	public function valid()
+	{
+		return $this->iterator->valid();
+	}
+
+	public function rewind()
+	{
+		$this->iterator->rewind();
 	}
 }

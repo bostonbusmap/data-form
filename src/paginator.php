@@ -42,27 +42,11 @@ interface IPaginator {
 	public function ignore_filtering($ignore_filtering = true);
 
 	/**
-	 * Get something to produce paginated data. This may be a SQL string, the data itself,
-	 * or something else appropriate to the class
+	 * This returns an array of (paginated Iterator, row_count)
 	 *
-	 * @return mixed
-	 * @throws Exception
-	 */
-	public function obtain_paginated_data();
-
-	/**
-	 * Get something to produce a row count. This may be a SQL string or the row count itself,
-	 * depending on the implementing class
-	 *
-	 * @return mixed
-	 */
-	public function obtain_row_count();
-
-	/**
-	 * This returns an array of (pagination_data, row_count) in the same format provided
-	 * by obtain_paginated_data() and obtain_row_count()
-	 *
+	 * @param $conn_type string
+	 * @param $rowid_key string
 	 * @return array
 	 */
-	public function obtain_paginated_data_and_row_count();
+	public function obtain_paginated_data_and_row_count($conn_type, $rowid_key);
 }

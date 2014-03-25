@@ -298,7 +298,10 @@ class SqlConstructor implements IPaginator {
 		}
 	}
 
-	public function obtain_row_count() {
+	/**
+	 * @return string
+	 */
+	public function build_count() {
 		$this->validate_input();
 
 		// this is a shallow copy so the where clauses we add are only temporary
@@ -315,19 +318,12 @@ class SqlConstructor implements IPaginator {
 	}
 
 	/**
-	 * @return string
-	 */
-	public function build_count() {
-		return $this->obtain_row_count();
-	}
-
-	/**
 	 * Make SQL string from object contents
 	 *
 	 * @return string SQL
 	 * @throws Exception
 	 */
-	public function obtain_paginated_data() {
+	public function build() {
 		$this->validate_input();
 
 		// this only performs a shallow copy
@@ -353,15 +349,26 @@ class SqlConstructor implements IPaginator {
 		return $constructor->make_sql();
 	}
 
-	/**
-	 * @return string
-	 */
-	public function build() {
-		return $this->obtain_paginated_data();
-	}
+	public function obtain_paginated_data_and_row_count($conn_type, $rowid_key) {
+		$count_sql = $this->build_count();
+		$count_res = gfy_db::query($count_sql, $conn_type, true);
+		$count_row = gfy_db::fetch_row($count_res);
+		$num_rows = (int)$count_row[0];
 
-	public function obtain_paginated_data_and_row_count() {
-		return array($this->obtain_paginated_data(), $this->obtain_row_count());
+		$settings = $this->settings;
+		if ($settings) {
+			$settings = $settings->make_builder()->total_rows($num_rows)->build();
+		}
+		else
+		{
+			$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
+		}
+
+		$sql_builder = clone $this;
+		$paginated_sql = $sql_builder->settings($settings)->build();
+
+		$iterator = new DatabaseIterator($paginated_sql, $conn_type, $rowid_key);
+		return array($iterator, $num_rows);
 	}
 
 	/**
