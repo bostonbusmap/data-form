@@ -408,36 +408,38 @@ class FilterTreeTransform  implements ISQLTreeTransform
 
 					if ($obj) {
 						$params = $obj->get_params();
-						if ($obj->get_type() === DataTableSearchState::like ||
-							$obj->get_type() === DataTableSearchState::rlike ||
-							$obj->get_type() === DataTableSearchState::less_than ||
-							$obj->get_type() === DataTableSearchState::less_or_equal ||
-							$obj->get_type() === DataTableSearchState::greater_than ||
-							$obj->get_type() === DataTableSearchState::greater_or_equal ||
-							$obj->get_type() === DataTableSearchState::equal) {
+						$type = $obj->get_type();
+						if ($type === DataTableSearchState::like ||
+							$type === DataTableSearchState::rlike ||
+							$type === DataTableSearchState::less_than ||
+							$type === DataTableSearchState::less_or_equal ||
+							$type === DataTableSearchState::greater_than ||
+							$type === DataTableSearchState::greater_or_equal ||
+							$type === DataTableSearchState::equal ||
+							$type === DataTableSearchState::in) {
 							$escaped_value = gfy_db::escape_string($params[0]);
 							// TODO: check is_numeric for numeric comparisons
 							if ($escaped_value !== "") {
-								if ($obj->get_type() === DataTableSearchState::like) {
+								if ($type === DataTableSearchState::like) {
 									$like_escaped_value = escape_like_parameter($escaped_value);
 									$phrase = " $column_base_expr LIKE '%$like_escaped_value%' ESCAPE '\\\\' ";
 								}
-								elseif ($obj->get_type() === DataTableSearchState::rlike) {
+								elseif ($type === DataTableSearchState::rlike) {
 									$phrase = " $column_base_expr RLIKE '$escaped_value' ";
 								}
-								elseif ($obj->get_type() === DataTableSearchState::less_than) {
+								elseif ($type === DataTableSearchState::less_than) {
 									$phrase = " $column_base_expr < $escaped_value ";
 								}
-								elseif ($obj->get_type() === DataTableSearchState::less_or_equal) {
+								elseif ($type === DataTableSearchState::less_or_equal) {
 									$phrase = " $column_base_expr <= $escaped_value ";
 								}
-								elseif ($obj->get_type() === DataTableSearchState::greater_than) {
+								elseif ($type === DataTableSearchState::greater_than) {
 									$phrase = " $column_base_expr > $escaped_value ";
 								}
-								elseif ($obj->get_type() === DataTableSearchState::greater_or_equal) {
+								elseif ($type === DataTableSearchState::greater_or_equal) {
 									$phrase = " $column_base_expr >= $escaped_value ";
 								}
-								elseif ($obj->get_type() === DataTableSearchState::equal) {
+								elseif ($type === DataTableSearchState::equal) {
 									if (is_numeric($escaped_value)) {
 										$phrase = " $column_base_expr = $escaped_value ";
 									}
@@ -446,8 +448,11 @@ class FilterTreeTransform  implements ISQLTreeTransform
 										$phrase = " $column_base_expr = '$escaped_value' ";
 									}
 								}
+								elseif ($type === DataTableSearchState::in) {
+									$phrase = " $column_base_expr IN ($escaped_value) ";
+								}
 								else {
-									throw new Exception("Unimplemented for search type " . $obj->get_type());
+									throw new Exception("Unimplemented for search type " . $type);
 								}
 
 								$ret[] = $phrase;

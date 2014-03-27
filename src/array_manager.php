@@ -197,69 +197,82 @@ class ArrayManager implements IPaginator {
 					$obj = $state->get_searching_state($column_key, $table_name);
 					if ($obj) {
 						$params = $obj->get_params();
-						if ($obj->get_type() === DataTableSearchState::like ||
-							$obj->get_type() === DataTableSearchState::rlike ||
-							$obj->get_type() === DataTableSearchState::less_than ||
-							$obj->get_type() === DataTableSearchState::less_or_equal ||
-							$obj->get_type() === DataTableSearchState::greater_than ||
-							$obj->get_type() === DataTableSearchState::greater_or_equal ||
-							$obj->get_type() === DataTableSearchState::equal) {
+						$type = $obj->get_type();
+						if ($type === DataTableSearchState::like ||
+							$type === DataTableSearchState::rlike ||
+							$type === DataTableSearchState::less_than ||
+							$type === DataTableSearchState::less_or_equal ||
+							$type === DataTableSearchState::greater_than ||
+							$type === DataTableSearchState::greater_or_equal ||
+							$type === DataTableSearchState::equal ||
+							$type === DataTableSearchState::in) {
 
 							$value = $params[0];
 							// TODO: check is_numeric for numeric comparisons
 							if ($value !== "") {
 								$copy = array();
-								if ($obj->get_type() === DataTableSearchState::like) {
+								if ($type === DataTableSearchState::like) {
 									foreach ($array as $key => $rows) {
 										if (stripos($rows[$column_key], $value) !== false) {
 											$copy[$key] = $rows;
 										}
 									}
 								}
-								elseif ($obj->get_type() === DataTableSearchState::rlike) {
+								elseif ($type === DataTableSearchState::rlike) {
 									foreach ($array as $key => $rows) {
 										if (preg_match('/' . $value . '/i', $rows[$column_key]) !== false) {
 											$copy[$key] = $rows;
 										}
 									}
 								}
-								elseif ($obj->get_type() === DataTableSearchState::less_than) {
+								elseif ($type === DataTableSearchState::less_than) {
 									foreach ($array as $key => $rows) {
 										if ($rows[$column_key] < $value) {
 											$copy[$key] = $rows;
 										}
 									}
 								}
-								elseif ($obj->get_type() === DataTableSearchState::less_or_equal) {
+								elseif ($type === DataTableSearchState::less_or_equal) {
 									foreach ($array as $key => $rows) {
 										if ($rows[$column_key] <= $value) {
 											$copy[$key] = $rows;
 										}
 									}
 								}
-								elseif ($obj->get_type() === DataTableSearchState::greater_than) {
+								elseif ($type === DataTableSearchState::greater_than) {
 									foreach ($array as $key => $rows) {
 										if ($rows[$column_key] > $value) {
 											$copy[$key] = $rows;
 										}
 									}
 								}
-								elseif ($obj->get_type() === DataTableSearchState::greater_or_equal) {
+								elseif ($type === DataTableSearchState::greater_or_equal) {
 									foreach ($array as $key => $rows) {
 										if ($rows[$column_key] >= $value) {
 											$copy[$key] = $rows;
 										}
 									}
 								}
-								elseif ($obj->get_type() === DataTableSearchState::equal) {
+								elseif ($type === DataTableSearchState::equal) {
 									foreach ($array as $key => $rows) {
 										if ($rows[$column_key] == $value) {
 											$copy[$key] = $rows;
 										}
 									}
 								}
+								elseif ($type === DataTableSearchState::in) {
+									$pieces = explode(",", $value);
+									foreach ($array as $key => $rows) {
+										foreach ($pieces as $piece) {
+											if ($rows[$column_key] == $piece) {
+												$copy[$key] = $rows;
+												break;
+											}
+										}
+									}
+								}
 								else {
-									throw new Exception("Unimplemented for search type " . $obj->get_type());
+									throw new Exception("Unimplemented for search type " . $type);
 								}
 								$array = $copy;
 							}

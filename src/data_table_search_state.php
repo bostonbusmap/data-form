@@ -35,6 +35,7 @@ class DataTableSearchState {
 	const greater_or_equal = ">=";
 	/** Filter to display numbers equal to number specified */
 	const equal = "=";
+	const in = "IN";
 
 	/**
 	 * Field specifying type of search
@@ -70,10 +71,12 @@ class DataTableSearchState {
 			$type === self::greater_than ||
 			$type === self::greater_or_equal ||
 			$type === self::less_than ||
-			$type === self::less_or_equal) {
+			$type === self::less_or_equal ||
+			$type === self::in) {
 			if (count($params) !== 1) {
 				throw new Exception("$type must have one parameter");
 			}
+			// in the future we may want to support x between y and z type of filtering
 		}
 		else
 		{

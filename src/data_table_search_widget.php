@@ -49,6 +49,7 @@ class DataTableSearchWidget implements IDataTableWidget {
 		switch ($search_type) {
 			case DataTableSearchState::like:
 			case DataTableSearchState::rlike:
+			case DataTableSearchState::in:
 				$this->formatter = new TextboxSearchFormatter($search_type);
 				break;
 			case DataTableSearchState::greater_than:
