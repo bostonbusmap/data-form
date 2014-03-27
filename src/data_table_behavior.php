@@ -175,6 +175,56 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 	}
 }
 
+class DataTableBehaviorRefreshSaveAs implements IDataTableBehavior
+{
+	/** @var string  */
+	protected $mime_type;
+	/** @var array */
+	protected $extra_params;
+
+	public function __construct($mime_type = "application/octet-stream", $extra_params = array())
+	{
+		if (!is_string($mime_type)) {
+			throw new Exception("mime-type must be a string");
+		}
+		if (!is_array($extra_params)) {
+			throw new Exception("params must be in an array");
+		}
+		foreach ($extra_params as $k => $v) {
+			if (!is_string($k) || trim($k) === "") {
+				throw new Exception("Each key in extra_params must be a non-empty string");
+			}
+		}
+		$this->mime_type = $mime_type;
+		$this->extra_params = $extra_params;
+	}
+
+	function action($form_name, $form_action, $form_method)
+	{
+		$only_display_form_name = DataFormState::make_field_name($form_name, DataFormState::only_display_form_key());
+		$params = $this->extra_params;
+		$params[$only_display_form_name] = "true";
+
+		$method = strtolower($form_method);
+		if ($method != "post" && $method != "get") {
+			throw new Exception("Unknown method '$method'");
+		}
+		$flash_name = $form_name . "_flash";
+
+		// form_action, method, form_name, flash_name, params
+		$options = array(
+			"mime_type" => $this->mime_type,
+			"form_action" => $form_action,
+			"form_method" => $form_method,
+			"form_name" => $form_name,
+			"flash_name" => $flash_name,
+			"params" => $params
+		);
+
+		return 'return DataForm.refreshSaveAs(this, event, ' . json_encode($options) . ');';
+
+	}
+}
 /**
  * Send form information using AJAX with $div height and width, and put result in $div (probably HTML with link to an image)
  */
