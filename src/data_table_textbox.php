@@ -93,6 +93,10 @@ class DataTableTextbox implements IDataTableWidget {
 			$text = $default_text;
 		}
 
+		if (!is_string($text)) {
+			throw new Exception("Textbox text must be a string");
+		}
+
 		if ($name_array) {
 			$qualified_name = DataFormState::make_field_name($form_name, $name_array);
 
