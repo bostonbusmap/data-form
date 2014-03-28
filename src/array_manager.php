@@ -220,7 +220,7 @@ class ArrayManager implements IPaginator {
 								}
 								elseif ($type === DataTableSearchState::rlike) {
 									foreach ($array as $key => $rows) {
-										if (preg_match('/' . $value . '/i', $rows[$column_key]) !== false) {
+										if (preg_match('/' . preg_quote($value) . '/i', $rows[$column_key]) === 1) {
 											$copy[$key] = $rows;
 										}
 									}
