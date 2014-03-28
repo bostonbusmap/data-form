@@ -93,6 +93,9 @@ class DataTableTextbox implements IDataTableWidget {
 			$text = $default_text;
 		}
 
+		if ($text === null) {
+			$text = "";
+		}
 		if (!is_string($text)) {
 			throw new Exception("Textbox text must be a string");
 		}
