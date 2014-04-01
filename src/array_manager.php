@@ -213,51 +213,100 @@ class ArrayManager implements IPaginator {
 								$copy = array();
 								if ($type === DataTableSearchState::like) {
 									foreach ($array as $key => $rows) {
-										if (stripos($rows[$column_key], $value) !== false) {
+										if (array_key_exists($column_key, $rows)) {
+											$cell = $rows[$column_key];
+										}
+										else
+										{
+											$cell = "";
+										}
+										if (stripos($cell, $value) !== false) {
 											$copy[$key] = $rows;
 										}
 									}
 								}
 								elseif ($type === DataTableSearchState::rlike) {
 									foreach ($array as $key => $rows) {
+										if (array_key_exists($column_key, $rows)) {
+											$cell = $rows[$column_key];
+										}
+										else
+										{
+											$cell = "";
+										}
 										$escaped_value = str_replace("\\", "\\\\", $value);
 										$escaped_value = str_replace("/", "\\/", $escaped_value);
-										if (preg_match('/' . $escaped_value . '/i', $rows[$column_key]) === 1) {
+										if (preg_match('/' . $escaped_value . '/i', $cell) === 1) {
 											$copy[$key] = $rows;
 										}
 									}
 								}
 								elseif ($type === DataTableSearchState::less_than) {
 									foreach ($array as $key => $rows) {
-										if ($rows[$column_key] < $value) {
+										if (array_key_exists($column_key, $rows)) {
+											$cell = $rows[$column_key];
+										}
+										else
+										{
+											$cell = "";
+										}
+										if ($cell < $value) {
 											$copy[$key] = $rows;
 										}
 									}
 								}
 								elseif ($type === DataTableSearchState::less_or_equal) {
 									foreach ($array as $key => $rows) {
-										if ($rows[$column_key] <= $value) {
+										if (array_key_exists($column_key, $rows)) {
+											$cell = $rows[$column_key];
+										}
+										else
+										{
+											$cell = "";
+										}
+										if ($cell <= $value) {
 											$copy[$key] = $rows;
 										}
 									}
 								}
 								elseif ($type === DataTableSearchState::greater_than) {
 									foreach ($array as $key => $rows) {
-										if ($rows[$column_key] > $value) {
+										if (array_key_exists($column_key, $rows)) {
+											$cell = $rows[$column_key];
+										}
+										else
+										{
+											$cell = "";
+										}
+										if ($cell > $value) {
 											$copy[$key] = $rows;
 										}
 									}
 								}
 								elseif ($type === DataTableSearchState::greater_or_equal) {
 									foreach ($array as $key => $rows) {
-										if ($rows[$column_key] >= $value) {
+										if (array_key_exists($column_key, $rows)) {
+											$cell = $rows[$column_key];
+										}
+										else
+										{
+											$cell = "";
+										}
+										if ($cell >= $value) {
 											$copy[$key] = $rows;
 										}
 									}
 								}
 								elseif ($type === DataTableSearchState::equal) {
 									foreach ($array as $key => $rows) {
-										if ($rows[$column_key] == $value) {
+										if (array_key_exists($column_key, $rows)) {
+											$cell = $rows[$column_key];
+										}
+										else
+										{
+											$cell = "";
+										}
+										if ($cell == $value) {
 											$copy[$key] = $rows;
 										}
 									}
@@ -265,8 +314,15 @@ class ArrayManager implements IPaginator {
 								elseif ($type === DataTableSearchState::in) {
 									$pieces = explode(",", $value);
 									foreach ($array as $key => $rows) {
+										if (array_key_exists($column_key, $rows)) {
+											$cell = $rows[$column_key];
+										}
+										else
+										{
+											$cell = "";
+										}
 										foreach ($pieces as $piece) {
-											if ($rows[$column_key] == $piece) {
+											if ($cell == $piece) {
 												$copy[$key] = $rows;
 												break;
 											}
