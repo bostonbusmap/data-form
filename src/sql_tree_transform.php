@@ -317,18 +317,31 @@ class FilterTreeTransform  implements ISQLTreeTransform
 	public static function make_alias_lookup($tree) {
 		$lookup = array();
 
+		$fake_clause = "SELECT a";
+		$parser = new PHPSQLParser();
+		$creator = new PHPSQLCreator();
+
+		$fake_tree = $parser->parse($fake_clause);
+
 		$root = find_select_root_clause($tree);
 		if ($root !== null && array_key_exists("SELECT", $root)) {
 			$select = $root["SELECT"];
+
 			foreach ($select as $select_item) {
-				if (array_key_exists("base_expr", $select_item)) {
-					$base_expr = $select_item["base_expr"];
-					if (array_key_exists("alias", $select_item)) {
-						$alias = $select_item["alias"];
-						if (is_array($alias) && array_key_exists("no_quotes", $alias)) {
-							$no_quotes = $alias["no_quotes"];
-							$lookup[$no_quotes] = $base_expr;
+				if (array_key_exists("alias", $select_item)) {
+					$alias = $select_item["alias"];
+					if (is_array($alias) && array_key_exists("no_quotes", $alias)) {
+						$no_quotes = $alias["no_quotes"];
+
+						$fake_tree["SELECT"][0] = $select_item;
+						$fake_tree["SELECT"][0]["delim"] = "";
+						unset($fake_tree["SELECT"][0]["alias"]);
+						$expr = $creator->create($fake_tree);
+
+						if (substr($expr, 0, strlen("SELECT")) === "SELECT") {
+							$expr = substr($expr, strlen("SELECT"));
 						}
+						$lookup[$no_quotes] = $expr;
 					}
 				}
 			}
@@ -428,16 +441,16 @@ class FilterTreeTransform  implements ISQLTreeTransform
 									$phrase = " $column_base_expr RLIKE '$escaped_value' ";
 								}
 								elseif ($type === DataTableSearchState::less_than) {
-									$phrase = " $column_base_expr < $escaped_value ";
+									$phrase = " CAST($column_base_expr AS DECIMAL) < $escaped_value ";
 								}
 								elseif ($type === DataTableSearchState::less_or_equal) {
-									$phrase = " $column_base_expr <= $escaped_value ";
+									$phrase = " CAST($column_base_expr AS DECIMAL)  <= $escaped_value ";
 								}
 								elseif ($type === DataTableSearchState::greater_than) {
-									$phrase = " $column_base_expr > $escaped_value ";
+									$phrase = " CAST($column_base_expr AS DECIMAL)  > $escaped_value ";
 								}
 								elseif ($type === DataTableSearchState::greater_or_equal) {
-									$phrase = " $column_base_expr >= $escaped_value ";
+									$phrase = " CAST($column_base_expr AS DECIMAL)  >= $escaped_value ";
 								}
 								elseif ($type === DataTableSearchState::equal) {
 									if (is_numeric($escaped_value)) {
