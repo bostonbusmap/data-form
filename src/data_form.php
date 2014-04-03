@@ -211,8 +211,6 @@ class DataForm {
 		$exists_field_name = DataFormState::make_field_name($this->form_name, DataFormState::exists_key());
 		$writer->write('<input type="hidden" name="' . htmlspecialchars($exists_field_name) . '" value="true" />');
 
-		$state_prefix = $this->form_name . "[" . DataFormState::state_key .  "]";
-
 		foreach ($this->forwarded_state as $forwarded_state) {
 			$writer->write(self::make_hidden_inputs_from_array($forwarded_state->get_form_data(),
 				DataFormState::make_field_name($this->form_name,
