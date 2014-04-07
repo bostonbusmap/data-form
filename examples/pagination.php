@@ -57,9 +57,6 @@ class PrimeFormatter implements IDataTableCellFormatter {
 function make_form($state) {
 	$this_url = "pagination.php";
 
-	// The pagination state stores things like the current limit and page number
-	$pagination_state = $state->get_pagination_state();
-
 	// just one column here, a list of numbers, highlighted with PrimeFormatter if prime, and sortable
 	$columns = array();
 	$columns[] = DataTableColumnBuilder::create()->display_header_name("Prime numbers")->column_key("number")->
@@ -71,10 +68,17 @@ function make_form($state) {
 	// Note that total_rows needs to be set here so that the DataTable
 	// can calculate how many pages there are.
 	$settings = DataTableSettingsBuilder::create()->total_rows($total_count)->default_limit(25)->build();
-	$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
 
-	$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
+	// If we have more than one table in a form, we would want to specify a name here
+	// so the form can tell them apart
+	$table_name = "";
+	// PaginationInfo looks at default values from $settings
+	// and user supplied values from $state and figures out the proper values
+	// for pagination, filtering and sorting values
+	$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
+	$current_page = $pagination_info->calculate_current_page($total_count);
 
+	$limit = $pagination_info->get_limit();
 	if ($limit !== 0) {
 		// fill in the data within the page boundaries
 		$start = $limit * $current_page;
@@ -89,9 +93,12 @@ function make_form($state) {
 		$start = 0;
 		$end = $total_count;
 	}
+
+	$sorting_state = $pagination_info->get_sorting_order();
+
 	$rows = array();
 	for ($i = $start; $i < $end; $i++) {
-		if ($state->get_sorting_state("number") == DataFormState::sorting_state_desc) {
+		if (array_key_exists("number", $sorting_state) && $sorting_state["number"] == DataFormState::sorting_state_desc) {
 			$rows[] = array("number" => $total_count - $i - 1);
 		}
 		else

@@ -268,6 +268,9 @@ class SQLBuilder implements IPaginator {
 
 	/**
 	 * Create SQL for counting the number of rows. This changes the SQL to 'SELECT COUNT(*) FROM ...'
+	 * @throws UnableToCreateSQLException
+	 * @throws UnsupportedFeatureException
+	 * @throws Exception
 	 * @return string SQL
 	 */
 	public function build_count() {
@@ -288,6 +291,9 @@ class SQLBuilder implements IPaginator {
 	/**
 	 * @param string $conn_type string
 	 * @param string $rowid_key string
+	 * @throws UnableToCreateSQLException
+	 * @throws UnsupportedFeatureException
+	 * @throws Exception
 	 * @return array Iterator, num_rows
 	 */
 	public function obtain_paginated_data_and_row_count($conn_type, $rowid_key) {

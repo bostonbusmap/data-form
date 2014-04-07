@@ -63,9 +63,9 @@ class TextboxSearchFormatter implements IDataTableSearchFormatter {
 			$default_type = $default_value->get_type();
 		}
 
-		$searching_state_key = DataFormState::get_searching_state_key($column_key, $table_name);
-		$type_key = array_merge($searching_state_key, array(DataTableSearchState::type_key));
-		$params_key = array_merge($searching_state_key, array(DataTableSearchState::params_key, "0"));
+		$searching_state_key = DataFormState::get_searching_state_key($table_name);
+		$type_key = array_merge($searching_state_key, array($column_key, DataTableSearchState::type_key));
+		$params_key = array_merge($searching_state_key, array($column_key, DataTableSearchState::params_key, "0"));
 
 		$ret = DataTableHidden::display_hidden($form_name, $state, $type_key, $default_type);
 		$ret .= DataTableTextbox::display_textbox($form_name, $params_key, $form_action, $form_method, new DataTableBehaviorRefresh(), $default_param, $label, $state);
@@ -97,9 +97,9 @@ class NumericalSearchFormatter implements IDataTableSearchFormatter {
 		$options[DataTableSearchState::greater_or_equal] = new DataTableOption(">=", DataTableSearchState::greater_or_equal);
 		$options[DataTableSearchState::equal] = new DataTableOption("=", DataTableSearchState::equal);
 
-		$searching_state_key = DataFormState::get_searching_state_key($column_key, $table_name);
-		$type_key = array_merge($searching_state_key, array(DataTableSearchState::type_key));
-		$params_key = array_merge($searching_state_key, array(DataTableSearchState::params_key, "0"));
+		$searching_state_key = DataFormState::get_searching_state_key($table_name);
+		$type_key = array_merge($searching_state_key, array($column_key, DataTableSearchState::type_key));
+		$params_key = array_merge($searching_state_key, array($column_key, DataTableSearchState::params_key, "0"));
 
 		// surrounding this with a div to allow CSS to set column width
 		$ret = "<div>";

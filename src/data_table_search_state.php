@@ -8,6 +8,8 @@
  * @copyright  2013 Above Authors and the President and Fellows of Harvard University
  */
 
+require_once "pagination_info.php";
+
 /**
  * The search parameters for a particular column. This can be simple in the case of a textbox or more complicated
  * for numerical comparisons for example
@@ -47,7 +49,7 @@ class DataTableSearchState {
 	const params_key = "_p";
 
 	/**
-	 * @var string Type of search
+	 * @var string Type of search state (see constants)
 	 */
 	protected $type;
 	/**
@@ -55,6 +57,11 @@ class DataTableSearchState {
 	 */
 	protected $params;
 
+	/**
+	 * @param $type string
+	 * @param $params string[]
+	 * @throws Exception
+	 */
 	public function __construct($type, $params) {
 		if (!is_array($params)) {
 			throw new Exception("params must be an array");

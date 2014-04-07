@@ -150,21 +150,17 @@ class ArrayManager implements IPaginator {
 
 		$array = $this->array;
 
+		$settings = $this->settings;
+		$pagination_info = DataFormState::make_pagination_info($this->state, $settings, $this->table_name);
+
 		// Order is important here
 		if (!$this->ignore_filtering) {
-			$array = self::filter($array, $this->state, $this->settings, $this->table_name);
+			$array = self::filter($array, $pagination_info);
 		}
 		$num_rows = count($array);
-		if ($this->settings) {
-			$settings = $this->settings->make_builder()->total_rows($num_rows)->build();
-		}
-		else
-		{
-			$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
-		}
-		$array = self::sort($array, $this->state, $settings, $this->table_name);
+		$array = self::sort($array, $pagination_info);
 		if (!$this->ignore_pagination) {
-			$array = self::paginate($array, $this->state, $settings, $this->table_name);
+			$array = self::paginate($array, $pagination_info, $num_rows);
 		}
 
 		$iterator = new ArrayIterator($array);
@@ -177,164 +173,130 @@ class ArrayManager implements IPaginator {
 	/**
 	 * Applies filters from $state to array and returns a copy with matched rows removed
 	 * @param $array array
-	 * @param $state DataFormState
-	 * @param $settings DataTableSettings
-	 * @param $table_name string
+	 * @param $pagination_info PaginationInfo
 	 * @throws Exception
 	 * @return array
 	 */
-	protected static function filter($array, $state, $settings, $table_name) {
-		if ($state) {
-			if ($table_name) {
-				$searching_state = $state->find_item(array(DataFormState::state_key, $table_name, DataFormState::searching_state_key));
-			}
-			else
-			{
-				$searching_state = $state->find_item(array(DataFormState::state_key, DataFormState::searching_state_key));
-			}
-			if (is_array($searching_state)) {
-				foreach (array_keys($searching_state) as $column_key) {
-					$obj = $state->get_searching_state($column_key, $table_name);
-					if ($obj) {
-						$params = $obj->get_params();
-						$type = $obj->get_type();
-						if ($type === DataTableSearchState::like ||
-							$type === DataTableSearchState::rlike ||
-							$type === DataTableSearchState::less_than ||
-							$type === DataTableSearchState::less_or_equal ||
-							$type === DataTableSearchState::greater_than ||
-							$type === DataTableSearchState::greater_or_equal ||
-							$type === DataTableSearchState::equal ||
-							$type === DataTableSearchState::in) {
+	protected static function filter($array, $pagination_info)
+	{
+		$searching_state = $pagination_info->get_search_states();
+		foreach ($searching_state as $column_key => $obj) {
+			/** @var $obj DataTableSearchState */
+			if ($obj !== null) {
+				$params = $obj->get_params();
+				$type = $obj->get_type();
+				if ($type === DataTableSearchState::like ||
+					$type === DataTableSearchState::rlike ||
+					$type === DataTableSearchState::less_than ||
+					$type === DataTableSearchState::less_or_equal ||
+					$type === DataTableSearchState::greater_than ||
+					$type === DataTableSearchState::greater_or_equal ||
+					$type === DataTableSearchState::equal ||
+					$type === DataTableSearchState::in
+				) {
 
-							$value = $params[0];
-							// TODO: check is_numeric for numeric comparisons
-							if ($value !== "") {
-								$copy = array();
-								if ($type === DataTableSearchState::like) {
-									foreach ($array as $key => $rows) {
-										if (array_key_exists($column_key, $rows)) {
-											$cell = $rows[$column_key];
-										}
-										else
-										{
-											$cell = "";
-										}
-										if (stripos($cell, $value) !== false) {
-											$copy[$key] = $rows;
-										}
-									}
+					$value = $params[0];
+					// TODO: check is_numeric for numeric comparisons
+					if ($value !== "") {
+						$copy = array();
+						if ($type === DataTableSearchState::like) {
+							foreach ($array as $key => $rows) {
+								if (array_key_exists($column_key, $rows)) {
+									$cell = $rows[$column_key];
+								} else {
+									$cell = "";
 								}
-								elseif ($type === DataTableSearchState::rlike) {
-									foreach ($array as $key => $rows) {
-										if (array_key_exists($column_key, $rows)) {
-											$cell = $rows[$column_key];
-										}
-										else
-										{
-											$cell = "";
-										}
-										$escaped_value = str_replace("\\", "\\\\", $value);
-										$escaped_value = str_replace("/", "\\/", $escaped_value);
-										if (preg_match('/' . $escaped_value . '/i', $cell) === 1) {
-											$copy[$key] = $rows;
-										}
-									}
+								if (stripos($cell, $value) !== false) {
+									$copy[$key] = $rows;
 								}
-								elseif ($type === DataTableSearchState::less_than) {
-									foreach ($array as $key => $rows) {
-										if (array_key_exists($column_key, $rows)) {
-											$cell = $rows[$column_key];
-										}
-										else
-										{
-											$cell = "";
-										}
-										if ($cell < $value) {
-											$copy[$key] = $rows;
-										}
-									}
-								}
-								elseif ($type === DataTableSearchState::less_or_equal) {
-									foreach ($array as $key => $rows) {
-										if (array_key_exists($column_key, $rows)) {
-											$cell = $rows[$column_key];
-										}
-										else
-										{
-											$cell = "";
-										}
-										if ($cell <= $value) {
-											$copy[$key] = $rows;
-										}
-									}
-								}
-								elseif ($type === DataTableSearchState::greater_than) {
-									foreach ($array as $key => $rows) {
-										if (array_key_exists($column_key, $rows)) {
-											$cell = $rows[$column_key];
-										}
-										else
-										{
-											$cell = "";
-										}
-										if ($cell > $value) {
-											$copy[$key] = $rows;
-										}
-									}
-								}
-								elseif ($type === DataTableSearchState::greater_or_equal) {
-									foreach ($array as $key => $rows) {
-										if (array_key_exists($column_key, $rows)) {
-											$cell = $rows[$column_key];
-										}
-										else
-										{
-											$cell = "";
-										}
-										if ($cell >= $value) {
-											$copy[$key] = $rows;
-										}
-									}
-								}
-								elseif ($type === DataTableSearchState::equal) {
-									foreach ($array as $key => $rows) {
-										if (array_key_exists($column_key, $rows)) {
-											$cell = $rows[$column_key];
-										}
-										else
-										{
-											$cell = "";
-										}
-										if ($cell == $value) {
-											$copy[$key] = $rows;
-										}
-									}
-								}
-								elseif ($type === DataTableSearchState::in) {
-									$pieces = explode(",", $value);
-									foreach ($array as $key => $rows) {
-										if (array_key_exists($column_key, $rows)) {
-											$cell = $rows[$column_key];
-										}
-										else
-										{
-											$cell = "";
-										}
-										foreach ($pieces as $piece) {
-											if ($cell == $piece) {
-												$copy[$key] = $rows;
-												break;
-											}
-										}
-									}
-								}
-								else {
-									throw new Exception("Unimplemented for search type " . $type);
-								}
-								$array = $copy;
 							}
+						} elseif ($type === DataTableSearchState::rlike) {
+							foreach ($array as $key => $rows) {
+								if (array_key_exists($column_key, $rows)) {
+									$cell = $rows[$column_key];
+								} else {
+									$cell = "";
+								}
+								$escaped_value = str_replace("\\", "\\\\", $value);
+								$escaped_value = str_replace("/", "\\/", $escaped_value);
+								if (preg_match('/' . $escaped_value . '/i', $cell) === 1) {
+									$copy[$key] = $rows;
+								}
+							}
+						} elseif ($type === DataTableSearchState::less_than) {
+							foreach ($array as $key => $rows) {
+								if (array_key_exists($column_key, $rows)) {
+									$cell = $rows[$column_key];
+								} else {
+									$cell = "";
+								}
+								if ($cell < $value) {
+									$copy[$key] = $rows;
+								}
+							}
+						} elseif ($type === DataTableSearchState::less_or_equal) {
+							foreach ($array as $key => $rows) {
+								if (array_key_exists($column_key, $rows)) {
+									$cell = $rows[$column_key];
+								} else {
+									$cell = "";
+								}
+								if ($cell <= $value) {
+									$copy[$key] = $rows;
+								}
+							}
+						} elseif ($type === DataTableSearchState::greater_than) {
+							foreach ($array as $key => $rows) {
+								if (array_key_exists($column_key, $rows)) {
+									$cell = $rows[$column_key];
+								} else {
+									$cell = "";
+								}
+								if ($cell > $value) {
+									$copy[$key] = $rows;
+								}
+							}
+						} elseif ($type === DataTableSearchState::greater_or_equal) {
+							foreach ($array as $key => $rows) {
+								if (array_key_exists($column_key, $rows)) {
+									$cell = $rows[$column_key];
+								} else {
+									$cell = "";
+								}
+								if ($cell >= $value) {
+									$copy[$key] = $rows;
+								}
+							}
+						} elseif ($type === DataTableSearchState::equal) {
+							foreach ($array as $key => $rows) {
+								if (array_key_exists($column_key, $rows)) {
+									$cell = $rows[$column_key];
+								} else {
+									$cell = "";
+								}
+								if ($cell == $value) {
+									$copy[$key] = $rows;
+								}
+							}
+						} elseif ($type === DataTableSearchState::in) {
+							$pieces = explode(",", $value);
+							foreach ($array as $key => $rows) {
+								if (array_key_exists($column_key, $rows)) {
+									$cell = $rows[$column_key];
+								} else {
+									$cell = "";
+								}
+								foreach ($pieces as $piece) {
+									if ($cell == $piece) {
+										$copy[$key] = $rows;
+										break;
+									}
+								}
+							}
+						} else {
+							throw new Exception("Unimplemented for search type " . $type);
 						}
+						$array = $copy;
 					}
 				}
 			}
@@ -345,42 +307,27 @@ class ArrayManager implements IPaginator {
 	/**
 	 * Applies filters from $state to array and returns a copy with matched rows removed
 	 * @param $array array
-	 * @param $state DataFormState
-	 * @param $settings DataTableSettings
-	 * @param $table_name string
+	 * @param $pagination_info PaginationInfo
 	 * @throws Exception
 	 * @return array
 	 */
-	protected static function sort($array, $state, $settings, $table_name) {
-		if ($state) {
-			if ($table_name) {
-				$sorting_data = $state->find_item(array(DataFormState::state_key, $table_name, DataFormState::sorting_state_key));
-			}
-			else
-			{
-				$sorting_data = $state->find_item(array(DataFormState::state_key, DataFormState::sorting_state_key));
-			}
-			if (is_array($sorting_data)) {
+	protected static function sort($array, $pagination_info)
+	{
+		$sorting_data = $pagination_info->get_sorting_order();
+		foreach ($sorting_data as $column_key => $value) {
+			if (is_string($value)) {
+				if ($value == DataFormState::sorting_state_desc ||
+					$value == DataFormState::sorting_state_asc
+				) {
+					// create new ORDER clause
 
-				foreach ($sorting_data as $column_key => $value) {
-					if (is_string($value)) {
-						if ($value == DataFormState::sorting_state_desc ||
-							$value == DataFormState::sorting_state_asc) {
-							// create new ORDER clause
-
-							$sorter = new ArraySorter($column_key);
-							usort($array, array($sorter, 'sort'));
-						}
-						elseif ($value)
-						{
-							throw new Exception("Unexpected sorting value received: '$value'");
-						}
-					}
-					else
-					{
-						throw new Exception("sorting value should be a string");
-					}
+					$sorter = new ArraySorter($column_key);
+					usort($array, array($sorter, 'sort'));
+				} elseif ($value) {
+					throw new Exception("Unexpected sorting value received: '$value'");
 				}
+			} else {
+				throw new Exception("sorting value should be a string");
 			}
 		}
 		return $array;
@@ -388,16 +335,14 @@ class ArrayManager implements IPaginator {
 
 	/**
 	 * @param $array array
-	 * @param $state DataFormState
-	 * @param $settings DataTableSettings
-	 * @param $table_name string
+	 * @param $pagination_info PaginationInfo
+	 * @param $num_rows int
+	 * @throws Exception
 	 * @return array
 	 */
-	protected static function paginate($array, $state, $settings, $table_name) {
-		$pagination_state = $state->get_pagination_state($table_name);
-
-		$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
-		$page = DataTableSettings::calculate_current_page($settings, $pagination_state);
+	protected static function paginate($array, $pagination_info, $num_rows) {
+		$limit = $pagination_info->get_limit();
+		$page = $pagination_info->calculate_current_page($num_rows);
 
 		if ($limit === 0) {
 			return $array;

@@ -79,42 +79,36 @@ class WherePaginationTreeTransform implements ISQLTreeTransform {
 
 	function alter($input_tree, $state, $settings, $table_name)
 	{
-		if ($state) {
-			$pagination_state = $state->get_pagination_state($table_name);
+		$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
 
-			$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
-			if ($limit !== 0) {
-				$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
+		$limit = $pagination_info->get_limit();
+		$current_page = $pagination_info->calculate_current_page($settings->get_total_rows());
+		if ($limit !== 0) {
 
-				$offset = $current_page * $limit;
+			$offset = $current_page * $limit;
 
-				$alias_lookup = FilterTreeTransform::make_alias_lookup($input_tree);
+			$alias_lookup = FilterTreeTransform::make_alias_lookup($input_tree);
 
-				if (array_key_exists($this->column_key, $alias_lookup)) {
-					$alias = $alias_lookup[$this->column_key];
-				}
-				else
-				{
-					$alias = $this->column_key;
-				}
-
-				// TODO: proper handling of quotes such that something like
-				// `table`.`column` and `name with spaces` are handled correctly
-				// and consistently
-				if (strpos($alias, ".") === false) {
-					$quoted_column_key = "`$alias`";
-				}
-				else
-				{
-					$quoted_column_key = $alias;
-				}
-
-				return FilterTreeTransform::add_where_clause($input_tree, "(" .
-					$quoted_column_key . " >= " . $offset . " AND " . $quoted_column_key .
-					" < " . ($offset + $limit) . ")");
+			if (array_key_exists($this->column_key, $alias_lookup)) {
+				$alias = $alias_lookup[$this->column_key];
+			} else {
+				$alias = $this->column_key;
 			}
-			// else the limit is zero and we don't paginate at all
+
+			// TODO: proper handling of quotes such that something like
+			// `table`.`column` and `name with spaces` are handled correctly
+			// and consistently
+			if (strpos($alias, ".") === false) {
+				$quoted_column_key = "`$alias`";
+			} else {
+				$quoted_column_key = $alias;
+			}
+
+			return FilterTreeTransform::add_where_clause($input_tree, "(" .
+				$quoted_column_key . " >= " . $offset . " AND " . $quoted_column_key .
+				" < " . ($offset + $limit) . ")");
 		}
+		// else the limit is zero and we don't paginate at all
 		return $input_tree;
 
 	}
@@ -129,28 +123,29 @@ class LimitPaginationTreeTransform implements ISQLTreeTransform
 	 * @param $state DataFormState
 	 * @param $settings DataTableSettings
 	 * @param $table_name string
+	 * @throws Exception
 	 * @return string
 	 */
-	public static function make_limit_offset_clause($state, $settings, $table_name) {
-		if ($state) {
-			$pagination_state = $state->get_pagination_state($table_name);
+	public static function make_limit_offset_clause($state, $settings, $table_name)
+	{
+		$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
 
-			$limit = DataTableSettings::calculate_limit($settings, $pagination_state);
-			if ($limit !== 0) {
-				$current_page = DataTableSettings::calculate_current_page($settings, $pagination_state);
+		$limit = $pagination_info->get_limit();
+		if ($limit !== 0) {
+			$current_page = $pagination_info->calculate_current_page($settings->get_total_rows());
 
-				$offset = $current_page * $limit;
+			$offset = $current_page * $limit;
 
-				return "LIMIT $limit OFFSET $offset";
-			}
-			// else the limit is zero and we don't paginate at all
+			return "LIMIT $limit OFFSET $offset";
 		}
+		// else the limit is zero and we don't paginate at all
 		return "";
 	}
 
 	/**
 	 * @param $tree array
 	 * @param $limit_order_clause string
+	 * @throws UnableToCalculatePositionException
 	 * @return array
 	 */
 	public static function add_limit_offset_clause($tree, $limit_order_clause) {
@@ -224,6 +219,7 @@ class SortTreeTransform  implements ISQLTreeTransform
 	/**
 	 * @param $tree array
 	 * @param $clause string
+	 * @throws UnableToCalculatePositionException
 	 * @return array
 	 */
 	public static function add_order_clause($tree, $clause) {
@@ -244,46 +240,33 @@ class SortTreeTransform  implements ISQLTreeTransform
 	 * @return string
 	 * @throws Exception
 	 */
-	public static function make_order_clause($state, $settings, $table_name) {
+	public static function make_order_clause($state, $settings, $table_name)
+	{
+		$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
 		$ret = "";
-		if ($state) {
-			if (trim($table_name) !== "") {
-				$sorting_data = $state->find_item(array(DataFormState::state_key, $table_name, DataFormState::sorting_state_key));
-			}
-			else
-			{
-				$sorting_data = $state->find_item(array(DataFormState::state_key, DataFormState::sorting_state_key));
-			}
-			if (is_array($sorting_data)) {
-				foreach ($sorting_data as $column_key => $value) {
-					if (is_string($value)) {
-						if ($value == DataFormState::sorting_state_desc ||
-							$value == DataFormState::sorting_state_asc) {
-							// create new ORDER clause
+		$sorting_data = $pagination_info->get_sorting_order();
+		foreach ($sorting_data as $column_key => $value) {
+			if (is_string($value)) {
+				if ($value == DataFormState::sorting_state_desc ||
+					$value == DataFormState::sorting_state_asc
+				) {
+					// create new ORDER clause
 
-							// TODO: proper handling of quotes such that something like
-							// `table`.`column` and `name with spaces` are handled correctly
-							// and consistently
-							if (strpos($column_key, ".") === false) {
-								$quoted_column_key = "`$column_key`";
-							}
-							else
-							{
-								$quoted_column_key = $column_key;
-							}
+					// TODO: proper handling of quotes such that something like
+					// `table`.`column` and `name with spaces` are handled correctly
+					// and consistently
+					if (strpos($column_key, ".") === false) {
+						$quoted_column_key = "`$column_key`";
+					} else {
+						$quoted_column_key = $column_key;
+					}
 
-							$ret .= " " . $quoted_column_key . " " . $value;
-						}
-						elseif ($value)
-						{
-							throw new Exception("Unexpected sorting value received: '$value'");
-						}
-					}
-					else
-					{
-						throw new Exception("sorting value should be a string");
-					}
+					$ret .= " " . $quoted_column_key . " " . $value;
+				} elseif ($value) {
+					throw new Exception("Unexpected sorting value received: '$value'");
 				}
+			} else {
+				throw new Exception("sorting value should be a string");
 			}
 		}
 		return $ret;
@@ -312,6 +295,9 @@ class FilterTreeTransform  implements ISQLTreeTransform
 	 * which are usually what we're using for column keys.
 	 *
 	 * @param $tree array
+	 * @throws UnableToCreateSQLException
+	 * @throws UnableToCalculatePositionException
+	 * @throws UnsupportedFeatureException
 	 * @return array
 	 */
 	public static function make_alias_lookup($tree) {
@@ -395,82 +381,61 @@ class FilterTreeTransform  implements ISQLTreeTransform
 	 * @return string[] List of WHERE clauses, joined with AND
 	 * @throws Exception
 	 */
-	public static function make_where_clauses($state, $settings, $table_name, $alias_lookup) {
+	public static function make_where_clauses($state, $settings, $table_name, $alias_lookup)
+	{
 		$ret = array();
 
-		// TODO: make this less ugly
-		if ($state) {
-			if ($table_name) {
-				$searching_state = $state->find_item(array(DataFormState::state_key, $table_name, DataFormState::searching_state_key));
+		$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
+		$searching_state = $pagination_info->get_search_states();
+		foreach ($searching_state as $column_key => $obj) {
+			/** @var DataTableSearchState $obj */
+			if (array_key_exists($column_key, $alias_lookup)) {
+				$column_base_expr = $alias_lookup[$column_key];
+			} else {
+				$column_base_expr = $column_key;
 			}
-			else
-			{
-				$searching_state = $state->find_item(array(DataFormState::state_key, DataFormState::searching_state_key));
-			}
-			if (is_array($searching_state)) {
-				foreach (array_keys($searching_state) as $column_key) {
-					$obj = $state->get_searching_state($column_key, $table_name);
 
-					if (array_key_exists($column_key, $alias_lookup)) {
-						$column_base_expr = $alias_lookup[$column_key];
-					}
-					else
-					{
-						$column_base_expr = $column_key;
-					}
-
-					if ($obj) {
-						$params = $obj->get_params();
-						$type = $obj->get_type();
-						if ($type === DataTableSearchState::like ||
-							$type === DataTableSearchState::rlike ||
-							$type === DataTableSearchState::less_than ||
-							$type === DataTableSearchState::less_or_equal ||
-							$type === DataTableSearchState::greater_than ||
-							$type === DataTableSearchState::greater_or_equal ||
-							$type === DataTableSearchState::equal ||
-							$type === DataTableSearchState::in) {
-							$escaped_value = gfy_db::escape_string($params[0]);
-							// TODO: check is_numeric for numeric comparisons
-							if ($escaped_value !== "") {
-								if ($type === DataTableSearchState::like) {
-									$like_escaped_value = escape_like_parameter($escaped_value);
-									$phrase = " $column_base_expr LIKE '%$like_escaped_value%' ESCAPE '\\\\' ";
-								}
-								elseif ($type === DataTableSearchState::rlike) {
-									$phrase = " $column_base_expr RLIKE '$escaped_value' ";
-								}
-								elseif ($type === DataTableSearchState::less_than) {
-									$phrase = " CAST($column_base_expr AS DECIMAL(15,15)) < $escaped_value ";
-								}
-								elseif ($type === DataTableSearchState::less_or_equal) {
-									$phrase = " CAST($column_base_expr AS DECIMAL(15,15))  <= $escaped_value ";
-								}
-								elseif ($type === DataTableSearchState::greater_than) {
-									$phrase = " CAST($column_base_expr AS DECIMAL(15,15))  > $escaped_value ";
-								}
-								elseif ($type === DataTableSearchState::greater_or_equal) {
-									$phrase = " CAST($column_base_expr AS DECIMAL(15,15))  >= $escaped_value ";
-								}
-								elseif ($type === DataTableSearchState::equal) {
-									if (is_numeric($escaped_value)) {
-										$phrase = " $column_base_expr = $escaped_value ";
-									}
-									else
-									{
-										$phrase = " $column_base_expr = '$escaped_value' ";
-									}
-								}
-								elseif ($type === DataTableSearchState::in) {
-									$phrase = " $column_base_expr IN ($escaped_value) ";
-								}
-								else {
-									throw new Exception("Unimplemented for search type " . $type);
-								}
-
-								$ret[] = $phrase;
+			if ($obj) {
+				$params = $obj->get_params();
+				$type = $obj->get_type();
+				if ($type === DataTableSearchState::like ||
+					$type === DataTableSearchState::rlike ||
+					$type === DataTableSearchState::less_than ||
+					$type === DataTableSearchState::less_or_equal ||
+					$type === DataTableSearchState::greater_than ||
+					$type === DataTableSearchState::greater_or_equal ||
+					$type === DataTableSearchState::equal ||
+					$type === DataTableSearchState::in
+				) {
+					$escaped_value = gfy_db::escape_string($params[0]);
+					// TODO: check is_numeric for numeric comparisons
+					if ($escaped_value !== "") {
+						if ($type === DataTableSearchState::like) {
+							$like_escaped_value = escape_like_parameter($escaped_value);
+							$phrase = " $column_base_expr LIKE '%$like_escaped_value%' ESCAPE '\\\\' ";
+						} elseif ($type === DataTableSearchState::rlike) {
+							$phrase = " $column_base_expr RLIKE '$escaped_value' ";
+						} elseif ($type === DataTableSearchState::less_than) {
+							$phrase = " CAST($column_base_expr AS DECIMAL(15,15)) < $escaped_value ";
+						} elseif ($type === DataTableSearchState::less_or_equal) {
+							$phrase = " CAST($column_base_expr AS DECIMAL(15,15))  <= $escaped_value ";
+						} elseif ($type === DataTableSearchState::greater_than) {
+							$phrase = " CAST($column_base_expr AS DECIMAL(15,15))  > $escaped_value ";
+						} elseif ($type === DataTableSearchState::greater_or_equal) {
+							$phrase = " CAST($column_base_expr AS DECIMAL(15,15))  >= $escaped_value ";
+						} elseif ($type === DataTableSearchState::equal) {
+							if (is_numeric($escaped_value)) {
+								$phrase = " $column_base_expr = $escaped_value ";
+							} else {
+								$phrase = " $column_base_expr = '$escaped_value' ";
 							}
+						} elseif ($type === DataTableSearchState::in) {
+							$phrase = " $column_base_expr IN ($escaped_value) ";
+						} else {
+							throw new Exception("Unimplemented for search type " . $type);
 						}
+
+						$ret[] = $phrase;
 					}
 				}
 			}

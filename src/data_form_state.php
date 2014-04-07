@@ -9,6 +9,7 @@
  */
 
 require_once "data_table_search_state.php";
+require_once "pagination_info.php";
 /**
  * This class stores data which was provided about the form through $_POST or $_GET.
  *
@@ -35,8 +36,11 @@ class DataFormState
 	 * Holds ordering information for columns
 	 */
 	const sorting_state_key = "_srt";
-	const sorting_state_asc = "asc";
-	const sorting_state_desc = "desc";
+	const sorting_state_asc = PaginationInfo::sorting_state_asc;
+	const sorting_state_desc = PaginationInfo::sorting_state_desc;
+
+	const limit_key = "_limit";
+	const current_page_key = "_current_page";
 
 	/**
 	 * Holds filtering information for columns
@@ -374,86 +378,138 @@ class DataFormState
 	}
 
 	/**
-	 * Returns a DataTableSearchType
+	 * Put this state's pagination, sorting and filtering information into a PaginationInfo object
 	 *
-	 * @param $column_key string
-	 * @param $table_name string Optional table name. If falsey, use state for whole form
-	 * @return DataTableSearchState. May be null if params don't exist
+	 * If the state's information doesn't exist, information from $settings is used instead
+	 *
+	 * @param DataFormState $state
+	 * @param DataTableSettings $settings
+	 * @param string $table_name
 	 * @throws Exception
+	 * @return PaginationInfo
 	 */
-	public function get_searching_state($column_key, $table_name="") {
-		$search_key = self::get_searching_state_key($column_key, $table_name);
-		$params_key = array_merge($search_key, array(DataTableSearchState::params_key));
-		$type_key = array_merge($search_key, array(DataTableSearchState::type_key));
+	public static function make_pagination_info($state = null, &$settings = null, $table_name = "") {
+		if (!is_string($table_name)) {
+			throw new Exception("table_name must be a string");
+		}
+		if ($settings !== null && !($settings instanceof DataTableSettings)) {
+			throw new Exception("settings must be a DataTableSettings");
+		}
+		$search_key = self::get_searching_state_key($table_name);
+		$sort_key = self::get_sorting_state_key($table_name);
+		$pagination_key = self::get_pagination_state_key($table_name);
 
-		$type = $this->find_item($type_key);
-		$params = $this->find_item($params_key);
+		$builder = PaginationInfoBuilder::create();
 
-		if (is_null($type) && is_null($params)) {
-			return null;
+		if ($settings === null) {
+			$settings = DataTableSettingsBuilder::create()->build();
+		}
+
+		// set default search parameters if any
+		$default_filtering = $settings->get_default_filtering();
+		foreach ($default_filtering as $column_key => $search_state) {
+			$builder->set_search_state($column_key, $search_state);
+		}
+
+		// then set search terms entered by user, possibly overwriting defaults
+		if ($state !== null) {
+			$search_array = $state->find_item($search_key);
+			if (is_array($search_array)) {
+				foreach ($search_array as $column_key => $column_search_array) {
+
+					$params_key = array_merge($search_key, array($column_key, DataTableSearchState::params_key));
+					$type_key = array_merge($search_key, array($column_key, DataTableSearchState::type_key));
+
+					$params = $state->find_item($params_key);
+					$type = $state->find_item($type_key);
+
+					$search_state = new DataTableSearchState($type, $params);
+
+					$builder->set_search_state($column_key, $search_state);
+				}
+			}
+		}
+
+		// set default sorting terms
+		foreach ($settings->get_default_sorting() as $column_key => $direction) {
+			$builder->set_sorting_order($column_key, $direction);
+		}
+
+		if ($state !== null) {
+			$sort_array = $state->find_item($sort_key);
+			if (is_array($sort_array)) {
+				foreach ($sort_array as $column_key => $sort_direction) {
+					$builder->set_sorting_order($column_key, $sort_direction);
+				}
+			}
+		}
+
+		if ($state !== null) {
+			$pagination_array = $state->find_item($pagination_key);
+			if (!$pagination_array) {
+				$pagination_array = array(self::limit_key => null,
+					self::current_page_key => 0);
+			}
 		}
 		else
 		{
-			// if only one is null, this should be validated in constructor
-			return new DataTableSearchState($type, $params);
+			$pagination_array = array();
 		}
+		if (array_key_exists(self::limit_key, $pagination_array) && !is_null($pagination_array[self::limit_key])) {
+			$limit = (int)$pagination_array[self::limit_key];
+		}
+		else {
+			$limit = $settings->get_default_limit();
+		}
+		if (array_key_exists(self::current_page_key, $pagination_array) && $pagination_array[self::current_page_key]) {
+			$current_page = (int)$pagination_array[self::current_page_key];
+			if (is_int($limit)) {
+				$offset = $limit * $current_page;
+			}
+			else
+			{
+				throw new Exception("current_page_key was set but limit was not set");
+			}
+		}
+		else
+		{
+			$offset = 0;
+		}
+
+		$pagination_info = $builder->limit($limit)->offset($offset)->build();
+		return $pagination_info;
 	}
 
 	/**
 	 * A string array which can be used with make_field_name to get a field name for search state
 	 *
-	 * @param $column_key string
 	 * @param $table_name string
 	 * @return string[]
 	 */
-	public static function get_searching_state_key($column_key, $table_name) {
+	public static function get_searching_state_key($table_name) {
 		if (!$table_name) {
-			return array(self::state_key, self::searching_state_key, $column_key);
+			return array(self::state_key, self::searching_state_key);
 		}
 		else
 		{
-			return array(self::state_key, $table_name, self::searching_state_key, $column_key);
+			return array(self::state_key, $table_name, self::searching_state_key);
 		}
-	}
-
-	/**
-	 * Returns 'asc' or 'desc' for a given column, or null
-	 *
-	 * @param $column_key string
-	 * @param $table_name string Optional table name. If falsey, use state for whole form
-	 * @return string 'asc' or 'desc' or null if unspecified for column
-	 */
-	public function get_sorting_state($column_key, $table_name="") {
-		return $this->find_item(self::get_sorting_state_key($column_key, $table_name));
 	}
 
 	/**
 	 * A string array which can be used with make_field_name to get a field name for sorting state
 	 *
-	 * @param $column_key string
 	 * @param $table_name string
 	 * @return string[]
 	 */
-	public static function get_sorting_state_key($column_key, $table_name) {
+	public static function get_sorting_state_key($table_name) {
 		if (!$table_name) {
-			return array(self::state_key, self::sorting_state_key, $column_key);
+			return array(self::state_key, self::sorting_state_key);
 		}
 		else
 		{
-			return array(self::state_key, $table_name, self::sorting_state_key, $column_key);
+			return array(self::state_key, $table_name, self::sorting_state_key);
 		}
-	}
-
-	/**
-	 * Returns a DataTablePaginationState for a table, which contains limit and page information
-	 *
-	 * @param string $table_name Optional table name. If set, gets the pagination state for the table, else gets
-	 * the pagination state for the whole form
-	 * @throws Exception
-	 * @return DataTablePaginationState The form data relevant to data table pagination
-	 */
-	public function get_pagination_state($table_name="") {
-		return new DataTablePaginationState($this->find_item(self::get_pagination_state_key($table_name)));
 	}
 
 	/**
@@ -475,6 +531,7 @@ class DataFormState
 	/**
 	 * Returns true if client indicates that it wants only HTML for form to be rendered, not whole page
 	 *
+	 * @throws Exception
 	 * @return bool Did client indicate that it wants the raw HTML form?
 	 *
 	 * This is true if user wants to do an AJAX refresh of the form
@@ -495,6 +552,7 @@ class DataFormState
 	/**
 	 * Returns true if client indicates it wants only validation text to be rendered, not whole page.
 	 *
+	 * @throws Exception
 	 * @return bool Is client only looking to validate the form, not submit it?
 	 */
 	public function only_validate() {
@@ -531,6 +589,7 @@ class DataFormState
 	/**
 	 * Returns true if this DataFormState found anything in $_POST or $_GET for it.
 	 *
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function exists() {
@@ -549,6 +608,7 @@ class DataFormState
 	/**
 	 * Should we ignore the state and use defaults, effectively resetting the form?
 	 *
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function get_reset() {

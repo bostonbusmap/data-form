@@ -77,6 +77,7 @@ class DataTableSettings {
 	 * @param DataFormState $state Form state containing pagination information
 	 * @param string $remote_url URL to refresh to
 	 * @param string $table_name Name of table containing pagination controls (if any)
+	 * @throws Exception
 	 * @return string
 	 */
 	public function display_controls($form_name, $form_method, $state, $remote_url, $table_name) {
@@ -95,6 +96,7 @@ class DataTableSettings {
 	 * @param DataFormState $state State with pagination information
 	 * @param $remote_url string URL for refresh
 	 * @param $table_name string Name of table if any
+	 * @throws Exception
 	 * @return string HTML
 	 */
 	protected function create_pagination_limit_controls($form_name, $form_method, $state, $remote_url, $table_name) {
@@ -110,7 +112,7 @@ class DataTableSettings {
 			$option_values[] = new DataTableOption($text, $limit, $limit === $default_pagination_limit);
 		}
 		$limit_name_array = array_merge(DataFormState::get_pagination_state_key($table_name),
-			array(DataTablePaginationState::limit_key));
+			array(DataFormState::limit_key));
 		$form_action = $remote_url;
 
 		$behavior = new DataTableBehaviorRefresh();
@@ -130,6 +132,7 @@ class DataTableSettings {
 	 * @param $remote_url string URL to refresh from
 	 * @param $form_method string GET or POST
 	 * @param $table_name string Name of table if any
+	 * @throws Exception
 	 * @return string HTML
 	 */
 	protected function create_page_link($page_num, $text, $title, $form_name, $remote_url, $form_method, $table_name) {
@@ -155,21 +158,18 @@ class DataTableSettings {
 	 */
 	protected function create_pagination_page_controls($form_name, $form_method, $state, $remote_url, $table_name) {
 		$ret = "<div style='text-align: left;'>";
-		if ($state) {
-			$pagination_state = $state->get_pagination_state($table_name);
-		}
-		else
-		{
-			$pagination_state = null;
-		}
 
 		// number of nearby pages to show
 		// TODO: make this a parameter
 		$window = 5;
 
-		$current_page = self::calculate_current_page($this, $pagination_state);
+		$settings = $this;
+		$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
 
-		$num_pages = self::calculate_num_pages($this, $pagination_state);
+		$num_rows = $settings->get_total_rows();
+		$current_page = $pagination_info->calculate_current_page($num_rows);
+
+		$num_pages = $pagination_info->calculate_num_pages($num_rows);
 
 		// note that current_page is 0-indexed
 		if ($current_page > 0) {
@@ -284,92 +284,5 @@ class DataTableSettings {
 		return $this->filtering;
 	}
 
-	/**
-	 * @param $settings DataTableSettings
-	 * @param $pagination_state DataTablePaginationState
-	 * @throws Exception
-	 * @return int
-	 */
-	public static function calculate_current_page($settings, $pagination_state)
-	{
-		if ($settings !== null && !($settings instanceof DataTableSettings)) {
-			throw new Exception("settings must be instance of DataTableSettings");
-		}
-		if ($pagination_state !== null && !($pagination_state instanceof DataTablePaginationState)) {
-			throw new Exception("pagination_state must be instance of DataTablePaginationState");
-		}
-		if ($pagination_state) {
-			$page = $pagination_state->get_current_page($settings);
-			if ($page !== null) {
-				$current_page = $page;
-			} else {
-				$current_page = 0;
-			}
-		} else {
-			$current_page = 0;
-		}
-		return $current_page;
-	}
-
-	/**
-	 * @param $settings DataTableSettings
-	 * @param $pagination_state DataTablePaginationState
-	 * @throws Exception
-	 * @return int Either the limit or zero for everything on one page. You shouldn't see null here
-	 */
-	public static function calculate_limit($settings, $pagination_state)
-	{
-		if ($settings !== null && !($settings instanceof DataTableSettings)) {
-			throw new Exception("settings must be instance of DataTableSettings");
-		}
-		if ($pagination_state !== null && !($pagination_state instanceof DataTablePaginationState)) {
-			throw new Exception("pagination_state must be instance of DataTablePaginationState");
-		}
-		if (!$pagination_state || is_null($pagination_state->get_limit())) {
-			if ($settings === null) {
-				$limit = DataTableSettings::default_limit;
-			}
-			else
-			{
-				$limit = $settings->default_limit;
-			}
-
-		} else {
-			$limit = $pagination_state->get_limit();
-		}
-		return $limit;
-	}
-
-	/**
-	 * @param $settings DataTableSettings
-	 * @param $pagination_state DataTablePaginationState
-	 * @throws Exception
-	 * @return int
-	 */
-	public static function calculate_num_pages($settings, $pagination_state)
-	{
-		if ($settings === null) {
-			throw new Exception("settings must not be null since it has the number of rows");
-		}
-		if (!($settings instanceof DataTableSettings)) {
-			throw new Exception("settings must be instance of DataTableSettings");
-		}
-		if ($pagination_state !== null && !($pagination_state instanceof DataTablePaginationState)) {
-			throw new Exception("pagination_state must be instance of DataTablePaginationState");
-		}
-
-		$limit = self::calculate_limit($settings, $pagination_state);
-
-		$num_rows = $settings->total_rows;
-
-		if ($limit === 0) {
-			$num_pages = 1;
-		} elseif (($num_rows % $limit) !== 0) {
-			$num_pages = (int)(($num_rows / $limit) + 1);
-		} else {
-			$num_pages = (int)($num_rows / $limit);
-		}
-		return $num_pages;
-	}
 
 }

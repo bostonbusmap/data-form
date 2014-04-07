@@ -41,6 +41,7 @@ require_once "data_table_textbox_builder.php";
 require_once "data_table_textbox.php";
 require_once "data_form_state.php";
 require_once "data_table_widget.php";
+require_once "pagination_info.php";
 require_once "paginator.php";
 require_once "selected.php";
 require_once "sql_builder.php";
@@ -298,6 +299,7 @@ class DataTable
 	 * @param $form_method string GET or POST
 	 * @param $remote_url string URL to refresh from
 	 * @param $state DataFormState State with form information
+	 * @throws Exception
 	 * @return string HTML
 	 */
 	protected function display_table_header($form_name, $form_method, $remote_url, $state)
@@ -305,27 +307,10 @@ class DataTable
 		$ret = "<thead>";
 		$ret .= "<tr>";
 
-		// figure out sorting state
-		/** @var string[] $old_sorting_state mapping of column key to 'asc' or 'desc' */
-		$old_sorting_state = array();
-		if ($remote_url) {
-			foreach ($this->columns as $column) {
-				$column_key = $column->get_column_key();
+		$settings = $this->settings;
+		$pagination_info = DataFormState::make_pagination_info($state, $settings, $this->table_name);
 
-				if ($column->get_sortable()) {
-					if ($state && $state->get_sorting_state($column_key, $this->table_name)) {
-						$old_sorting_state = array($column_key => $state->get_sorting_state($column_key, $this->table_name));
-						break;
-					}
-				}
-			}
-			if (!$old_sorting_state) {
-				// if nothing was previously set in the state, use the default if any
-				if ($this->settings) {
-					$old_sorting_state = $this->settings->get_default_sorting();
-				}
-			}
-		}
+		$old_sorting_state = $pagination_info->get_sorting_order();
 
 		// write out header cells
 
@@ -347,7 +332,11 @@ class DataTable
 						// set sorting state in form
 						// Note that the code at $this->remote is responsible for reading sorting state
 						// and doing something useful with it (probably incorporating it into SQL somehow)
-						$sorting_name = DataFormState::make_field_name($form_name, DataFormState::get_sorting_state_key($column_key, $this->table_name));
+						$sorting_name = DataFormState::make_field_name($form_name,
+							array_merge(
+								DataFormState::get_sorting_state_key($this->table_name),
+								array($column_key)
+							));
 						$ret .= '<input type="hidden" name="' . htmlspecialchars($sorting_name) . '" value="' . htmlspecialchars($old_sorting_state[$column_key]) . '" class="hidden_sorting" />';
 
 						if ($old_sorting_state[$column_key] == DataFormState::sorting_state_asc) {
@@ -383,7 +372,10 @@ class DataTable
 					$new_sorting_state = DataFormState::sorting_state_desc;
 				}
 				$sorting_state_name = DataFormState::make_field_name($form_name,
-					DataFormState::get_sorting_state_key($column_key, $this->table_name));
+					array_merge(
+						DataFormState::get_sorting_state_key($this->table_name),
+						array($column_key)
+					));
 
 				$onclick_obj = new DataTableBehaviorClearSortThenRefresh(array($sorting_state_name => $new_sorting_state));
 				$onclick = $onclick_obj->action($form_name, $remote_url, $form_method);
@@ -412,11 +404,9 @@ class DataTable
 					else
 					{
 						$default_value = null;
-						if ($this->settings) {
-							$default_filtering = $this->settings->get_default_filtering();
-							if (isset($default_filtering[$column_key])) {
-								$default_value = $default_filtering[$column_key];
-							}
+						$search_states = $pagination_info->get_search_states();
+						if (array_key_exists($column_key, $search_states)) {
+							$default_value = $search_states[$column_key];
 						}
 
 						$ret .= $column->get_search_formatter()->format($form_name, $remote_url, $form_method, $this->table_name, $column_key,
