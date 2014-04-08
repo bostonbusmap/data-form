@@ -1,0 +1,38 @@
+.data-form {
+
+}
+
+.data-form table {
+    width: 400px;
+    font-size: small;
+}
+
+.data-form .error {
+    color: red;
+}
+
+.data-form th {
+    background-color:#c9dbff;
+    font-weight:bold;
+    text-align:center;
+    vertical-align:top;
+}
+
+.data-form .row-even {
+    background-color: rgb(242, 250, 255);
+}
+
+.data-form .row-odd {
+    background-color: rgb(226, 236, 255);
+}
+
+/* styling filtering textboxes */
+.data-form input[type=text] {
+    width: 120px;
+}
+.data-form select + input[type=text] {
+    width: 40px;
+}
+.data-form th div {
+    width: 100px;
+}
