@@ -37,6 +37,19 @@ class DataTableCheckboxBuilder {
 	 */
 	protected $label;
 
+	/**
+	 * Is this one of many checkboxes with the same name? This must be true or else last checkbox value will be only one sent
+	 * @var bool
+	 */
+	protected $as_array;
+
+	/**
+	 * The key for the value if submitted as array
+	 *
+	 * @var string
+	 */
+	protected $array_key;
+
 	public static function create() {
 		return new DataTableCheckboxBuilder();
 	}
@@ -104,6 +117,24 @@ class DataTableCheckboxBuilder {
 	}
 
 	/**
+	 * @param $as_array bool
+	 * @return DataTableCheckboxBuilder
+	 */
+	public function as_array($as_array) {
+		$this->as_array = $as_array;
+		return $this;
+	}
+
+	/**
+	 * @param $array_key string
+	 * @return DataTableCheckboxBuilder
+	 */
+	public function array_key($array_key) {
+		$this->array_key = $array_key;
+		return $this;
+	}
+
+	/**
 	 * @return string Field name
 	 */
 	public function get_name() {
@@ -154,6 +185,21 @@ class DataTableCheckboxBuilder {
 		return $this->label;
 	}
 
+	/**
+	 * Should checkboxes be submitted as an array? Must be true if there are more than one checkboxes with the same name.
+	 * @return bool
+	 */
+	public function get_as_array() {
+		return $this->as_array;
+	}
+
+	/**
+	 * The key for the value if submitted as array
+	 * @return string
+	 */
+	public function get_array_key() {
+		return $this->array_key;
+	}
 
 	/**
 	 * @return DataTableCheckbox
@@ -202,6 +248,27 @@ class DataTableCheckboxBuilder {
 		}
 		if (!is_string($this->label)) {
 			throw new Exception("label must be a string");
+		}
+
+		if ($this->as_array === null) {
+			$this->as_array = false;
+		}
+		if (!is_bool($this->as_array)) {
+			throw new Exception("as_array must be a bool");
+		}
+
+		if ($this->array_key !== null && !is_string($this->array_key)) {
+			throw new Exception("array_key must be a string");
+		}
+
+		if ($this->array_key === null || trim($this->array_key) === "") {
+			if ($this->as_array) {
+				throw new Exception("array_key must be specified if as_array is true");
+			}
+		}
+
+		if ($this->array_key !== null && !$this->as_array) {
+			throw new Exception("array_key must be null if as_array is false");
 		}
 
 		return new DataTableCheckbox($this);

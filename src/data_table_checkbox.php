@@ -43,6 +43,19 @@ class DataTableCheckbox implements IDataTableWidget {
 	 * @var string HTML label
 	 */
 	protected $label;
+	/**
+	 * Is this one of many checkboxes with the same name? This must be true or else last checkbox value will be only one sent
+	 *
+	 * @var bool
+	 */
+	protected $as_array;
+
+	/**
+	 * If as_array is true, this specifies what the key will be within the array
+	 *
+	 * @var string
+	 */
+	protected $array_key;
 
 	/**
 	 * @param $builder DataTableCheckboxBuilder
@@ -60,11 +73,20 @@ class DataTableCheckbox implements IDataTableWidget {
 		$this->placement = $builder->get_placement();
 		$this->form_action = $builder->get_form_action();
 		$this->label = $builder->get_label();
+		$this->as_array = $builder->get_as_array();
+		$this->array_key = $builder->get_array_key();
 	}
 
 	public function display($form_name, $form_method, $state)
 	{
-		return self::format_checkbox($form_name, $form_method, $this->form_action, array($this->name), $this->value, $this->checked_by_default, $this->behavior, $state, $this->label);
+		if ($this->as_array) {
+			$name_array = array($this->name, $this->array_key);
+		}
+		else
+		{
+			$name_array = array($this->name);
+		}
+		return self::format_checkbox($form_name, $form_method, $this->form_action, $name_array, $this->value, $this->checked_by_default, $this->behavior, $state, $this->label);
 	}
 
 	public function get_placement()
@@ -155,6 +177,7 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 	 * @param object $column_data Value for checkbox
 	 * @param string $rowid Row id
 	 * @param DataFormState $state
+	 * @throws Exception
 	 * @return string HTML for a checkbox
 	 */
 	public function format($form_name, $column_header, $column_data, $rowid, $state)
