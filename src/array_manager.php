@@ -171,6 +171,95 @@ class ArrayManager implements IPaginator {
 	}
 
 	/**
+	 * @param $row array
+	 * @param $pagination_info PaginationInfo
+	 * @return bool
+	 * @throws Exception
+	 */
+	public static function accept($row, $pagination_info) {
+		if (!is_array($row)) {
+			throw new Exception("row must be an array");
+		}
+		if (!($pagination_info instanceof PaginationInfo)) {
+			throw new Exception("pagination_info must be a PaginationInfo");
+		}
+		$searching_state = $pagination_info->get_search_states();
+
+		foreach ($row as $column_key => $cell) {
+			if (!array_key_exists($column_key, $searching_state)) {
+				continue;
+			}
+			/** @var $obj DataTableSearchState */
+			$obj = $searching_state[$column_key];
+			if ($obj === null) {
+				continue;
+			}
+			$params = $obj->get_params();
+			$type = $obj->get_type();
+			if ($type === DataTableSearchState::like ||
+				$type === DataTableSearchState::rlike ||
+				$type === DataTableSearchState::less_than ||
+				$type === DataTableSearchState::less_or_equal ||
+				$type === DataTableSearchState::greater_than ||
+				$type === DataTableSearchState::greater_or_equal ||
+				$type === DataTableSearchState::equal ||
+				$type === DataTableSearchState::in
+			) {
+				$value = $params[0];
+				// TODO: check is_numeric for numeric comparisons
+				if ($value !== "") {
+					if ($type === DataTableSearchState::like) {
+						if (stripos($cell, $value) === false) {
+							return false;
+						}
+					} elseif ($type === DataTableSearchState::rlike) {
+						$escaped_value = str_replace("\\", "\\\\", $value);
+						$escaped_value = str_replace("/", "\\/", $escaped_value);
+						if (preg_match('/' . $escaped_value . '/i', $cell) !== 1) {
+							return false;
+						}
+					} elseif ($type === DataTableSearchState::less_than) {
+						if ($cell >= $value) {
+							return false;
+						}
+					} elseif ($type === DataTableSearchState::less_or_equal) {
+						if ($cell > $value) {
+							return false;
+						}
+					} elseif ($type === DataTableSearchState::greater_than) {
+						if ($cell <= $value) {
+							return false;
+						}
+					} elseif ($type === DataTableSearchState::greater_or_equal) {
+						if ($cell < $value) {
+							return false;
+						}
+					} elseif ($type === DataTableSearchState::equal) {
+						if ($cell != $value) {
+							return false;
+						}
+					} elseif ($type === DataTableSearchState::in) {
+						$pieces = explode(",", $value);
+						$in = false;
+						foreach ($pieces as $piece) {
+							if ($cell == $piece) {
+								$in = true;
+								break;
+							}
+						}
+						if (!$in) {
+							return false;
+						}
+					} else {
+						throw new Exception("Unimplemented for search type " . $type);
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
 	 * Applies filters from $state to array and returns a copy with matched rows removed
 	 * @param $array array
 	 * @param $pagination_info PaginationInfo
@@ -179,129 +268,13 @@ class ArrayManager implements IPaginator {
 	 */
 	protected static function filter($array, $pagination_info)
 	{
-		$searching_state = $pagination_info->get_search_states();
-		foreach ($searching_state as $column_key => $obj) {
-			/** @var $obj DataTableSearchState */
-			if ($obj !== null) {
-				$params = $obj->get_params();
-				$type = $obj->get_type();
-				if ($type === DataTableSearchState::like ||
-					$type === DataTableSearchState::rlike ||
-					$type === DataTableSearchState::less_than ||
-					$type === DataTableSearchState::less_or_equal ||
-					$type === DataTableSearchState::greater_than ||
-					$type === DataTableSearchState::greater_or_equal ||
-					$type === DataTableSearchState::equal ||
-					$type === DataTableSearchState::in
-				) {
-
-					$value = $params[0];
-					// TODO: check is_numeric for numeric comparisons
-					if ($value !== "") {
-						$copy = array();
-						if ($type === DataTableSearchState::like) {
-							foreach ($array as $key => $rows) {
-								if (array_key_exists($column_key, $rows)) {
-									$cell = $rows[$column_key];
-								} else {
-									$cell = "";
-								}
-								if (stripos($cell, $value) !== false) {
-									$copy[$key] = $rows;
-								}
-							}
-						} elseif ($type === DataTableSearchState::rlike) {
-							foreach ($array as $key => $rows) {
-								if (array_key_exists($column_key, $rows)) {
-									$cell = $rows[$column_key];
-								} else {
-									$cell = "";
-								}
-								$escaped_value = str_replace("\\", "\\\\", $value);
-								$escaped_value = str_replace("/", "\\/", $escaped_value);
-								if (preg_match('/' . $escaped_value . '/i', $cell) === 1) {
-									$copy[$key] = $rows;
-								}
-							}
-						} elseif ($type === DataTableSearchState::less_than) {
-							foreach ($array as $key => $rows) {
-								if (array_key_exists($column_key, $rows)) {
-									$cell = $rows[$column_key];
-								} else {
-									$cell = "";
-								}
-								if ($cell < $value) {
-									$copy[$key] = $rows;
-								}
-							}
-						} elseif ($type === DataTableSearchState::less_or_equal) {
-							foreach ($array as $key => $rows) {
-								if (array_key_exists($column_key, $rows)) {
-									$cell = $rows[$column_key];
-								} else {
-									$cell = "";
-								}
-								if ($cell <= $value) {
-									$copy[$key] = $rows;
-								}
-							}
-						} elseif ($type === DataTableSearchState::greater_than) {
-							foreach ($array as $key => $rows) {
-								if (array_key_exists($column_key, $rows)) {
-									$cell = $rows[$column_key];
-								} else {
-									$cell = "";
-								}
-								if ($cell > $value) {
-									$copy[$key] = $rows;
-								}
-							}
-						} elseif ($type === DataTableSearchState::greater_or_equal) {
-							foreach ($array as $key => $rows) {
-								if (array_key_exists($column_key, $rows)) {
-									$cell = $rows[$column_key];
-								} else {
-									$cell = "";
-								}
-								if ($cell >= $value) {
-									$copy[$key] = $rows;
-								}
-							}
-						} elseif ($type === DataTableSearchState::equal) {
-							foreach ($array as $key => $rows) {
-								if (array_key_exists($column_key, $rows)) {
-									$cell = $rows[$column_key];
-								} else {
-									$cell = "";
-								}
-								if ($cell == $value) {
-									$copy[$key] = $rows;
-								}
-							}
-						} elseif ($type === DataTableSearchState::in) {
-							$pieces = explode(",", $value);
-							foreach ($array as $key => $rows) {
-								if (array_key_exists($column_key, $rows)) {
-									$cell = $rows[$column_key];
-								} else {
-									$cell = "";
-								}
-								foreach ($pieces as $piece) {
-									if ($cell == $piece) {
-										$copy[$key] = $rows;
-										break;
-									}
-								}
-							}
-						} else {
-							throw new Exception("Unimplemented for search type " . $type);
-						}
-						$array = $copy;
-					}
-				}
+		$copy = array();
+		foreach ($array as $rowid => $row) {
+			if (self::accept($row, $pagination_info)) {
+				$copy[$rowid] = $row;
 			}
 		}
-		return $array;
+		return $copy;
 	}
 
 	/**

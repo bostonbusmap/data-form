@@ -10,6 +10,7 @@
 
 require_once FILE_BASE_PATH . "/lib/database_iterator.php";
 require_once "sql_constructor.php";
+require_once "iterator_manager.php";
 // Useful functions for working with DataForm and DataTable objects
 
 /**
@@ -192,6 +193,42 @@ function paginate_array($array, $state, &$settings, $table_name="") {
 
 
 	return $subset;
+}
+
+/**
+ * Returns an iterator which iterates over a paginated subset of the rows
+ *
+ * You probably want to use paginate_sql or paginate_array instead, since this doesn't have
+ * the ability to seek between rows
+ *
+ * @param $iterator Iterator
+ * @param $state DataFormState
+ * @param $settings DataTableSettings
+ * @param string $table_name
+ * @return Iterator
+ * @throws Exception
+ */
+function paginate_iterator($iterator, $state, $settings, $table_name="") {
+	if (!($iterator instanceof Iterator)) {
+		throw new Exception("iterator must be an Iterator");
+	}
+	if (!($state instanceof DataFormState)) {
+		throw new Exception("state must be instance of DataFormState");
+	}
+	if ($settings !== null && !($settings instanceof DataTableSettings)) {
+		throw new Exception("settings must be instance of DataTableSettings, or null to create a new object");
+	}
+	if (!is_string($table_name)) {
+		throw new Exception("table_name must be a string");
+	}
+
+	$manager = new IteratorManager($iterator);
+	$manager->state($state);
+	$manager->settings($settings);
+	$manager->table_name($table_name);
+
+	list($iterator, $row_count) = $manager->obtain_paginated_data_and_row_count(null, null);
+	return $iterator;
 }
 
 /**
