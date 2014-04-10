@@ -278,20 +278,8 @@ class DataTableBuilder {
 		if (is_null($this->rows)) {
 			$this->rows = array();
 		}
-		if ($this->rows instanceof Traversable) {
-			$rows = array();
-			foreach ($this->rows as $k => $v) {
-				$rows[$k] = $v;
-			}
-			$this->rows = $rows;
-		}
-		if (!is_array($this->rows)) {
-			throw new Exception("rows must be an array of arrays or a Traversable");
-		}
-		foreach ($this->rows as $row) {
-			if (!is_array($row)) {
-				throw new Exception("Each row in rows must be an array");
-			}
+		if (!is_array($this->rows) && !($this->rows instanceof Iterator)) {
+			throw new Exception("rows must be an array or an Iterator");
 		}
 
 		if (is_null($this->row_classes)) {

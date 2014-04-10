@@ -16,7 +16,7 @@ class DataTableSettings {
 
 	/** @var  int Default number of rows per page */
 	protected $default_limit;
-	/** @var  int|null Number of rows in data set. Used to calculate pagination. May be null if not specified */
+	/** @var  int|null Number of rows in data set. Used to calculate pagination. May be null if unknown */
 	protected $total_rows;
 
 	/** @var string[] Mapping of limit number to text to display for that limit number */
@@ -196,7 +196,7 @@ class DataTableSettings {
 
 
 		for ($page_num = $starting_page; $page_num < $ending_page; $page_num++) {
-			if ($page_num < 0 || $page_num >= $num_pages) {
+			if ($page_num < 0 || ($num_pages !== null && $page_num >= $num_pages)) {
 				continue;
 			}
 			if ($page_num == $current_page) {
@@ -204,19 +204,28 @@ class DataTableSettings {
 			}
 			else
 			{
-				$link_title = "Go to page " . ($page_num + 1) . " of " . ($num_pages);
+				if ($num_pages !== null) {
+					$link_title = "Go to page " . ($page_num + 1) . " of " . ($num_pages);
+				}
+				else
+				{
+					$link_title = "Go to page " . ($page_num + 1);
+				}
 				$ret .= $this->create_page_link($page_num, (string)($page_num + 1), $link_title,
 					$form_name, $remote_url, $form_method, $table_name);
 			}
 		}
 
-		if ($ending_page < $num_pages) {
+		if ($num_pages === null) {
+			$ret .= " ... ";
+		}
+		elseif ($ending_page < $num_pages) {
 			$ret .= " ... ";
 			$ret .= $this->create_page_link($num_pages - 1, (string)($num_pages), "Go to last page",
 				$form_name, $remote_url, $form_method, $table_name);
 		}
 
-		if ($current_page < $num_pages - 1) {
+		if ($num_pages === null || ($current_page < $num_pages - 1)) {
 			// there is a next page
 			$ret .= $this->create_page_link($current_page + 1, "Next &raquo; ", "Go to next page",
 				$form_name, $remote_url, $form_method, $table_name);
@@ -241,9 +250,8 @@ class DataTableSettings {
 	 */
 	public function uses_pagination()
 	{
-		// total_rows is the only necessary pagination option, so I'm using it as an
-		// indicator that the user wants pagination
-		return !is_null($this->total_rows);
+		// TODO: provide option to disable pagination
+		return true;
 	}
 
 	/**
@@ -257,7 +265,7 @@ class DataTableSettings {
 	}
 
 	/**
-	 * Number of rows in data set. May be null if unspecified
+	 * Number of rows in data set. May be null if unknown
 	 *
 	 * @return int|null
 	 */

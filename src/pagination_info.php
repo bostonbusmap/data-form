@@ -211,7 +211,7 @@ class PaginationInfo {
 	 */
 	public function calculate_current_page($total_rows)
 	{
-		if (!is_int($total_rows)) {
+		if ($total_rows !== null && !is_int($total_rows)) {
 			throw new Exception("total_rows expected to be an int");
 		}
 
@@ -222,7 +222,7 @@ class PaginationInfo {
 		}
 		else {
 			$current_page = $this->offset / $this->limit;
-			if ($current_page >= $num_pages) {
+			if ($num_pages !== null && $current_page >= $num_pages) {
 				if ($num_pages > 1) {
 					return $num_pages - 1;
 				} else {
@@ -237,14 +237,17 @@ class PaginationInfo {
 	/**
 	 * Return number of pages given the row count and number of rows per page
 	 *
-	 * @param $num_rows int
+	 * @param $num_rows int|null
 	 * @throws Exception
-	 * @return int
+	 * @return int|null
 	 */
 	public function calculate_num_pages($num_rows)
 	{
-		if (!is_int($num_rows)) {
-			throw new Exception("num_rows must be an int");
+		if ($num_rows === null) {
+			return null;
+		}
+		elseif (!is_int($num_rows)) {
+			throw new Exception("num_rows must be an int or null");
 		}
 
 		$limit = $this->get_limit();

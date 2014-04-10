@@ -259,6 +259,9 @@ class SQLBuilder implements IPaginator {
 		}
 		$tree = $this->sort_transform->alter($tree, $this->state, $this->settings, $this->table_name);
 		if (!$this->ignore_pagination) {
+			if ($this->settings === null || $this->settings->get_total_rows() === null) {
+				throw new Exception("SQLBuilder->settings must contain the number of rows in order to paginate properly");
+			}
 			$tree = $this->pagination_transform->alter($tree, $this->state, $this->settings, $this->table_name);
 		}
 

@@ -15,7 +15,7 @@ class DataTableSettingsBuilder
 {
 	/** @var  int Default number of rows per page */
 	protected $default_limit;
-	/** @var  int Number of total rows in data (before pagination) */
+	/** @var  int|null Number of total rows in data (before pagination). If null this is assumed to be unknown */
 	protected $total_rows;
 
 	/** @var string[] Mapping of limit number to text to display for that limit number */
@@ -53,9 +53,9 @@ class DataTableSettingsBuilder
 	}
 
 	/**
-	 * Number of rows in data set. Used for pagination
+	 * Number of rows in data set. Used for pagination. May be null if unknown
 	 *
-	 * @param $total_rows int
+	 * @param $total_rows int|null
 	 * @return DataTableSettingsBuilder
 	 */
 	public function total_rows($total_rows)
@@ -112,7 +112,7 @@ class DataTableSettingsBuilder
 	}
 
 	/**
-	 * @return int Number of rows in data (without pagination, but after filtering)
+	 * @return int|null Number of rows in data (without pagination, but after filtering). May be null if value is unknown
 	 */
 	public function get_total_rows()
 	{

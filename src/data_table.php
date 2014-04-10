@@ -446,12 +446,29 @@ class DataTable
 			$count++;
 		}
 
+		$settings = $this->settings;
+		$pagination_info = DataFormState::make_pagination_info($state, $settings, $this->table_name);
+
+		if ($pagination_info->get_limit() === 0) {
+			if ($this->settings === null || $this->settings->get_total_rows() === null) {
+				throw new Exception("Cannot show infinite rows");
+			}
+
+			$max_rows = $this->settings->get_total_rows();
+		}
+		else {
+			$max_rows = $pagination_info->get_limit();
+		}
 
 		// end of header, start writing cells
 		$row_count = 0;
 		foreach ($this->rows as $row_id => $row) {
 			if (!is_array($row)) {
 				throw new Exception("Each row in rows expected to be an array");
+			}
+			if ($row_count >= $max_rows) {
+				// The person creating the iterator must do the work of truncating it themselves
+				throw new Exception("Exceeded permitted row count");
 			}
 			$row_id = (string)$row_id;
 
