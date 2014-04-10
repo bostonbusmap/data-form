@@ -137,7 +137,7 @@ class DataTableOptionsBuilder {
 	 */
 	public function build() {
 		if (is_null($this->name)) {
-			throw new Exception("field name must not be empty");
+			$this->name = "";
 		}
 		if (!is_string($this->name)) {
 			throw new Exception("name must be a string");
