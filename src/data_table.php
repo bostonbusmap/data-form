@@ -94,6 +94,11 @@ class DataTable
 	private $empty_message;
 
 	/**
+	 * @var string column key for selected items or empty string to disable
+	 */
+	protected $selected_items_column;
+
+	/**
 	 * @param DataTableBuilder $builder
 	 * @throws Exception
 	 */
@@ -110,6 +115,7 @@ class DataTable
 		$this->settings = $builder->get_settings();
 		$this->header = $builder->get_header();
 		$this->empty_message = $builder->get_empty_message();
+		$this->selected_items_column = $builder->get_selected_items_column();
 	}
 
 	/**
@@ -187,11 +193,31 @@ class DataTable
 		$writer->write('>');
 
 		// write pagination controls
-		if ($this->header || ($this->settings && $this->settings->uses_pagination())) {
+		if ($this->header !== "" ||
+			($this->settings && $this->settings->uses_pagination()) ||
+			$this->selected_items_column !== "") {
 			$writer->write("<caption>");
 
-			if ($this->header) {
+			if ($this->header !== "") {
 				$writer->write($this->header);
+			}
+			if ($this->selected_items_column !== "") {
+				if ($state !== null) {
+					$items = $state->find_item(array($this->selected_items_column));
+					if (is_array($items)) {
+						$selected_items_count = count($items);
+					}
+					elseif ($items !== null)
+					{
+						throw new Exception("selected_items_column is not an array");
+					}
+					else
+					{
+						$selected_items_count = 0;
+					}
+					$selected_items_header = "<div style=\"text-align: left\">Selected items: " . $selected_items_count . "</div>";
+					$writer->write($selected_items_header);
+				}
 			}
 			if ($this->settings && $this->settings->uses_pagination())
 			{

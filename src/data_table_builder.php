@@ -46,6 +46,11 @@ class DataTableBuilder {
 	private $empty_message;
 
 	/**
+	 * @var string The column key of the selected items, or null to disable
+	 */
+	private $selected_items_column;
+
+	/**
 	 * This is like the constructor but allows for chaining of methods
 	 * (ie, DataTableBuilder::create_builder()->buttons($buttons)->build())
 	 * @return DataTableBuilder
@@ -153,6 +158,15 @@ class DataTableBuilder {
 	}
 
 	/**
+	 * @param $selected_items_column string|null The column key of the selected items, or null to disable
+	 * @return DataTableBuilder
+	 */
+	public function selected_items_column($selected_items_column) {
+		$this->selected_items_column = $selected_items_column;
+		return $this;
+	}
+
+	/**
 	 * @return string Name of table
 	 */
 	public function get_table_name() {
@@ -220,6 +234,13 @@ class DataTableBuilder {
 	 */
 	public function get_empty_message() {
 		return $this->empty_message;
+	}
+
+	/**
+	 * @return string The column key for selected items, or null if not shown
+	 */
+	public function get_selected_items_column() {
+		return $this->selected_items_column;
 	}
 
 	/**
@@ -310,6 +331,13 @@ class DataTableBuilder {
 		}
 		if (!is_string($this->empty_message)) {
 			throw new Exception("empty_message must be a string containing HTML");
+		}
+
+		if ($this->selected_items_column === null) {
+			$this->selected_items_column = "";
+		}
+		if (!is_string($this->selected_items_column)) {
+			throw new Exception("selected_items_column must be a string column key");
 		}
 
 		return new DataTable($this);
