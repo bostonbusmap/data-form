@@ -476,10 +476,6 @@ class DataTable
 		$pagination_info = DataFormState::make_pagination_info($state, $settings, $this->table_name);
 
 		if ($pagination_info->get_limit() === 0) {
-			if ($this->settings === null || $this->settings->get_total_rows() === null) {
-				throw new Exception("Cannot show infinite rows");
-			}
-
 			$max_rows = $this->settings->get_total_rows();
 		}
 		else {
