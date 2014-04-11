@@ -74,7 +74,14 @@ class IteratorManager implements IPaginator {
 			$iterator = new RowFilterIterator($iterator, $pagination_info);
 		}
 		if (!$this->ignore_pagination) {
-			$iterator = new LimitIterator($iterator, $pagination_info->get_offset(), $pagination_info->get_limit());
+			if ($pagination_info->get_limit() === 0) {
+				$limit_count = -1;
+			}
+			else
+			{
+				$limit_count = $pagination_info->get_limit();
+			}
+			$iterator = new LimitIterator($iterator, $pagination_info->get_offset(), $limit_count);
 		}
 		if ($rowid_key !== null) {
 			$iterator = new ColumnAsKeyIterator($iterator, $rowid_key);
