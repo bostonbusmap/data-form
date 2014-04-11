@@ -416,13 +416,13 @@ class FilterTreeTransform  implements ISQLTreeTransform
 						} elseif ($type === DataTableSearchState::rlike) {
 							$phrase = " $column_base_expr RLIKE '$escaped_value' ";
 						} elseif ($type === DataTableSearchState::less_than) {
-							$phrase = " CAST($column_base_expr AS DECIMAL(15,15)) < $escaped_value ";
+							$phrase = " CAST($column_base_expr AS DECIMAL(30,15)) < $escaped_value ";
 						} elseif ($type === DataTableSearchState::less_or_equal) {
-							$phrase = " CAST($column_base_expr AS DECIMAL(15,15))  <= $escaped_value ";
+							$phrase = " CAST($column_base_expr AS DECIMAL(30,15))  <= $escaped_value ";
 						} elseif ($type === DataTableSearchState::greater_than) {
-							$phrase = " CAST($column_base_expr AS DECIMAL(15,15))  > $escaped_value ";
+							$phrase = " CAST($column_base_expr AS DECIMAL(30,15))  > $escaped_value ";
 						} elseif ($type === DataTableSearchState::greater_or_equal) {
-							$phrase = " CAST($column_base_expr AS DECIMAL(15,15))  >= $escaped_value ";
+							$phrase = " CAST($column_base_expr AS DECIMAL(30,15))  >= $escaped_value ";
 						} elseif ($type === DataTableSearchState::equal) {
 							if (is_numeric($escaped_value)) {
 								$phrase = " $column_base_expr = $escaped_value ";
