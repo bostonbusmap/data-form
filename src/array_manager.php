@@ -299,7 +299,7 @@ class ArrayManager implements IPaginator {
 				) {
 					// create new ORDER clause
 
-					$sorter = new ArraySorter($column_key);
+					$sorter = new ArraySorter($column_key, $value == DataFormState::sorting_state_asc);
 					usort($array, array($sorter, 'sort'));
 				} elseif ($value) {
 					throw new Exception("Unexpected sorting value received: '$value'");
@@ -339,12 +339,25 @@ class ArrayManager implements IPaginator {
 class ArraySorter {
 	/** @var  string */
 	protected $column_key;
+	/**
+	 * @var bool
+	 */
+	protected $is_asc;
 
 	/**
 	 * @param $column_key string
+	 * @param $is_asc bool
+	 * @throws Exception
 	 */
-	public function __construct($column_key) {
+	public function __construct($column_key, $is_asc) {
+		if (!is_string($column_key)) {
+			throw new Exception("column_key must be a string");
+		}
+		if (!is_bool($is_asc)) {
+			throw new Exception("is_asc must be a bool");
+		}
 		$this->column_key = $column_key;
+		$this->is_asc = $is_asc;
 	}
 
 	/**
@@ -355,16 +368,21 @@ class ArraySorter {
 	public function sort($a, $b) {
 		$a_value = $a[$this->column_key];
 		$b_value = $b[$this->column_key];
+
 		if ($a_value < $b_value) {
-			return -1;
+			$ret = -1;
 		}
 		elseif ($a_value == $b_value) {
-			return 0;
+			$ret = 0;
 		}
 		else
 		{
-			return 1;
+			$ret = 1;
 		}
+		if (!$this->is_asc) {
+			$ret *= -1;
+		}
+		return $ret;
 	}
 }
 
