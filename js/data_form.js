@@ -57,8 +57,11 @@ var DataForm = (function() {
                     }
                     $form.attr("action", options.form_action);
                     $form.submit();
+                },
+                error: function(jqXHR, textStatus, data) {
+                    my.parseData(data, options.flash_name);
                 }
-                });
+            });
             event.preventDefault();
         },
         refresh : function(element, event, options) {
@@ -83,6 +86,9 @@ var DataForm = (function() {
                         return;
                     }
                     $(jq(options.form_name)).html(parsedData.html);
+                },
+                error: function(jqXHR, textStatus, data) {
+                    my.parseData(data, options.flash_name);
                 }
             });
             event.preventDefault();
@@ -120,7 +126,10 @@ var DataForm = (function() {
                         type = "application/octet-stream;charset=utf-8";
                     }
                     var blob = new Blob([data], {type: type});
-                    saveAs(blob, "tmt_stats_params.json");
+                    saveAs(blob, options.output_filename);
+                },
+                error: function(jqXHR, textStatus, data) {
+                    my.parseData(data, options.flash_name);
                 }
             });
             event.preventDefault();
@@ -156,11 +165,17 @@ var DataForm = (function() {
                 type: options.form_method.toUpperCase(),
                 data: data,
                 success: function(data, textStatus, jqXHR) {
+                    // TODO: make users of this function accept JSON
+                    // then better error handling here
                     div.html(data);
                 }
             });
             event.preventDefault();
         },
+        /**
+         * This is primarily used when a person clicks the column names
+         * to first clear other sorting metadata before setting new metadata
+         */
         clearSortThenRefresh : function(element, event, options) {
             $(element).parents("form").find(".hidden_sorting").attr("value", "");
             return this.refresh(element, event, options);
