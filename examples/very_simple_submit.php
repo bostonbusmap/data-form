@@ -13,15 +13,26 @@ require_once "../../../../../lib/main_lib.php";
 require_once FILE_BASE_PATH . "/www/browser/lib/data_table/data_form.php";
 require_once FILE_BASE_PATH . "/www/browser/lib/data_table/sql_builder.php";
 
-$state = new DataFormState("browse_organisms", $_GET);
+function show_selected_organisms() {
+	$state = new DataFormState("browse_organisms", $_GET);
 
-gfy_header("Browse organisms", "");
+	gfy_header("Browse organisms", "");
 
-$data = $state->get_form_data();
-if (array_key_exists("organism_id", $data)) {
-	echo "Selected organism #" . $data["organism_id"];
+	$data = $state->get_form_data();
+	if (array_key_exists("organism_id", $data)) {
+		echo "Selected organism #" . $data["organism_id"];
+	}
+	else
+	{
+		echo "No search selected";
+	}
 }
-else
+
+try
 {
-	echo "No search selected";
+	show_selected_organisms();
 }
+catch (Exception $e) {
+	echo "<pre>" . $e->getMessage() . "</pre>";
+}
+

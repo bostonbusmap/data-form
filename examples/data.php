@@ -1,4 +1,5 @@
 <?php
+// this contains information about the cities and zip codes in Massachusetts
 function get_data() {
 	return array(array("zip" => "02351", "city" => "Abington"),
 array("zip" => "02018", "city" => "Accord"),

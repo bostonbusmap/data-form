@@ -37,13 +37,21 @@ try
 {
 	$state = new DataFormState("browse_organisms", $_GET);
 
-	$form = make_organisms_table($state);
-
 	if ($state->only_display_form()) {
-		echo $form->display_form($state);
+		try
+		{
+			$form = make_organisms_table($state);
+
+			echo $form->display_form($state);
+		}
+		catch (Exception $e) {
+			echo json_encode(array("error" => $e->getMessage()));
+		}
 	}
 	else
 	{
+		$form = make_organisms_table($state);
+
 		gfy_header("Browse organisms", "");
 		echo $form->display($state);
 	}

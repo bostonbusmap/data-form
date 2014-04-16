@@ -92,8 +92,14 @@ function make_form($state) {
 
 	// Two columns: checkbox and number (both using same data, column_key = 'number')
 	$columns = array();
-	$columns[] = DataTableColumnBuilder::create()->cell_formatter(new DataTableCheckboxCellFormatter())->column_key("number")->build();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Numbers")->column_key("number")->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->cell_formatter(new DataTableCheckboxCellFormatter())
+		->column_key("number")
+		->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Numbers")
+		->column_key("number")
+		->build();
 
 	// make 15 rows of numbers
 	$rows = array();
@@ -114,20 +120,20 @@ function make_form($state) {
 
 	// Two widgets: a button that validates the form then submits, and a textbox which will be validated
 	$widgets = array();
-	$widgets[] = DataTableButtonBuilder::create()->
-		text("Validate and submit")->
-		form_action("validation_submit.php")->
-		behavior(new DataTableBehaviorValidateThenSubmit($this_url))->
-		build();
-	$widgets[] = DataTableTextboxBuilder::create()->
-		text("Enter text without spaces")->
-		name("text")->
-		build();
+	$widgets[] = DataTableButtonBuilder::create()
+		->text("Validate and submit")
+		->form_action("validation_submit.php")
+		->behavior(new DataTableBehaviorValidateThenSubmit($this_url))
+		->build();
+	$widgets[] = DataTableTextboxBuilder::create()
+		->text("Enter text without spaces")
+		->name("text")
+		->build();
 	$widgets[] = new CustomWidget("<br />");
-	$widgets[] = DataTableButtonBuilder::create()->
-		text("Reset form")->
-		behavior(new DataTableBehaviorReset())->
-		build();
+	$widgets[] = DataTableButtonBuilder::create()
+		->text("Reset form")
+		->behavior(new DataTableBehaviorReset())
+		->build();
 
 	// Add validator rules
 	$validator_rules = array();
@@ -135,26 +141,46 @@ function make_form($state) {
 	$validator_rules[] = new OnlyEvenItemsSelected("number");
 
 	// create DataTable and DataForm, putting validator rules in validator_rules parameter
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($widgets)->build();
-	$form = DataFormBuilder::create($state->get_form_name())->tables(array($table))->
-		validator_rules($validator_rules)->remote($this_url)->build();
+	$table = DataTableBuilder::create()
+		->columns($columns)
+		->rows($rows)
+		->widgets($widgets)
+		->build();
+	$form = DataFormBuilder::create($state->get_form_name())
+		->tables(array($table))
+		->validator_rules($validator_rules)
+		->remote($this_url)
+		->build();
 	return $form;
 }
 
 try {
 	$state = new DataFormState("select_3", $_GET);
-	$form = make_form($state);
 	if ($state->only_display_form()) {
-		// DataFormState indicates that only form HTML should be displayed
-		echo $form->display_form($state);
+		try {
+			$form = make_form($state);
+			// DataFormState indicates that we want the form HTML only
+			echo $form->display_form($state);
+		}
+		catch (Exception $e) {
+			echo json_encode(array("error" => $e->getMessage()));
+		}
 	}
 	elseif ($state->only_validate()) {
 		// DataFormState indicates that only validation error HTML should be displayed
 		// this goes in a div named form_name_flash
-		echo $form->validate($state);
+		try {
+			$form = make_form($state);
+			// DataFormState indicates that we want the form HTML only
+			echo $form->validate($state);
+		}
+		catch (Exception $e) {
+			echo json_encode(array("error" => $e->getMessage()));
+		}
 	}
 	else
 	{
+		$form = make_form($state);
 		gfy_header("Select 3", "");
 		echo "Unselect all odd numbers and remove spaces from textbox<br />";
 		echo $form->display($state);

@@ -25,18 +25,32 @@ function make_form($state) {
 	$this_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/multi_step_selection.php";
 	$next_url = HTTP_BASE_PATH . "/browser/lib/data_table/examples/multi_step_selection_2.php";
 
+	$settings = DataTableSettingsBuilder::create()
+		->no_pagination()
+		->build();
+
 	// Create two columns: a checkbox column and the name of the city
 	// Note that both columns have the same column_key: city
 	// This is allowed and means that both columns get the same data
 	$columns = array();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Select")->column_key("city")->
-		cell_formatter(new DataTableCheckboxCellFormatter())->build();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("City")->column_key("city")->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Select")
+		->column_key("city")
+		->cell_formatter(new DataTableCheckboxCellFormatter())
+		->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("City")
+		->column_key("city")
+		->build();
 
 	// simple continue button to go to next form
 	$buttons = array();
-	$buttons[] = DataTableButtonBuilder::create()->text("Continue >>")->name("submit")->form_action($next_url)->
-		behavior(new DataTableBehaviorSubmit())->build();
+	$buttons[] = DataTableButtonBuilder::create()
+		->text("Continue >>")
+		->name("submit")
+		->form_action($next_url)
+		->behavior(new DataTableBehaviorSubmit())
+		->build();
 
 	// fill in data on Massachusetts cities
 	$rows = array();
@@ -45,25 +59,43 @@ function make_form($state) {
 	}
 
 	// create a DataTable with the information we just specified
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->
-		build();
+	$table = DataTableBuilder::create()
+		->columns($columns)
+		->rows($rows)
+		->widgets($buttons)
+		->settings($settings)
+		->build();
 	// create a DataForm from the DataTable
-	$form = DataFormBuilder::create($state->get_form_name())->tables(array($table))->remote($this_url)->build();
+	$form = DataFormBuilder::create($state->get_form_name())
+		->tables(array($table))
+		->remote($this_url)
+		->build();
 	return $form;
 }
 
 try {
+	// We can use StdoutWriter to output the form directly to stdout,
+	// avoiding the need for a large intermediate string
+	$writer = new StdoutWriter();
+
 	// $state here is mostly used to keep state if we refresh the form via AJAX
 	// However we don't do that in this particular case, but it's a good idea in general anyway.
 	$state = new DataFormState("select_cities", $_GET);
-	$form = make_form($state);
 	if ($state->only_display_form()) {
-		echo $form->display_form($state);
+		try
+		{
+			$form = make_form($state);
+			$form->display_form_using_writer($writer, $state);
+		}
+		catch (Exception $e) {
+			echo json_encode(array("error" => $e->getMessage()));
+		}
 	}
 	else
 	{
+		$form = make_form($state);
 		gfy_header("Select cities", "");
-		echo $form->display($state);
+		$form->display_using_writer($writer, $state);
 	}
 }
 catch (Exception $e) {

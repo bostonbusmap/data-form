@@ -16,7 +16,7 @@ require_once FILE_BASE_PATH . "/www/browser/lib/data_table/data_form.php";
 // this require contains information about the cities and zip codes in Massachusetts
 require_once "data.php";
 
-// comparators for zip codes (not sure if it'll handle it like octal or strings, but it's not too important in this case)
+// comparators for zip codes
 
 function compare_zip_column_asc($a, $b) {
 	return $a["zip"] > $b["zip"];
@@ -38,14 +38,25 @@ function make_form($prev_state, $current_state) {
 
 	// make two columns: a checkbox and the zip code. Zip code is sortable to show off this feature.
 	$columns = array();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Select")->column_key("zip")->
-		cell_formatter(new DataTableCheckboxCellFormatter())->build();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Zip code")->column_key("zip")->sortable(true)->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Select")
+		->column_key("zip")
+		->cell_formatter(new DataTableCheckboxCellFormatter())
+		->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Zip code")
+		->column_key("zip")
+		->sortable(true)
+		->build();
 
 	// Simple continue button to submit to next page
 	$buttons = array();
-	$buttons[] = DataTableButtonBuilder::create()->text("Continue >>")->name("submit")->form_action($next_url)->
-		behavior(new DataTableBehaviorSubmit())->build();
+	$buttons[] = DataTableButtonBuilder::create()
+		->text("Continue >>")
+		->name("submit")
+		->form_action($next_url)
+		->behavior(new DataTableBehaviorSubmit())
+		->build();
 
 	// get list of selected cities
 	$prev_form_data = $prev_state->get_form_data();
@@ -65,20 +76,43 @@ function make_form($prev_state, $current_state) {
 		}
 	}
 
+	$settings = DataTableSettingsBuilder::create()
+		->no_pagination()
+		->build();
+
+	// Note that $settings would have been created here with default values if it didn't already exist.
+	$pagination_info = DataFormState::make_pagination_info($current_state, $settings);
+	$current_sorting_state = $pagination_info->get_sorting_order();
+
 	// sort zip codes
-	$current_sorting_state = $current_state->get_sorting_state("zip");
-	if ($current_sorting_state == DataFormState::sorting_state_desc) {
-		usort($rows, "compare_zip_column_desc");
+	if (isset($current_sorting_state["zip"])) {
+		if ($current_sorting_state["zip"] == DataFormState::sorting_state_desc) {
+			usort($rows, "compare_zip_column_desc");
+		}
+		elseif ($current_sorting_state["zip"] == DataFormState::sorting_state_asc)
+		{
+			usort($rows, "compare_zip_column_asc");
+		}
 	}
-	elseif ($current_sorting_state == DataFormState::sorting_state_asc)
-	{
-		usort($rows, "compare_zip_column_asc");
+
+	// mark each row with the rowid of the zip code
+	$rows_with_rowid = array();
+	foreach ($rows as $row) {
+		$rows_with_rowid[$row["zip"]] = $row;
 	}
 
 	// create DataTable with the columns and rows we specified
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->build();
-	$form = DataFormBuilder::create("select_zipcodes")->remote($this_url)->tables(array($table))->
-		forwarded_state(array($prev_state, $current_state))->build();
+	$table = DataTableBuilder::create()
+		->columns($columns)
+		->rows($rows_with_rowid)
+		->widgets($buttons)
+		->settings($settings)
+		->build();
+	$form = DataFormBuilder::create("select_zipcodes")
+		->remote($this_url)
+		->tables(array($table))
+		->forwarded_state(array($prev_state))
+		->build();
 	return $form;
 }
 
@@ -105,12 +139,17 @@ try {
 		$selected_cities = array();
 	}
 
-	$form = make_form($prev_state, $current_state);
 	if ($current_state->only_display_form()) {
-		echo $form->display_form($current_state);
+		try {
+			$form = make_form($prev_state, $current_state);
+			echo $form->display_form($current_state);
+		} catch (Exception $e) {
+			echo json_encode(array("error" => $e->getMessage()));
+		}
 	}
 	else
 	{
+		$form = make_form($prev_state, $current_state);
 		gfy_header("Select zip codes", "");
 		if ($selected_cities) {
 			echo "You have selected: " . join(", ", $selected_cities) . "<br />";
@@ -123,5 +162,5 @@ try {
 	}
 }
 catch (Exception $e) {
-	echo "<pre>" . $e . "</pre>";
+	echo "<pre>" . $e->getMessage() . "</pre>";
 }

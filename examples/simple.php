@@ -24,8 +24,14 @@ function make_form() {
 	// The column_key parameter will be matched up with the key in $rows defined below
 	// so the column knows where the data is coming from.
 	$columns = array();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Numbers")->column_key("number")->build();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Squared number")->column_key("square")->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Numbers")
+		->column_key("number")
+		->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Squared number")
+		->column_key("square")
+		->build();
 
 	// create data to be displayed
 	$rows = array();
@@ -40,8 +46,13 @@ function make_form() {
 	// Create DataForm. Unlike most other examples here, this is a local form which means there's no
 	// AJAX communication with the server to refresh the table. Column sorting and filtering
 	// will be done with Javascript instead, and no pagination will be done
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->build();
-	$form = DataFormBuilder::create("simple")->tables(array($table))->build();
+	$table = DataTableBuilder::create()
+		->columns($columns)
+		->rows($rows)
+		->build();
+	$form = DataFormBuilder::create("simple")
+		->tables(array($table))
+		->build();
 	return $form;
 }
 

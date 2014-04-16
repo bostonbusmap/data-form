@@ -26,6 +26,8 @@ function make_organisms_query() {
 }
 
 /**
+ * Make a form which lists organisms from the database
+ *
  * @param DataFormState $state
  * @param string $this_url
  * @return DataForm
@@ -34,11 +36,15 @@ function make_organisms_form($state, $this_url) {
 	// generate some SQL
 	$browse_searches_query = make_organisms_query();
 
-	// Tell DataTable how many rows we have. This is needed for pagination.
-	$settings = DataTableSettingsBuilder::create()->default_limit(10)->build();
+	// Set default number of rows per page
+	$settings = DataTableSettingsBuilder::create()
+		->default_limit(10)
+		->build();
 
 	// Make a SQL query which takes into account pagination, filtering and sorting. This will be like our original
 	// query but with a LIMIT clause, the search text added in a WHERE clause, and maybe an ORDER BY clause.
+
+	// This will also replace $settings with a copy which has total_rows set with the number of rows
 	$query = paginate_sql($browse_searches_query, $state, $settings);
 
 	// Create three columns: organism_id which is checkboxes to select rows,
@@ -46,11 +52,21 @@ function make_organisms_form($state, $this_url) {
 	// Set organism_name to be sortable so we can show off this feature
 	// organism_scientific is set to be searchable
 	$columns = array();
-	$columns[] = DataTableColumnBuilder::create()->column_key("organism_id")->
-		cell_formatter(new DataTableCheckboxCellFormatter())->
-		header_formatter(new DataTableCheckboxHeaderFormatter())->build();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Organism name")->column_key("organism_name")->sortable(true)->build();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Scientific name")->column_key("organism_scientific")->searchable(true)->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->column_key("organism_id")
+		->cell_formatter(new DataTableCheckboxCellFormatter())
+		->header_formatter(new DataTableCheckboxHeaderFormatter())
+		->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Organism name")
+		->column_key("organism_name")
+		->sortable(true)
+		->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Scientific name")
+		->column_key("organism_scientific")
+		->searchable(true)
+		->build();
 
 
 	// Define the pieces of HTML which surround the DataTable
@@ -65,13 +81,22 @@ function make_organisms_form($state, $this_url) {
 
 	// Each link sets the hidden field with that field name to the given value,
 	// then sets the form action to sql_export.php, then submits the form.
-	$widgets[] = DataTableLinkBuilder::create()->text("Export all rows")->link("sql_export.php")->
-		behavior(new DataTableBehaviorSubmit(array($selected_only_name => false)))->build();
+	$widgets[] = DataTableLinkBuilder::create()
+		->text("Export all rows")
+		->link("sql_export.php")
+		->behavior(new DataTableBehaviorSubmit(array($selected_only_name => false)))
+		->build();
 	$widgets[] = CustomWidget::create("<br />");
-	$widgets[] = DataTableLinkBuilder::create()->text("Export selected rows")->link("sql_export.php")->
-		behavior(new DataTableBehaviorSubmit(array($selected_only_name => true)))->build();
+	$widgets[] = DataTableLinkBuilder::create()
+		->text("Export selected rows")
+		->link("sql_export.php")
+		->behavior(new DataTableBehaviorSubmit(array($selected_only_name => true)))
+		->build();
 	$widgets[] = CustomWidget::create("<br />");
-	$widgets[] = DataTableButtonBuilder::create()->text("Reset")->behavior(new DataTableBehaviorReset())->build();
+	$widgets[] = DataTableButtonBuilder::create()
+		->text("Reset")
+		->behavior(new DataTableBehaviorReset())
+		->build();
 
 	// We need to have a hidden field to set so the value is passed when submitting the form.
 	$widgets[] = DataTableHiddenBuilder::create()->name("selected_only")->build();
@@ -84,17 +109,26 @@ function make_organisms_form($state, $this_url) {
 
 	// Specifying the row key parameter is important because it allows the DataForm to uniquely identify
 	// checkboxes and other input fields, even on different pages.
-	$table = DataTableBuilder::create()->columns($columns)->rows(new DatabaseIterator($query, null, "organism_id"))->settings($settings)->widgets($widgets)->build();
-	$form = DataFormBuilder::create($state->get_form_name())->remote($this_url)->tables(array($table))->build();
+	$table = DataTableBuilder::create()
+		->columns($columns)
+		->rows(new DatabaseIterator($query, null, "organism_id"))
+		->settings($settings)
+		->widgets($widgets)
+		->build();
+	$form = DataFormBuilder::create($state->get_form_name())
+		->remote($this_url)
+		->tables(array($table))
+		->build();
 	return $form;
 }
 
 /**
- *
+ * Filter the data then write it as a TSV to standard output
  *
  * @param $state DataFormState Form state which contains selected_only
  */
 function export_rows($state) {
+	// cast string to boolean
 	$selected_only = filter_var($state->find_item(array("selected_only")), FILTER_VALIDATE_BOOLEAN);
 
 	// selected_items is a list of search ids
@@ -103,7 +137,7 @@ function export_rows($state) {
 		$selected_items = array();
 	}
 
-	// We need to filter the data the way it's filtered in the previous page
+	// We need to filter the data exactly the way it's filtered in the previous page
 	// to get a correct data set
 	$browse_searches_query = make_organisms_query();
 	// SQLBuilder parses the query and makes it ready for manipulation
@@ -112,6 +146,7 @@ function export_rows($state) {
 	$sql_builder->state($state);
 	// But don't paginate since we're preparing a data set for export
 	$sql_builder->ignore_pagination();
+
 	if (!$selected_only || $selected_items) {
 		// Filtering behavior might mask rows selected on unfiltered row set, so turn it off
 		$sql_builder->ignore_filtering();
@@ -139,7 +174,6 @@ function export_rows($state) {
 	// write TSV
 	$stdout = fopen("php://output", "w");
 	fwritetsv($stdout, $rows, $headers);
-
 }
 
 /**

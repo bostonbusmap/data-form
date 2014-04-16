@@ -19,8 +19,12 @@ require_once FILE_BASE_PATH . "/www/browser/lib/data_table/data_form.php";
  *
  * @param DataFormState $state State of form which roughly encapsulates $_POST
  * @return DataForm
+ * @throws Exception
  */
 function make_form($state) {
+	if (!($state instanceof DataFormState)) {
+		throw new Exception("state expected to be instance of DataFormState");
+	}
 	$this_url = "add_columns.php";
 
 	// numbers in $rows will be converted to checkboxes using this formatter
@@ -28,9 +32,19 @@ function make_form($state) {
 
 	// create first three columns
 	$columns = array();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Select")->column_key("perm_1")->cell_formatter($checkbox_formatter)->build();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Permanent Column #1")->column_key("perm_1")->build();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Permanent Column #2")->column_key("perm_2")->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Select")
+		->column_key("perm_1")
+		->cell_formatter($checkbox_formatter)
+		->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Permanent Column #1")
+		->column_key("perm_1")
+		->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Permanent Column #2")
+		->column_key("perm_2")
+		->build();
 
 	// The Add Column and Remove Column buttons just refresh the table while
 	// updating this parameter
@@ -45,7 +59,10 @@ function make_form($state) {
 
 	// create all generated columns
 	for ($col_num = 2; $col_num < $num_columns; $col_num++) {
-		$columns[] = DataTableColumnBuilder::create()->display_header_name("Generated Column #" . ($col_num - 1))->column_key("gen_" . ($col_num - 1))->build();
+		$columns[] = DataTableColumnBuilder::create()
+			->display_header_name("Generated Column #" . ($col_num - 1))
+			->column_key("gen_" . ($col_num - 1))
+			->build();
 	}
 
 	// keep value deterministic so numbers don't change between refreshes
@@ -75,17 +92,32 @@ function make_form($state) {
 
 	$num_columns_name = DataFormState::make_field_name($form_name, array("num_columns"));
 	$add_column_behavior = new DataTableBehaviorRefresh(array($num_columns_name => ($num_columns + 1)));
-	$widgets[] = DataTableButtonBuilder::create()->text("Add Column")->form_action($this_url)->behavior($add_column_behavior)->build();
+	$widgets[] = DataTableButtonBuilder::create()
+		->text("Add Column")
+		->form_action($this_url)
+		->behavior($add_column_behavior)
+		->build();
 
 	if ($num_columns > 2) {
 		$remove_column_behavior = new DataTableBehaviorRefresh(array($num_columns_name => ($num_columns - 1)));
-		$widgets[] = DataTableButtonBuilder::create()->text("Remove Column")->form_action($this_url)->behavior($remove_column_behavior)->build();
+		$widgets[] = DataTableButtonBuilder::create()
+			->text("Remove Column")
+			->form_action($this_url)
+			->behavior($remove_column_behavior)
+			->build();
 	}
 
 	// create DataTable from rows, buttons, and columns
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($widgets)->build();
+	$table = DataTableBuilder::create()
+		->columns($columns)
+		->rows($rows)
+		->widgets($widgets)
+		->build();
 	// create DataForm from DataTable
-	$form = DataFormBuilder::create($state->get_form_name())->tables(array($table))->remote($this_url)->build();
+	$form = DataFormBuilder::create($state->get_form_name())
+		->tables(array($table))
+		->remote($this_url)
+		->build();
 	return $form;
 }
 
@@ -94,13 +126,21 @@ try {
 
 	// Try selecting some checkboxes and add a column. Notice how the checkboxes remain selected.
 	$state = new DataFormState("add_columns", $_GET);
-	$form = make_form($state);
 	if ($state->only_display_form()) {
 		// Just asking for a refresh. Only display form HTML
-		echo $form->display_form($state);
+		try
+		{
+			$form = make_form($state);
+			echo $form->display_form($state);
+		}
+		catch (Exception $e) {
+			echo json_encode(array("error" => $e->getMessage()));
+		}
 	}
 	else
 	{
+		$form = make_form($state);
+
 		gfy_header("Add and remove columns", "");
 		echo $form->display($state);
 	}

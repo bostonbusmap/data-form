@@ -18,5 +18,5 @@ try {
 	export_rows($state);
 }
 catch (Exception $e) {
-	echo "<pre>" . $e . "</pre>";
+	echo "<pre>" . $e->getMessage() . "</pre>";
 }

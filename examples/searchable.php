@@ -76,99 +76,12 @@ function make_form($state) {
 		$rows[] = array("bird" => $bird, "weight" => $bird_weights[$bird]);
 	}
 
-	// Filter rows based on bird names
-	// in PHP 5.3 we can replace this with something like
-	//   array_filter($rows, function($row) { return($row["weight"] < $value });
-	$indexes_to_remove = array();
-
 	// Don't allow pagination since this example isn't showing it off
 	$settings = DataTableSettingsBuilder::create()
 		->no_pagination()
 		->build();
 
-	// figure out our filtering, pagination, and sorting settings given
-	// the default settings in $settings and the user-specified parameters
-	// in $state
-	$pagination_info = DataFormState::make_pagination_info($state, $settings);
-
-	// If user wrote anything in filtering textboxes, remove the rows that don't match
-	$search_states = $pagination_info->get_search_states();
-
-	if (isset($search_states["bird"])) {
-		/** @var DataTableSearchState $bird_search */
-		$bird_search = $search_states["bird"];
-		if ($bird_search->get_type() === DataTableSearchState::like) {
-			$params = $bird_search->get_params();
-			$value = $params[0];
-			if (trim($value) !== "") {
-
-				foreach ($rows as $i => $row) {
-					if (strpos(strtolower($row["bird"]), strtolower($value)) === false) {
-						$indexes_to_remove[] = $i;
-					}
-				}
-			}
-		}
-		else
-		{
-			throw new Exception("Unhandled search type");
-		}
-	}
-
-	// Filter remaining rows based on bird weight
-	if (isset($search_states["weight"])) {
-		/** @var DataTableSearchState $weight_search */
-		$weight_search = $search_states["weight"];
-		$params = $weight_search->get_params();
-		$type = $weight_search->get_type();
-		if ($type === DataTableSearchState::less_or_equal ||
-			$type === DataTableSearchState::less_than ||
-			$type === DataTableSearchState::greater_or_equal ||
-			$type === DataTableSearchState::greater_than ||
-			$type === DataTableSearchState::equal ||
-			$type === DataTableSearchState::not_equal) {
-			$value_string = $params[0];
-			if (is_numeric($value_string)) {
-				$value = (float)$value_string;
-				foreach ($rows as $i => $row) {
-					if ($type === DataTableSearchState::less_or_equal && $row["weight"] > $value) {
-						$indexes_to_remove[] = $i;
-					}
-					if ($type === DataTableSearchState::less_than && $row["weight"] >= $value) {
-						$indexes_to_remove[] = $i;
-					}
-					if ($type === DataTableSearchState::greater_or_equal && $row["weight"] < $value) {
-						$indexes_to_remove[] = $i;
-					}
-					if ($type === DataTableSearchState::greater_than && $row["weight"] <= $value) {
-						$indexes_to_remove[] = $i;
-					}
-					if ($type === DataTableSearchState::equal && $row["weight"] != $value) {
-						$indexes_to_remove[] = $i;
-					}
-					if ($type === DataTableSearchState::not_equal && $row["weight"] == $value) {
-						$indexes_to_remove[] = $i;
-					}
-				}
-			}
-		}
-	}
-
-	// remove filtered rows
-	foreach ($indexes_to_remove as $i) {
-		unset($rows[$i]);
-	}
-
-	// sort remaining rows on bird name
-	$sorting_state = $pagination_info->get_sorting_order();
-	if (isset($sorting_state["bird"])) {
-		if ($sorting_state["bird"] == DataFormState::sorting_state_asc) {
-			usort($rows, "compare_bird_column_asc");
-		}
-		elseif ($sorting_state["bird"] == DataFormState::sorting_state_desc) {
-			usort($rows, "compare_bird_column_desc");
-		}
-	}
+	$paginated_array = paginate_array($rows, $state, $settings);
 
 	// Add refresh button. This isn't strictly necessary since you can press Enter to active search
 	$buttons = array();
@@ -182,7 +95,7 @@ function make_form($state) {
 	// Create DataTable and DataForm
 	$table = DataTableBuilder::create()
 		->columns($columns)
-		->rows($rows)
+		->rows($paginated_array)
 		->widgets($buttons)
 		->settings($settings)
 		->build();
@@ -195,16 +108,23 @@ function make_form($state) {
 
 try {
 	$state = new DataFormState("searchable", $_GET);
-	$form = make_form($state);
 	if ($state->only_display_form()) {
-		echo $form->display_form($state);
+		try
+		{
+			$form = make_form($state);
+			echo $form->display_form($state);
+		}
+		catch (Exception $e) {
+			echo json_encode(array("error" => $e->getMessage()));
+		}
 	}
 	else
 	{
+		$form = make_form($state);
 		gfy_header("Simple table example", "");
 		echo $form->display($state);
 	}
 }
 catch (Exception $e) {
-	echo "<pre>" . $e . "</pre>";
+	echo "<pre>" . $e->getMessage() . "</pre>";
 }

@@ -15,16 +15,23 @@ require_once "sql_lib.php";
 try {
 	// See make_organisms_form in sql_lib.php for more information
 	$state = new DataFormState("organisms", $_GET);
-	$form = make_organisms_form($state, "sql.php");
 	if ($state->only_display_form()) {
-		echo $form->display_form($state);
+		try
+		{
+			$form = make_organisms_form($state, "sql.php");
+			echo $form->display_form($state);
+		}
+		catch (Exception $e) {
+			echo json_encode(array("error" => $e->getMessage()));
+		}
 	}
 	else
 	{
+		$form = make_organisms_form($state, "sql.php");
 		gfy_header("SQL example", "");
 		echo $form->display($state);
 	}
 }
 catch (Exception $e) {
-	echo "<pre>" . $e . "</pre>";
+	echo "<pre>" . $e->getMessage() . "</pre>";
 }

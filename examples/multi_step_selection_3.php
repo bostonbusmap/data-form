@@ -29,13 +29,19 @@ function compare_zip_column_asc($a, $b) {
  * This DataTable displays cities
  *
  * @param DataFormState $cities_state
- * @param DataFormState $current_state
  * @return DataTable
  */
-function make_city_table($cities_state, $current_state) {
+function make_city_table($cities_state) {
 	// Just one column that shows the city
 	$columns = array();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Cities")->column_key("city")->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Cities")
+		->column_key("city")
+		->build();
+
+	$settings = DataTableSettingsBuilder::create()
+		->no_pagination()
+		->build();
 
 	// Get list of cities from $cities_state
 	$city_state_data = $cities_state->get_form_data();
@@ -54,8 +60,13 @@ function make_city_table($cities_state, $current_state) {
 	}
 
 	// Make table for this information. Note the table name which is required when having two or more tables!
-	$table = DataTableBuilder::create()->table_name("city")->columns($columns)->
-		rows($rows)->empty_message("No cities selected!")->build();
+	$table = DataTableBuilder::create()
+		->table_name("city")
+		->columns($columns)
+		->rows($rows)
+		->settings($settings)
+		->empty_message("No cities selected!")
+		->build();
 	return $table;
 }
 
@@ -69,7 +80,11 @@ function make_city_table($cities_state, $current_state) {
 function make_zip_table($zip_state, $current_state) {
 	// One column with zip codes
 	$columns = array();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Zip codes")->column_key("zip")->sortable(true)->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Zip codes")
+		->column_key("zip")
+		->sortable(true)
+		->build();
 
 	// get zip codes from $zip_state
 	$zip_state_data = $zip_state->get_form_data();
@@ -89,19 +104,56 @@ function make_zip_table($zip_state, $current_state) {
 
 	// Sort zip code data
 	$table_name = "zip";
-	$current_sorting_state = $current_state->get_sorting_state("zip", $table_name);
-	if ($current_sorting_state == DataFormState::sorting_state_desc) {
-		usort($rows, "compare_zip_column_desc");
-	}
-	elseif ($current_sorting_state == DataFormState::sorting_state_asc)
-	{
-		usort($rows, "compare_zip_column_asc");
+
+	$settings = DataTableSettingsBuilder::create()
+		->no_pagination()
+		->build();
+
+	$pagination_info = DataFormState::make_pagination_info($current_state, $settings, $table_name);
+	$sorting_state = $pagination_info->get_sorting_order();
+
+	if (isset($sorting_state["zip"])) {
+		if ($sorting_state["zip"] == DataFormState::sorting_state_desc) {
+			usort($rows, "compare_zip_column_desc");
+		}
+		elseif ($sorting_state["zip"] == DataFormState::sorting_state_asc)
+		{
+			usort($rows, "compare_zip_column_asc");
+		}
 	}
 
 	// Make DataTable of data.  Note the table name which is required when having two or more tables!
-	$table = DataTableBuilder::create()->table_name($table_name)->columns($columns)->
-		rows($rows)->empty_message("No zip codes selected!")->build();
+	$table = DataTableBuilder::create()
+		->table_name($table_name)
+		->columns($columns)
+		->rows($rows)
+		->empty_message("No zip codes selected!")
+		->settings($settings)
+		->build();
 	return $table;
+}
+
+/**
+ * @param $zip_state DataFormState
+ * @param $city_state DataFormState
+ * @param $current_state DataFormState
+ * @return DataForm
+ * @throws Exception
+ */
+function make_form($zip_state, $city_state, $current_state) {
+
+	// create DataTables from DataFormState data
+	$zip_table = make_zip_table($zip_state, $current_state);
+	$city_table = make_city_table($city_state);
+	// create a DataForm with both DataTables
+
+
+	$form = DataFormBuilder::create("results")
+		->tables(array($zip_table, $city_table))
+		->remote("multi_step_selection_3.php")
+		->forwarded_state(array($zip_state, $city_state))
+		->build();
+	return $form;
 }
 
 try {
@@ -118,22 +170,27 @@ try {
 	$zip_code_state = new DataFormState("select_zipcodes", $_GET, $current_state);
 	$city_state = new DataFormState("select_cities", $_GET, $zip_code_state);
 
-	// create DataTables from DataFormState data
-	$zip_table = make_zip_table($zip_code_state, $current_state);
-	$city_table = make_city_table($city_state, $current_state);
-	// create a DataForm with both DataTables
-	$form = DataFormBuilder::create("results")->tables(array($zip_table, $city_table))->
-		forwarded_state(array($current_state, $zip_code_state))->remote("multi_step_selection_3.php")->build();
+	// We can use StdoutWriter to output directly to standard output
+	// so we don't create a huge intermediate string in memory
+	$writer = new StdoutWriter();
 
 	if ($current_state->only_display_form()) {
-		echo $form->display_form($current_state);
+		try
+		{
+			$form = make_form($zip_code_state, $city_state, $current_state);
+			$form->display_form_using_writer($writer, $current_state);
+		}
+		catch (Exception $e) {
+			echo json_encode(array("error" => $e->getMessage()));
+		}
 	}
 	else
 	{
+		$form = make_form($zip_code_state, $city_state, $current_state);
 		gfy_header("Show results", "");
-		echo $form->display($current_state);
+		$form->display_using_writer($writer, $current_state);
 	}
 }
 catch (Exception $e) {
-	echo "<pre>" . $e . "</pre>";
+	echo "<pre>" . $e->getMessage() . "</pre>";
 }

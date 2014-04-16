@@ -5,25 +5,25 @@ require_once "../../../../../lib/main_lib.php";
 require_once FILE_BASE_PATH . "/www/browser/lib/data_table/data_form.php";
 
 /**
- * Infinite stream of numbers x^y where x is incremented each loop and y is a given floating point value
+ * Stream of numbers x^y where x is incremented each loop and y is a given floating point value.
  */
 class ExponentIterator implements Iterator {
 
 	/**
-	 * @var int
+	 * @var int Internal counter starting from zero
 	 */
 	protected $counter;
 	/**
-	 * @var int
+	 * @var int This plus $counter is the base of the exponent
 	 */
 	protected $start;
 
 	/**
-	 * @var float
+	 * @var float The exponent
 	 */
 	protected $exponent;
 	/**
-	 * @var int
+	 * @var int Maximum number of rows to iterate through
 	 */
 	protected $limit;
 
@@ -82,10 +82,15 @@ class ExponentIterator implements Iterator {
 /**
  * @param $state DataFormState
  * @return DataForm
+ * @throws Exception
  */
 function make_form($state) {
+	if (!($state instanceof DataFormState)) {
+		throw new Exception("state expected to be instance of DataFormState");
+	}
 	$exponent = 1.5;
 
+	// Create a couple of columns for the base and exponent
 	$columns = array(
 		DataTableColumnBuilder::create()
 			->display_header_name("x")
@@ -97,13 +102,24 @@ function make_form($state) {
 			->build()
 	);
 
+	// Add a refresh button
 	$widgets = array();
 	$widgets[] = DataTableButtonBuilder::create()
 		->text("Refresh")
 		->behavior(new DataTableBehaviorRefresh())
 		->build();
 
+	// Figure out pagination from default $settings
+	// and user provided $state
 	$pagination_info = DataFormState::make_pagination_info($state, $settings);
+
+	if ($pagination_info->get_limit() === 0) {
+		// A limit of zero means all the rows, but
+		// we have infinite rows
+		throw new Exception("Cannot view all rows of infinite data");
+	}
+
+	// Create iterator over piece of number line we want to consider
 	$rows = new ExponentIterator($pagination_info->get_offset(), $exponent, $pagination_info->get_limit());
 
 	$table = DataTableBuilder::create()

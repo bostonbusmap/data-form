@@ -29,6 +29,7 @@ class RedFormatter implements IDataTableCellFormatter {
 	}
 }
 
+// comparators to describe how to compare a row
 function compare_result_column_desc($a, $b) {
 	return $a["result"] < $b["result"];
 }
@@ -40,14 +41,25 @@ function compare_result_column_asc($a, $b) {
 /**
  * @param DataFormState $state
  * @return DataForm
+ * @throws Exception
  */
 function make_form($state) {
+	if (!($state instanceof DataFormState)) {
+		throw new Exception("state must be instance of DataFormState");
+	}
 	$this_url = "live.php";
 
 	// Make two columns: one to show numbers from 0 through 14 inclusive, and another column to show a modulo result
 	$columns = array();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Numbers")->column_key("number")->build();
-	$columns[] = DataTableColumnBuilder::create()->display_header_name("Result")->column_key("result")->sortable(true)->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Numbers")
+		->column_key("number")
+		->build();
+	$columns[] = DataTableColumnBuilder::create()
+		->display_header_name("Result")
+		->column_key("result")
+		->sortable(true)
+		->build();
 
 	// get 'factor' value which is set using the select element defined below
 	$multiplier = $state->find_item(array("factor"));
@@ -69,18 +81,35 @@ function make_form($state) {
 		$rows[] = $row;
 	}
 
+	// turn off pagination since we're not demonstrating it here
+	$settings = DataTableSettingsBuilder::create()
+		->no_pagination()
+		->build();
+
+	// Figure out sorting state given default $settings and user provided $state
+	$pagination_info = DataFormState::make_pagination_info($state, $settings);
+
+	$sorting_state = $pagination_info->get_sorting_order();
+
 	// Sort the simple data using the comparators defined above
-	if ($state->get_sorting_state("result") == DataFormState::sorting_state_asc) {
-		usort($rows, "compare_result_column_asc");
-	}
-	elseif ($state->get_sorting_state("result") == DataFormState::sorting_state_desc) {
-		usort($rows, "compare_result_column_desc");
+	if (isset($sorting_state["result"])) {
+		if ($sorting_state["result"] == DataFormState::sorting_state_asc) {
+			usort($rows, "compare_result_column_asc");
+		}
+		elseif ($sorting_state["result"] == DataFormState::sorting_state_desc) {
+			usort($rows, "compare_result_column_desc");
+		}
 	}
 
 	// Make a refresh button. This is not really necessary since refreshes happen whenever
 	// sorting links are clicked.
 	$buttons = array();
-	$buttons[] = DataTableButtonBuilder::create()->name("refresh")->text("(x * ?) % 7")->form_action($this_url)->behavior(new DataTableBehaviorRefresh())->build();
+	$buttons[] = DataTableButtonBuilder::create()
+		->name("refresh")
+		->text("(x * ?) % 7")
+		->form_action($this_url)
+		->behavior(new DataTableBehaviorRefresh())
+		->build();
 
 	// Make select element which will become 'multiplication[factor]' field
 
@@ -92,27 +121,45 @@ function make_form($state) {
 	$options[] = new DataTableOption("5", "5");
 
 	// Make the select element
-	$buttons[] = DataTableOptionsBuilder::create()->options($options)->name("factor")->form_action($this_url)->behavior(new DataTableBehaviorRefresh())->build();
+	$buttons[] = DataTableOptionsBuilder::create()
+		->options($options)
+		->name("factor")
+		->form_action($this_url)
+		->behavior(new DataTableBehaviorRefresh())
+		->build();
 
 	// Create the DataTable, then the DataForm with the DataTable in it
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->build();
-	$form = DataFormBuilder::create($state->get_form_name())->tables(array($table))->remote($this_url)->build();
+	$table = DataTableBuilder::create()
+		->columns($columns)
+		->rows($rows)
+		->widgets($buttons)
+		->build();
+	$form = DataFormBuilder::create($state->get_form_name())
+		->tables(array($table))
+		->remote($this_url)
+		->build();
 	return $form;
 }
 
 try {
 	// $state contains our form state which contains sorting information and all our fields
 	$state = new DataFormState("multiplication", $_GET);
-	$form = make_form($state);
 	if ($state->only_display_form()) {
-		echo $form->display_form($state);
+		try {
+			$form = make_form($state);
+			echo $form->display_form($state);
+		}
+		catch (Exception $e) {
+			echo json_encode(array("error" => $e->getMessage()));
+		}
 	}
 	else
 	{
+		$form = make_form($state);
 		gfy_header("Simple table example", "");
 		echo $form->display($state);
 	}
 }
 catch (Exception $e) {
-	echo "<pre>" . $e . "</pre>";
+	echo "<pre>" . $e->getMessage() . "</pre>";
 }
