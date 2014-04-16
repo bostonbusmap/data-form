@@ -80,8 +80,23 @@ function make_form($state) {
 	// in PHP 5.3 we can replace this with something like
 	//   array_filter($rows, function($row) { return($row["weight"] < $value });
 	$indexes_to_remove = array();
-	$bird_search = $state->get_searching_state("bird");
-	if ($bird_search) {
+
+	// Don't allow pagination since this example isn't showing it off
+	$settings = DataTableSettingsBuilder::create()
+		->no_pagination()
+		->build();
+
+	// figure out our filtering, pagination, and sorting settings given
+	// the default settings in $settings and the user-specified parameters
+	// in $state
+	$pagination_info = DataFormState::make_pagination_info($state, $settings);
+
+	// If user wrote anything in filtering textboxes, remove the rows that don't match
+	$search_states = $pagination_info->get_search_states();
+
+	if (isset($search_states["bird"])) {
+		/** @var DataTableSearchState $bird_search */
+		$bird_search = $search_states["bird"];
 		if ($bird_search->get_type() === DataTableSearchState::like) {
 			$params = $bird_search->get_params();
 			$value = $params[0];
@@ -101,15 +116,17 @@ function make_form($state) {
 	}
 
 	// Filter remaining rows based on bird weight
-	$weight_search = $state->get_searching_state("weight");
-	if ($weight_search) {
+	if (isset($search_states["weight"])) {
+		/** @var DataTableSearchState $weight_search */
+		$weight_search = $search_states["weight"];
 		$params = $weight_search->get_params();
 		$type = $weight_search->get_type();
 		if ($type === DataTableSearchState::less_or_equal ||
 			$type === DataTableSearchState::less_than ||
 			$type === DataTableSearchState::greater_or_equal ||
 			$type === DataTableSearchState::greater_than ||
-			$type === DataTableSearchState::equal) {
+			$type === DataTableSearchState::equal ||
+			$type === DataTableSearchState::not_equal) {
 			$value_string = $params[0];
 			if (is_numeric($value_string)) {
 				$value = (float)$value_string;
@@ -126,7 +143,10 @@ function make_form($state) {
 					if ($type === DataTableSearchState::greater_than && $row["weight"] <= $value) {
 						$indexes_to_remove[] = $i;
 					}
-					if ($type === DataTableSearchState::equal && $row["weight"] !== $value) {
+					if ($type === DataTableSearchState::equal && $row["weight"] != $value) {
+						$indexes_to_remove[] = $i;
+					}
+					if ($type === DataTableSearchState::not_equal && $row["weight"] == $value) {
 						$indexes_to_remove[] = $i;
 					}
 				}
@@ -140,21 +160,36 @@ function make_form($state) {
 	}
 
 	// sort remaining rows on bird name
-	if ($state->get_sorting_state("bird") == DataFormState::sorting_state_asc) {
-		usort($rows, "compare_bird_column_asc");
-	}
-	elseif ($state->get_sorting_state("bird") == DataFormState::sorting_state_desc) {
-		usort($rows, "compare_bird_column_desc");
+	$sorting_state = $pagination_info->get_sorting_order();
+	if (isset($sorting_state["bird"])) {
+		if ($sorting_state["bird"] == DataFormState::sorting_state_asc) {
+			usort($rows, "compare_bird_column_asc");
+		}
+		elseif ($sorting_state["bird"] == DataFormState::sorting_state_desc) {
+			usort($rows, "compare_bird_column_desc");
+		}
 	}
 
 	// Add refresh button. This isn't strictly necessary since you can press Enter to active search
 	$buttons = array();
-	$buttons[] = DataTableButtonBuilder::create()->text("Refresh")->name("refresh")->form_action($this_url)->
-		behavior(new DataTableBehaviorRefresh())->build();
+	$buttons[] = DataTableButtonBuilder::create()
+		->text("Refresh")
+		->name("refresh")
+		->form_action($this_url)
+		->behavior(new DataTableBehaviorRefresh())
+		->build();
 
 	// Create DataTable and DataForm
-	$table = DataTableBuilder::create()->columns($columns)->rows($rows)->widgets($buttons)->build();
-	$form = DataFormBuilder::create("searchable")->tables(array($table))->remote($this_url)->build();
+	$table = DataTableBuilder::create()
+		->columns($columns)
+		->rows($rows)
+		->widgets($buttons)
+		->settings($settings)
+		->build();
+	$form = DataFormBuilder::create("searchable")
+		->tables(array($table))
+		->remote($this_url)
+		->build();
 	return $form;
 }
 
