@@ -150,7 +150,8 @@ class DataTableSearchWidgetBuilder
 			DataTableSearchState::greater_or_equal,
 			DataTableSearchState::rlike,
 			DataTableSearchState::like,
-			DataTableSearchState::in
+			DataTableSearchState::in,
+			DataTableSearchState::not_equal
 		);
 		if (!in_array($this->search_type, $valid_search_types)) {
 			throw new Exception("search_type must be a string, one of the constants defined in DataTableSearchState");

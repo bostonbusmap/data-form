@@ -43,8 +43,9 @@ class TextboxSearchFormatter implements IDataTableSearchFormatter {
 		if ($type !== DataTableSearchState::like &&
 			$type !== DataTableSearchState::rlike &&
 			$type !== DataTableSearchState::equal &&
-			$type !== DataTableSearchState::in) {
-			throw new Exception("This search formatter only supports LIKE, RLIKE, EQUAL and IN searches");
+			$type !== DataTableSearchState::in &&
+			$type !== DataTableSearchState::not_equal) {
+			throw new Exception("This search formatter only supports LIKE, RLIKE, EQUAL, IN, and NOT EQUAL searches");
 		}
 		$this->type = $type;
 	}
@@ -96,6 +97,7 @@ class NumericalSearchFormatter implements IDataTableSearchFormatter {
 		$options[DataTableSearchState::greater_than] = new DataTableOption(">", DataTableSearchState::greater_than);
 		$options[DataTableSearchState::greater_or_equal] = new DataTableOption(">=", DataTableSearchState::greater_or_equal);
 		$options[DataTableSearchState::equal] = new DataTableOption("=", DataTableSearchState::equal);
+		$options[DataTableSearchState::not_equal] = new DataTableOption("!=", DataTableSearchState::not_equal);
 
 		$searching_state_key = DataFormState::get_searching_state_key($table_name);
 		$type_key = array_merge($searching_state_key, array($column_key, DataTableSearchState::type_key));

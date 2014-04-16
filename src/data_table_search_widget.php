@@ -57,6 +57,7 @@ class DataTableSearchWidget implements IDataTableWidget {
 			case DataTableSearchState::less_than:
 			case DataTableSearchState::less_or_equal:
 			case DataTableSearchState::equal:
+			case DataTableSearchState::not_equal:
 				$this->formatter = new NumericalSearchFormatter();
 				break;
 			default:

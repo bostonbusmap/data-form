@@ -203,7 +203,8 @@ class ArrayManager implements IPaginator {
 				$type === DataTableSearchState::greater_than ||
 				$type === DataTableSearchState::greater_or_equal ||
 				$type === DataTableSearchState::equal ||
-				$type === DataTableSearchState::in
+				$type === DataTableSearchState::in ||
+				$type === DataTableSearchState::not_equal
 			) {
 				$value = $params[0];
 				// TODO: check is_numeric for numeric comparisons
@@ -248,6 +249,10 @@ class ArrayManager implements IPaginator {
 							}
 						}
 						if (!$in) {
+							return false;
+						}
+					} elseif ($type === DataTableSearchState::not_equal) {
+						if ($cell == $value) {
 							return false;
 						}
 					} else {

@@ -405,7 +405,8 @@ class FilterTreeTransform  implements ISQLTreeTransform
 					$type === DataTableSearchState::greater_than ||
 					$type === DataTableSearchState::greater_or_equal ||
 					$type === DataTableSearchState::equal ||
-					$type === DataTableSearchState::in
+					$type === DataTableSearchState::in ||
+					$type === DataTableSearchState::not_equal
 				) {
 					$escaped_value = gfy_db::escape_string($params[0]);
 					// TODO: check is_numeric for numeric comparisons
@@ -431,6 +432,12 @@ class FilterTreeTransform  implements ISQLTreeTransform
 							}
 						} elseif ($type === DataTableSearchState::in) {
 							$phrase = " $column_base_expr IN ($escaped_value) ";
+						} elseif ($type === DataTableSearchState::not_equal) {
+							if (is_numeric($escaped_value)) {
+								$phrase = " $column_base_expr != $escaped_value ";
+							} else {
+								$phrase = " $column_base_expr != '$escaped_value' ";
+							}
 						} else {
 							throw new Exception("Unimplemented for search type " . $type);
 						}

@@ -37,7 +37,12 @@ class DataTableSearchState {
 	const greater_or_equal = ">=";
 	/** Filter to display numbers equal to number specified */
 	const equal = "=";
+	/** Filter to display items which match any item in a comma delimited piece of text */
 	const in = "IN";
+	/**
+	 * Filter to display items which are not equal to a particular item. Blank means show all items
+	 */
+	const not_equal = "!=";
 
 	/**
 	 * Field specifying type of search
@@ -79,7 +84,8 @@ class DataTableSearchState {
 			$type === self::greater_or_equal ||
 			$type === self::less_than ||
 			$type === self::less_or_equal ||
-			$type === self::in) {
+			$type === self::in ||
+			$type === self::not_equal) {
 			if (count($params) !== 1) {
 				throw new Exception("$type must have one parameter");
 			}
