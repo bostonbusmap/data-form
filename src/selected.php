@@ -18,7 +18,7 @@ class Selected {
 	protected $selected;
 
 	/**
-	 * @param $thing object Something representable as a string
+	 * @param $thing mixed Something representable as a string
 	 * @param $selected bool Is it selected?
 	 * @throws Exception
 	 */
