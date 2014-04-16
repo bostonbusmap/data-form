@@ -33,6 +33,13 @@ class DataTableSettings {
 	protected $filtering;
 
 	/**
+	 * Turn off pagination if true
+	 *
+	 * @var bool
+	 */
+	protected $no_pagination;
+
+	/**
 	 * Use DataTableSettingsBuilder::build()
 	 *
 	 * @param $builder DataTableSettingsBuilder
@@ -47,6 +54,7 @@ class DataTableSettings {
 		$this->limit_options = $builder->get_limit_options();
 		$this->sorting = $builder->get_sorting();
 		$this->filtering = $builder->get_filtering();
+		$this->no_pagination = $builder->get_no_pagination();
 	}
 
 	/**
@@ -65,6 +73,7 @@ class DataTableSettings {
 		foreach ($this->filtering as $key => $value) {
 			$builder->filter_by($key, $value);
 		}
+		$builder->no_pagination($this->no_pagination);
 
 		return $builder;
 	}
@@ -245,13 +254,12 @@ class DataTableSettings {
 	}
 
 	/**
-	 * Did user set any of the pagination settings, indicating that they want pagination?
+	 * Did user indicate that they want pagination?
 	 * @return bool
 	 */
 	public function uses_pagination()
 	{
-		// TODO: provide option to disable pagination
-		return true;
+		return !$this->no_pagination;
 	}
 
 	/**

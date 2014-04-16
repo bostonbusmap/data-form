@@ -30,6 +30,10 @@ class DataTableSettingsBuilder
 	 * @var DataTableSearchState[] mapping of column_key to search phrase
 	 */
 	protected $filtering;
+	/**
+	 * @var bool
+	 */
+	protected $no_pagination;
 
 	public function __construct() {
 		$this->sorting = array();
@@ -104,6 +108,17 @@ class DataTableSettingsBuilder
 	}
 
 	/**
+	 * Disable pagination?
+	 *
+	 * @param bool $no_pagination
+	 * @return DataTableSettingsBuilder
+	 */
+	public function no_pagination($no_pagination = true) {
+		$this->no_pagination = $no_pagination;
+		return $this;
+	}
+
+	/**
 	 * @return int Default number of rows per page
 	 */
 	public function get_default_limit()
@@ -141,6 +156,13 @@ class DataTableSettingsBuilder
 	public function get_filtering()
 	{
 		return $this->filtering;
+	}
+
+	/**
+	 * @return bool Disable pagination?
+	 */
+	public function get_no_pagination() {
+		return $this->no_pagination;
 	}
 
 	/**
@@ -213,6 +235,13 @@ class DataTableSettingsBuilder
 			if (!($v instanceof DataTableSearchState)) {
 				throw new Exception("filtering values must be instances of DataTableSearchState");
 			}
+		}
+
+		if ($this->no_pagination === null) {
+			$this->no_pagination = false;
+		}
+		if (!is_bool($this->no_pagination)) {
+			throw new Exception("no_pagination expected to be a bool");
 		}
 
 		return new DataTableSettings($this);
