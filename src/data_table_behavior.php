@@ -179,16 +179,21 @@ class DataTableBehaviorRefreshSaveAs implements IDataTableBehavior
 {
 	/** @var string  */
 	protected $mime_type;
+	/** @var  string */
+	protected $output_filename;
 	/** @var array */
 	protected $extra_params;
 
-	public function __construct($mime_type = "application/octet-stream", $extra_params = array())
+	public function __construct($mime_type = "application/octet-stream", $extra_params = array(), $output_filename = "out.raw")
 	{
-		if (!is_string($mime_type)) {
+		if (!is_string($mime_type) || trim($mime_type) === "") {
 			throw new Exception("mime-type must be a string");
 		}
 		if (!is_array($extra_params)) {
 			throw new Exception("params must be in an array");
+		}
+		if (!is_string($output_filename) || trim($output_filename) === "") {
+			throw new Exception("output_filename must be a non-empty string");
 		}
 		foreach ($extra_params as $k => $v) {
 			if (!is_string($k) || trim($k) === "") {
@@ -197,6 +202,7 @@ class DataTableBehaviorRefreshSaveAs implements IDataTableBehavior
 		}
 		$this->mime_type = $mime_type;
 		$this->extra_params = $extra_params;
+		$this->output_filename = $output_filename;
 	}
 
 	function action($form_name, $form_action, $form_method)
@@ -218,7 +224,8 @@ class DataTableBehaviorRefreshSaveAs implements IDataTableBehavior
 			"form_method" => $form_method,
 			"form_name" => $form_name,
 			"flash_name" => $flash_name,
-			"params" => $params
+			"params" => $params,
+			"output_filename" => $this->output_filename
 		);
 
 		return 'return DataForm.refreshSaveAs(this, event, ' . json_encode($options) . ');';
