@@ -231,7 +231,7 @@ class DataTable
 		$writer->write($this->display_table_header($form_name, $form_method, $remote_url, $state));
 
 		// write data
-		$this->display_table_body($form_name, $form_method, $state, $writer);
+		$this->display_table_body($form_name, $form_method, $remote_url, $state, $writer);
 		$writer->write($this->display_table_footer($form_name, $form_method, $remote_url, $state));
 		$writer->write("</table>");
 
@@ -454,12 +454,13 @@ class DataTable
 	 *
 	 * @param $form_name string Name of form
 	 * @param $form_method string GET or POST
+	 * @param $remote_url string|bool The refresh url of the form, or false if local
 	 * @param $state DataFormState State of form
 	 * @param $writer IWriter Writer to output HTML to
 	 * @return void
 	 * @throws Exception
 	 */
-	public function display_table_body($form_name, $form_method, $state, $writer)
+	protected function display_table_body($form_name, $form_method, $remote_url, $state, $writer)
 	{
 		$writer->write("<tbody>");
 
@@ -488,7 +489,7 @@ class DataTable
 			if (!is_array($row)) {
 				throw new Exception("Each row in rows expected to be an array");
 			}
-			if ($row_count >= $max_rows) {
+			if ($remote_url && !$settings->get_no_pagination() && $row_count >= $max_rows) {
 				// The person creating the iterator must do the work of truncating it themselves
 				throw new Exception("Exceeded permitted row count");
 			}

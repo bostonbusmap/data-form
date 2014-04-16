@@ -300,5 +300,12 @@ class DataTableSettings {
 		return $this->filtering;
 	}
 
-
+	/**
+	 * Is pagination disabled?
+	 *
+	 * @return bool
+	 */
+	public function get_no_pagination() {
+		return $this->no_pagination;
+	}
 }
