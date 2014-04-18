@@ -49,9 +49,10 @@ class DataTableHidden implements IDataTableWidget {
 	 * @param $state DataFormState State of form
 	 * @param $name_array string[] Array of names which will become the field name, like form_name[a1][a2][a3]...
 	 * @param $default_value string Value if no value in state
+	 * @param $class string Optional class attribute
 	 * @return string HTML
 	 */
-	public static function display_hidden($form_name, $state, $name_array, $default_value) {
+	public static function display_hidden($form_name, $state, $name_array, $default_value, $class = "") {
 		$qualified_name = DataFormState::make_field_name($form_name, $name_array);
 
 		// NOTE: if something uses Javascript to update a hidden field, we would need
@@ -59,7 +60,7 @@ class DataTableHidden implements IDataTableWidget {
 		// instead of what's in $state
 		$value = $default_value;
 
-		$ret = '<input type="hidden" id="' . htmlspecialchars($qualified_name) . '" name="' . htmlspecialchars($qualified_name) . '" value="' . htmlspecialchars($value) . '" />';
+		$ret = '<input type="hidden" class="' . htmlspecialchars($class) . '" id="' . htmlspecialchars($qualified_name) . '" name="' . htmlspecialchars($qualified_name) . '" value="' . htmlspecialchars($value) . '" />';
 		return $ret;
 	}
 

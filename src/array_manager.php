@@ -291,21 +291,14 @@ class ArrayManager implements IPaginator {
 	 */
 	protected static function sort($array, $pagination_info)
 	{
-		$sorting_data = $pagination_info->get_sorting_order();
-		foreach ($sorting_data as $column_key => $value) {
-			if (is_string($value)) {
-				if ($value == DataFormState::sorting_state_desc ||
-					$value == DataFormState::sorting_state_asc
-				) {
-					// create new ORDER clause
-
-					$sorter = new ArraySorter($column_key, $value == DataFormState::sorting_state_asc);
-					usort($array, array($sorter, 'sort'));
-				} elseif ($value) {
-					throw new Exception("Unexpected sorting value received: '$value'");
-				}
-			} else {
-				throw new Exception("sorting value should be a string");
+		$sorting_data = $pagination_info->get_sorting_states();
+		foreach ($sorting_data as $column_key => $sorting_state) {
+			if (!($sorting_state instanceof DataTableSortingState)) {
+				throw new Exception("sorting value should be instance of DataTableSortingState");
+			}
+			if ($sorting_state->get_direction() !== DataTableSortingState::sort_order_default) {
+				$sorter = new ArraySorter($column_key, $sorting_state);
+				usort($array, array($sorter, 'sort'));
 			}
 		}
 		return $array;
@@ -340,24 +333,24 @@ class ArraySorter {
 	/** @var  string */
 	protected $column_key;
 	/**
-	 * @var bool
+	 * @var DataTableSortingState
 	 */
-	protected $is_asc;
+	protected $sorting_state;
 
 	/**
 	 * @param $column_key string
-	 * @param $is_asc bool
+	 * @param $sorting_state DataTableSortingState
 	 * @throws Exception
 	 */
-	public function __construct($column_key, $is_asc) {
+	public function __construct($column_key, $sorting_state) {
 		if (!is_string($column_key)) {
 			throw new Exception("column_key must be a string");
 		}
-		if (!is_bool($is_asc)) {
+		if (!($sorting_state instanceof DataTableSortingState)) {
 			throw new Exception("is_asc must be a bool");
 		}
 		$this->column_key = $column_key;
-		$this->is_asc = $is_asc;
+		$this->sorting_state = $sorting_state;
 	}
 
 	/**
@@ -366,8 +359,17 @@ class ArraySorter {
 	 * @return int
 	 */
 	public function sort($a, $b) {
+		$type = $this->sorting_state->get_type();
 		$a_value = $a[$this->column_key];
 		$b_value = $b[$this->column_key];
+		if ($type === DataTableSortingState::sort_type_numeric) {
+			$a_value = (float)$a_value;
+			$b_value = (float)$b_value;
+		}
+		elseif ($type === DataTableSortingState::sort_type_text) {
+			$a_value = (string)$a_value;
+			$b_value = (string)$b_value;
+		}
 
 		if ($a_value < $b_value) {
 			$ret = -1;
@@ -379,7 +381,7 @@ class ArraySorter {
 		{
 			$ret = 1;
 		}
-		if (!$this->is_asc) {
+		if ($this->sorting_state->get_direction() === DataTableSortingState::sort_order_desc) {
 			$ret *= -1;
 		}
 		return $ret;

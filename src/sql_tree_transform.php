@@ -244,29 +244,37 @@ class SortTreeTransform  implements ISQLTreeTransform
 	{
 		$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
 		$ret = "";
-		$sorting_data = $pagination_info->get_sorting_order();
-		foreach ($sorting_data as $column_key => $value) {
-			if (is_string($value)) {
-				if ($value == DataFormState::sorting_state_desc ||
-					$value == DataFormState::sorting_state_asc
-				) {
-					// create new ORDER clause
+		$sorting_data = $pagination_info->get_sorting_states();
+		foreach ($sorting_data as $column_key => $column_sorting_state) {
+			/** @var DataTableSortingState $column_sorting_state */
+			$direction = $column_sorting_state->get_direction();
+			$type = $column_sorting_state->get_type();
+			if ($direction == DataTableSortingState::sort_order_desc ||
+				$direction == DataTableSortingState::sort_order_asc
+			) {
+				// create new ORDER clause
 
-					// TODO: proper handling of quotes such that something like
-					// `table`.`column` and `name with spaces` are handled correctly
-					// and consistently
-					if (strpos($column_key, ".") === false) {
-						$quoted_column_key = "`$column_key`";
-					} else {
-						$quoted_column_key = $column_key;
-					}
-
-					$ret .= " " . $quoted_column_key . " " . $value;
-				} elseif ($value) {
-					throw new Exception("Unexpected sorting value received: '$value'");
+				// TODO: proper handling of quotes such that something like
+				// `table`.`column` and `name with spaces` are handled correctly
+				// and consistently
+				if (strpos($column_key, ".") === false) {
+					$quoted_column_key = "`$column_key`";
+				} else {
+					$quoted_column_key = $column_key;
 				}
-			} else {
-				throw new Exception("sorting value should be a string");
+
+				if ($type === DataTableSortingState::sort_type_numeric) {
+					$ret .= " CAST(" . $quoted_column_key . " AS DECIMAL(30,15)) " . $direction;
+				}
+				elseif ($type === DataTableSortingState::sort_type_text) {
+					$ret .= " CAST(" . $quoted_column_key . " AS TEXT) " . $direction;
+				}
+				else
+				{
+					$ret .= " " . $quoted_column_key . " " . $direction;
+				}
+			} elseif ($direction !== DataTableSortingState::sort_order_default) {
+				throw new Exception("Unexpected sorting value received: '$direction'");
 			}
 		}
 		return $ret;

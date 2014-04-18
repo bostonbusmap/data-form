@@ -104,13 +104,21 @@ function make_form($state) {
 		$end = $total_count;
 	}
 
-	$sorting_state = $pagination_info->get_sorting_order();
+	$sorting_state = $pagination_info->get_sorting_states();
 
 	// now that we have start and end numbers, create some data. Make it sorted if necessary
 	$rows = array();
 	for ($i = $start; $i < $end; $i++) {
-		if (array_key_exists("number", $sorting_state) && $sorting_state["number"] == DataFormState::sorting_state_desc) {
-			$rows[] = array("number" => $total_count - $i - 1);
+		if (array_key_exists("number", $sorting_state)) {
+			/** @var DataTableSortingState $column_sorting_state */
+			$column_sorting_state = $sorting_state["number"];
+			if ($column_sorting_state->get_direction() === DataTableSortingState::sort_order_desc) {
+				$rows[] = array("number" => $total_count - $i - 1);
+			}
+			else
+			{
+				$rows[] = array("number" => $i);
+			}
 		}
 		else
 		{

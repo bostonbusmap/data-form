@@ -89,14 +89,16 @@ function make_form($state) {
 	// Figure out sorting state given default $settings and user provided $state
 	$pagination_info = DataFormState::make_pagination_info($state, $settings);
 
-	$sorting_state = $pagination_info->get_sorting_order();
+	$sorting_state = $pagination_info->get_sorting_states();
 
 	// Sort the simple data using the comparators defined above
 	if (isset($sorting_state["result"])) {
-		if ($sorting_state["result"] == DataFormState::sorting_state_asc) {
+		/** @var DataTableSortingState $column_sorting_state */
+		$column_sorting_state = $sorting_state["result"];
+		if ($column_sorting_state->get_direction() === DataTableSortingState::sort_order_asc) {
 			usort($rows, "compare_result_column_asc");
 		}
-		elseif ($sorting_state["result"] == DataFormState::sorting_state_desc) {
+		elseif ($column_sorting_state->get_direction() === DataTableSortingState::sort_order_desc) {
 			usort($rows, "compare_result_column_desc");
 		}
 	}

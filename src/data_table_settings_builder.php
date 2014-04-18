@@ -81,15 +81,15 @@ class DataTableSettingsBuilder
 	}
 
 	/**
-	 * Sort $column_key by $direction, which must be 'asc' or 'desc'
+	 * Sort $column_key in a direction and as a numeric or text type
 	 *
 	 * @param $column_key string
-	 * @param $direction string
+	 * @param $sorting_state DataTableSortingState
 	 * @return DataTableSettingsBuilder
 	 */
-	public function sort_by($column_key, $direction)
+	public function sort_by($column_key, $sorting_state)
 	{
-		$this->sorting[$column_key] = $direction;
+		$this->sorting[$column_key] = $sorting_state;
 		return $this;
 	}
 
@@ -143,7 +143,7 @@ class DataTableSettingsBuilder
 	}
 
 	/**
-	 * @return string[] mapping of column_key to sorting direction ('asc' or 'desc')
+	 * @return array mapping of column_key to DataTableSortingState
 	 */
 	public function get_sorting()
 	{
@@ -216,8 +216,8 @@ class DataTableSettingsBuilder
 			if (!is_string($k) || trim($k) === "") {
 				throw new Exception("Each column_key in sorting must be a string and must exist");
 			}
-			if ($v != DataFormState::sorting_state_asc && $v != DataFormState::sorting_state_desc) {
-				throw new Exception("Each value must be either 'asc' or 'desc'");
+			if (!($v instanceof DataTableSortingState)) {
+				throw new Exception("Each value must be instance of DataTableSortingState");
 			}
 		}
 

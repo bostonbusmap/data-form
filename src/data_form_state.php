@@ -36,8 +36,6 @@ class DataFormState
 	 * Holds ordering information for columns
 	 */
 	const sorting_state_key = "_srt";
-	const sorting_state_asc = PaginationInfo::sorting_state_asc;
-	const sorting_state_desc = PaginationInfo::sorting_state_desc;
 
 	const limit_key = "_limit";
 	const current_page_key = "_current_page";
@@ -417,11 +415,13 @@ class DataFormState
 			if (is_array($search_array)) {
 				foreach ($search_array as $column_key => $column_search_array) {
 
-					$params_key = array_merge($search_key, array($column_key, DataTableSearchState::params_key));
-					$type_key = array_merge($search_key, array($column_key, DataTableSearchState::type_key));
+					if (!array_key_exists(DataTableSearchState::params_key, $column_search_array) ||
+						!array_key_exists(DataTableSearchState::type_key, $column_search_array)) {
+						throw new Exception("Invalid search state");
+					}
 
-					$params = $state->find_item($params_key);
-					$type = $state->find_item($type_key);
+					$params = $column_search_array[DataTableSearchState::params_key];
+					$type = $column_search_array[DataTableSearchState::type_key];
 
 					$search_state = new DataTableSearchState($type, $params);
 
@@ -431,15 +431,30 @@ class DataFormState
 		}
 
 		// set default sorting terms
-		foreach ($settings->get_default_sorting() as $column_key => $direction) {
-			$builder->set_sorting_order($column_key, $direction);
+		foreach ($settings->get_default_sorting() as $column_key => $sorting_state) {
+			$builder->set_sorting_state($column_key, $sorting_state);
 		}
 
-		if ($state !== null) {
+		if ($state !== null && $state->has_item($sort_key)) {
 			$sort_array = $state->find_item($sort_key);
-			if (is_array($sort_array)) {
-				foreach ($sort_array as $column_key => $sort_direction) {
-					$builder->set_sorting_order($column_key, $sort_direction);
+			if (!is_array($sort_array)) {
+				throw new Exception("sort_array expected to be an array");
+			}
+			foreach ($sort_array as $column_key => $column_sort_array) {
+				if (is_array($column_sort_array)) {
+					if (!array_key_exists(DataTableSortingState::type_key, $column_sort_array) ||
+						!array_key_exists(DataTableSortingState::direction_key, $column_sort_array)) {
+						throw new Exception("Invalid sorting state");
+					}
+
+					$type = $column_sort_array[DataTableSortingState::type_key];
+					$direction = $column_sort_array[DataTableSortingState::direction_key];
+					$sorting_state = new DataTableSortingState($type, $direction);
+
+					$builder->set_sorting_state($column_key, $sorting_state);
+				}
+				elseif ($column_sort_array) {
+					throw new Exception("column_sort_array expected to be an array");
 				}
 			}
 		}

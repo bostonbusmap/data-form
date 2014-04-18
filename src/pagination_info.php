@@ -5,9 +5,9 @@
  */
 class PaginationInfoBuilder {
 	/**
-	 * @var array ordered mapping of column_key => asc or desc
+	 * @var array ordered mapping of column_key => DataTableSortingState
 	 */
-	protected $sorting_order;
+	protected $sorting_states;
 
 	/**
 	 * @var int|null
@@ -32,16 +32,16 @@ class PaginationInfoBuilder {
 
 	public function __construct() {
 		$this->search_states = array();
-		$this->sorting_order = array();
+		$this->sorting_states = array();
 	}
 
 	/**
 	 * @param $column_key string
-	 * @param $order string|null
+	 * @param $sorting_state DataTableSortingState
 	 * @return PaginationInfoBuilder
 	 */
-	public function set_sorting_order($column_key, $order) {
-		$this->sorting_order[$column_key] = $order;
+	public function set_sorting_state($column_key, $sorting_state) {
+		$this->sorting_states[$column_key] = $sorting_state;
 		return $this;
 	}
 
@@ -73,8 +73,8 @@ class PaginationInfoBuilder {
 		return $this;
 	}
 
-	public function get_sorting_order() {
-		return $this->sorting_order;
+	public function get_sorting_states() {
+		return $this->sorting_states;
 	}
 	public function get_limit() {
 		return $this->limit;
@@ -97,20 +97,15 @@ class PaginationInfoBuilder {
 			throw new Exception("offset must an integer");
 		}
 
-		if (!is_array($this->sorting_order)) {
+		if (!is_array($this->sorting_states)) {
 			throw new Exception("order expected to be an array");
 		}
-		foreach ($this->sorting_order as $k => $v) {
+		foreach ($this->sorting_states as $k => $v) {
 			if (!is_string($k) || trim($k) === "") {
 				throw new Exception("column_key must be a string");
 			}
-			if ($v !== null && $v !== "") {
-				$lower = strtolower($v);
-				if ($lower !== PaginationInfo::sorting_state_desc &&
-					$lower !== PaginationInfo::sorting_state_asc
-				) {
-					throw new Exception("Each value in order must be asc or desc");
-				}
+			if ($v !== null && $v !== "" && !($v instanceof DataTableSortingState)) {
+				throw new Exception("Each item must be instance of DataTableSortingState");
 			}
 		}
 		if (!is_array($this->search_states)) {
@@ -137,13 +132,13 @@ class PaginationInfoBuilder {
  * You may want to use DataFormState::make_pagination_info() to create this object
  */
 class PaginationInfo {
-	const sorting_state_desc = "desc";
-	const sorting_state_asc = "asc";
+	const sorting_state_desc = DataTableSortingState::sort_order_desc;
+	const sorting_state_asc = DataTableSortingState::sort_order_asc;
 
 	/**
-	 * @var array ordered mapping of column_key => asc or desc
+	 * @var array ordered mapping of column_key => DataTableSortingState
 	 */
-	protected $sorting_order;
+	protected $sorting_states;
 
 	/**
 	 * @var int Number of rows per page
@@ -168,7 +163,7 @@ class PaginationInfo {
 			throw new Exception("builder must be a PaginationInfoBuilder");
 		}
 
-		$this->sorting_order = $builder->get_sorting_order();
+		$this->sorting_states = $builder->get_sorting_states();
 		$this->limit = $builder->get_limit();
 		$this->offset = $builder->get_offset();
 		$this->search_states = $builder->get_search_states();
@@ -177,8 +172,8 @@ class PaginationInfo {
 	/**
 	 * @return array
 	 */
-	public function get_sorting_order() {
-		return $this->sorting_order;
+	public function get_sorting_states() {
+		return $this->sorting_states;
 	}
 
 	/**

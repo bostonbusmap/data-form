@@ -110,13 +110,15 @@ function make_zip_table($zip_state, $current_state) {
 		->build();
 
 	$pagination_info = DataFormState::make_pagination_info($current_state, $settings, $table_name);
-	$sorting_state = $pagination_info->get_sorting_order();
+	$sorting_state = $pagination_info->get_sorting_states();
 
 	if (isset($sorting_state["zip"])) {
-		if ($sorting_state["zip"] == DataFormState::sorting_state_desc) {
+		/** @var DataTableSortingState $column_sorting_state */
+		$column_sorting_state = $sorting_state["zip"];
+		if ($column_sorting_state->get_direction() === DataTableSortingState::sort_order_desc) {
 			usort($rows, "compare_zip_column_desc");
 		}
-		elseif ($sorting_state["zip"] == DataFormState::sorting_state_asc)
+		elseif ($column_sorting_state->get_direction() === DataTableSortingState::sort_order_asc)
 		{
 			usort($rows, "compare_zip_column_asc");
 		}

@@ -35,6 +35,8 @@ require_once "data_table_search_widget_builder.php";
 require_once "data_table_search_state.php";
 require_once "data_table_settings_builder.php";
 require_once "data_table_settings.php";
+require_once "data_table_sorting_state.php";
+require_once "data_table_sorting_formatter.php";
 require_once "data_table_textarea_builder.php";
 require_once "data_table_textarea.php";
 require_once "data_table_textbox_builder.php";
@@ -336,7 +338,8 @@ class DataTable
 		$settings = $this->settings;
 		$pagination_info = DataFormState::make_pagination_info($state, $settings, $this->table_name);
 
-		$old_sorting_state = $pagination_info->get_sorting_order();
+		// TODO: make this a parameter in DataTableColumn
+		$sorting_formatter = new DefaultSortingFormatter();
 
 		// write out header cells
 
@@ -352,30 +355,12 @@ class DataTable
 			// either 'numeric' or 'alphanumeric'
 			if ($column->get_sortable()) {
 				if ($remote_url) {
-					// draw sorting arrow and set hidden field
 					$ret .= '<th class="column-' . htmlspecialchars($column_key) . '">';
-					if (array_key_exists($column_key, $old_sorting_state)) {
-						// set sorting state in form
-						// Note that the code at $this->remote is responsible for reading sorting state
-						// and doing something useful with it (probably incorporating it into SQL somehow)
-						$sorting_name = DataFormState::make_field_name($form_name,
-							array_merge(
-								DataFormState::get_sorting_state_key($this->table_name),
-								array($column_key)
-							));
-						$ret .= '<input type="hidden" name="' . htmlspecialchars($sorting_name) . '" value="' . htmlspecialchars($old_sorting_state[$column_key]) . '" class="hidden_sorting" />';
-
-						if ($old_sorting_state[$column_key] == DataFormState::sorting_state_asc) {
-							$ret .= "&uarr; ";
-						}
-						elseif ($old_sorting_state[$column_key] == DataFormState::sorting_state_desc) {
-							$ret .= "&darr; ";
-						}
-					}
 				}
 				else
 				{
 					// let Javascript handle it
+					// TODO: numeric and text sorting here
 					$ret .= '<th class="column-' . htmlspecialchars($column_key) . ' table-sortable:' . htmlspecialchars($column->get_sortable()) . ' table-sortable" title="Click to sort">';
 				}
 			}
@@ -386,29 +371,27 @@ class DataTable
 			}
 
 			// If sortable, make header text a link which flips sorting
+			$header_text = $column->get_display_header($form_name, $column_key, $state);
+
 			/** @var DataTableColumn $column */
 			if ($column->get_sortable() && $remote_url) {
-				// write a link to sort in the opposite direction
-				if (array_key_exists($column_key, $old_sorting_state) &&
-					$old_sorting_state[$column_key] == DataFormState::sorting_state_desc) {
-					$new_sorting_state = DataFormState::sorting_state_asc;
-				}
-				else
-				{
-					$new_sorting_state = DataFormState::sorting_state_desc;
-				}
-				$sorting_state_name = DataFormState::make_field_name($form_name,
-					array_merge(
-						DataFormState::get_sorting_state_key($this->table_name),
-						array($column_key)
-					));
+				$sorting_state = $pagination_info->get_sorting_states();
 
-				$onclick_obj = new DataTableBehaviorClearSortThenRefresh(array($sorting_state_name => $new_sorting_state));
-				$onclick = $onclick_obj->action($form_name, $remote_url, $form_method);
-				$ret .= '<a onclick="' . htmlspecialchars($onclick) . '">';
+				$column_sort_state = null;
+				if (array_key_exists($column_key, $sorting_state)) {
+					$column_sort_state = $column_sort_state[$column_key];
+				}
+
+				$ret .= $sorting_formatter->format($form_name, $remote_url, $form_method,
+					$this->table_name, $column_key,
+					$state, $column_sort_state, $header_text);
+			}
+			else
+			{
+				$ret .= $header_text;
 			}
 			// display special header cell if specified
-			$ret .= $column->get_display_header($form_name, $column_key, $state);
+
 			if ($column->get_sortable() && $remote_url) {
 				$ret .= "</a>";
 			}

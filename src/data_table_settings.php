@@ -23,7 +23,7 @@ class DataTableSettings {
 	protected $limit_options;
 
 	/**
-	 * @var string[] mapping of column_key to sorting direction ('asc' or 'desc')
+	 * @var array mapping of column_key to DataTableSortingState
 	 */
 	protected $sorting;
 
@@ -284,7 +284,7 @@ class DataTableSettings {
 	/**
 	 * Columns which are sorted by default, and how
 	 *
-	 * @return string[] Map of column_key to either 'asc' or 'desc'
+	 * @return array Map of column_key to DataTableSortingState
 	 */
 	public function get_default_sorting()
 	{

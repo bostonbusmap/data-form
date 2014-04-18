@@ -82,14 +82,16 @@ function make_form($prev_state, $current_state) {
 
 	// Note that $settings would have been created here with default values if it didn't already exist.
 	$pagination_info = DataFormState::make_pagination_info($current_state, $settings);
-	$current_sorting_state = $pagination_info->get_sorting_order();
+	$current_sorting_state = $pagination_info->get_sorting_states();
 
 	// sort zip codes
 	if (isset($current_sorting_state["zip"])) {
-		if ($current_sorting_state["zip"] == DataFormState::sorting_state_desc) {
+		/** @var DataTableSortingState $column_sorting_state */
+		$column_sorting_state = $current_sorting_state["zip"];
+		if ($column_sorting_state->get_direction() == DataTableSortingState::sort_order_desc) {
 			usort($rows, "compare_zip_column_desc");
 		}
-		elseif ($current_sorting_state["zip"] == DataFormState::sorting_state_asc)
+		elseif ($column_sorting_state->get_direction() == DataTableSortingState::sort_order_asc)
 		{
 			usort($rows, "compare_zip_column_asc");
 		}
