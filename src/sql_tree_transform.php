@@ -267,7 +267,7 @@ class SortTreeTransform  implements ISQLTreeTransform
 					$ret .= " CAST(" . $quoted_column_key . " AS DECIMAL(30,15)) " . $direction;
 				}
 				elseif ($type === DataTableSortingState::sort_type_text) {
-					$ret .= " CAST(" . $quoted_column_key . " AS TEXT) " . $direction;
+					$ret .= " CAST(" . $quoted_column_key . " AS CHARACTER) " . $direction;
 				}
 				else
 				{
