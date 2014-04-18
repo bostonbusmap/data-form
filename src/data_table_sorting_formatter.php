@@ -49,7 +49,7 @@ class DefaultSortingFormatter implements IDataTableSortingFormatter {
 		$type_key = array_merge($sorting_state_column_key, array(DataTableSortingState::type_key));
 		$direction_key = array_merge($sorting_state_column_key, array(DataTableSortingState::direction_key));
 
-		$ret = DataTableHidden::display_hidden($form_name, $state, $type_key, $value->get_type(), "hidden_sorting");
+		$ret = DataTableHidden::display_hidden($form_name, $state, $type_key, $value->get_type());
 		$ret .= DataTableHidden::display_hidden($form_name, $state, $direction_key, $value->get_direction(), "hidden_sorting");
 
 		if ($value->get_direction() === DataTableSortingState::sort_order_asc) {
