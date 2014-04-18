@@ -379,7 +379,7 @@ class DataTable
 
 				$column_sort_state = null;
 				if (array_key_exists($column_key, $sorting_state)) {
-					$column_sort_state = $column_sort_state[$column_key];
+					$column_sort_state = $sorting_state[$column_key];
 				}
 
 				$ret .= $sorting_formatter->format($form_name, $remote_url, $form_method,
