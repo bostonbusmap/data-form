@@ -217,7 +217,14 @@ class DataTable
 					{
 						$selected_items_count = 0;
 					}
-					$selected_items_header = "<div style=\"text-align: left\">Selected items: " . $selected_items_count . "</div>";
+
+					if ($this->settings->get_total_rows() === null) {
+						$selected_items_header = "<div style=\"text-align: left\">Selected items: " . $selected_items_count . "</div>";
+					}
+					else
+					{
+						$selected_items_header = "<div style=\"text-align: left\">Selected items: " . $selected_items_count . " out of " . $this->settings->get_total_rows() . "</div>";
+					}
 					$writer->write($selected_items_header);
 				}
 			}
