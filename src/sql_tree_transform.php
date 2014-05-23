@@ -262,9 +262,10 @@ class SortTreeTransform  implements ISQLTreeTransform
 				} else {
 					$quoted_column_key = $column_key;
 				}
-
+				
+				// subtract 0.0 to cast to float
 				if ($type === DataTableSortingState::sort_type_numeric) {
-					$ret .= " CAST(" . $quoted_column_key . " AS DECIMAL(30,15)) " . $direction;
+					$ret .= " (" . $quoted_column_key . ")-0.0 " . $direction;
 				}
 				elseif ($type === DataTableSortingState::sort_type_text) {
 					$ret .= " CAST(" . $quoted_column_key . " AS CHARACTER) " . $direction;
@@ -324,8 +325,9 @@ class FilterTreeTransform  implements ISQLTreeTransform
 			foreach ($select as $select_item) {
 				if (array_key_exists("alias", $select_item)) {
 					$alias = $select_item["alias"];
-					if (is_array($alias) && array_key_exists("no_quotes", $alias)) {
-						$no_quotes = $alias["no_quotes"];
+					if (is_array($alias) && array_key_exists("no_quotes", $alias) &&
+						array_key_exists("parts", $alias["no_quotes"]) && count($alias["no_quotes"]["parts"]) > 0) {
+						$no_quotes = $alias["no_quotes"]["parts"][0];
 
 						$fake_tree["SELECT"][0] = $select_item;
 						$fake_tree["SELECT"][0]["delim"] = "";
@@ -419,19 +421,20 @@ class FilterTreeTransform  implements ISQLTreeTransform
 					$escaped_value = gfy_db::escape_string($params[0]);
 					// TODO: check is_numeric for numeric comparisons
 					if ($escaped_value !== "") {
+						// subtract 0.0 to convert to float
 						if ($type === DataTableSearchState::like) {
 							$like_escaped_value = escape_like_parameter($escaped_value);
 							$phrase = " $column_base_expr LIKE '%$like_escaped_value%' ESCAPE '\\\\' ";
 						} elseif ($type === DataTableSearchState::rlike) {
 							$phrase = " $column_base_expr RLIKE '$escaped_value' ";
 						} elseif ($type === DataTableSearchState::less_than) {
-							$phrase = " CAST($column_base_expr AS DECIMAL(30,15)) < $escaped_value ";
+							$phrase = " ($column_base_expr)-0.0 < $escaped_value ";
 						} elseif ($type === DataTableSearchState::less_or_equal) {
-							$phrase = " CAST($column_base_expr AS DECIMAL(30,15))  <= $escaped_value ";
+							$phrase = " ($column_base_expr)-0.0  <= $escaped_value ";
 						} elseif ($type === DataTableSearchState::greater_than) {
-							$phrase = " CAST($column_base_expr AS DECIMAL(30,15))  > $escaped_value ";
+							$phrase = " ($column_base_expr)-0.0  > $escaped_value ";
 						} elseif ($type === DataTableSearchState::greater_or_equal) {
-							$phrase = " CAST($column_base_expr AS DECIMAL(30,15))  >= $escaped_value ";
+							$phrase = " ($column_base_expr)-0.0  >= $escaped_value ";
 						} elseif ($type === DataTableSearchState::equal) {
 							if (is_numeric($escaped_value)) {
 								$phrase = " $column_base_expr = $escaped_value ";
