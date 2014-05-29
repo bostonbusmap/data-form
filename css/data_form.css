@@ -19,11 +19,11 @@
 }
 
 .data-form .row-even {
-    background-color: rgb(242, 250, 255);
+    background-color: rgba(242, 250, 255, 0.8);
 }
 
 .data-form .row-odd {
-    background-color: rgb(226, 236, 255);
+    background-color: rgba(226, 236, 255, 0.8);
 }
 
 /* styling filtering textboxes */
