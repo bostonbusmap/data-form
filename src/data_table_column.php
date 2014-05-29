@@ -98,6 +98,11 @@ class DataTableColumn {
 	protected $column_key;
 
 	/**
+	 * @var string CSS class to apply to each cell in the column, if any
+	 */
+	protected $css_class;
+
+	/**
 	 * Use DataTableColumnBuilder::build()
 	 *
 	 * @param $builder DataTableColumnBuilder
@@ -116,6 +121,7 @@ class DataTableColumn {
 		$this->display_header_name = $builder->get_display_header_name();
 		$this->display_footer_name = $builder->get_display_footer_name();
 		$this->column_key = $builder->get_column_key();
+		$this->css_class = $builder->get_css_class();
 	}
 
 	/**
@@ -187,5 +193,14 @@ class DataTableColumn {
 	 */
 	public function get_column_key() {
 		return $this->column_key;
+	}
+
+	/**
+	 * A css class to apply to each row in the column, if any
+	 *
+	 * @return string
+	 */
+	public function get_css_class() {
+		return $this->css_class;
 	}
 }

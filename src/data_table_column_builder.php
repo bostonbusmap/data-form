@@ -52,6 +52,11 @@ class DataTableColumnBuilder {
 	 */
 	protected $column_key;
 
+	/**
+	 * @var string CSS class for each cell in column, if any
+	 */
+	protected $css_class;
+
 	public static function create() {
 		return new DataTableColumnBuilder();
 	}
@@ -137,6 +142,15 @@ class DataTableColumnBuilder {
 		return $this;
 	}
 
+	/**
+	 * @param $css_class string
+	 * @return DataTableColumnBuilder
+	 */
+	public function css_class($css_class) {
+		$this->css_class = $css_class;
+		return $this;
+	}
+
 	public function get_header_formatter() {
 		return $this->header_formatter;
 	}
@@ -171,6 +185,10 @@ class DataTableColumnBuilder {
 
 	public function get_column_key() {
 		return $this->column_key;
+	}
+
+	public function get_css_class() {
+		return $this->css_class;
 	}
 
 	/**
@@ -246,6 +264,13 @@ class DataTableColumnBuilder {
 		}
 		if (!is_string($this->display_footer_name)) {
 			$this->display_footer_name = (string)$this->display_footer_name;
+		}
+
+		if ($this->css_class === null) {
+			$this->css_class = "";
+		}
+		if (!is_string($this->css_class)) {
+			throw new Exception("css_class must be a string");
 		}
 
 		return new DataTableColumn($this);

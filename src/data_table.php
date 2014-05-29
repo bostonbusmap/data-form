@@ -360,21 +360,27 @@ class DataTable
 			// if an AJAX form, get_sortable is treated like a boolean
 			// if a local form, get_sortable may have the string which says what kind of sorting will be done
 			// either 'numeric' or 'alphanumeric'
+
+			// TODO: Should figure out escaping of css classes.
+			$css_classes = "column-" . str_replace(" ", "-", $column_key);
+			if ($column->get_css_class() !== "") {
+				$css_classes .= " " . $column->get_css_class();
+			}
 			if ($column->get_sortable()) {
 				if ($remote_url) {
-					$ret .= '<th class="column-' . htmlspecialchars($column_key) . '">';
+					$ret .= '<th class="' . htmlspecialchars($css_classes) . '">';
 				}
 				else
 				{
 					// let Javascript handle it
 					// TODO: numeric and text sorting here
-					$ret .= '<th class="column-' . htmlspecialchars($column_key) . ' table-sortable:' . htmlspecialchars($column->get_sortable()) . ' table-sortable" title="Click to sort">';
+					$ret .= '<th class="' . htmlspecialchars($css_classes) . ' table-sortable:' . htmlspecialchars($column->get_sortable()) . ' table-sortable" title="Click to sort">';
 				}
 			}
 			else
 			{
 				// no sorting
-				$ret .= '<th class="column-' . htmlspecialchars($column_key) . '">';
+				$ret .= '<th class="' . htmlspecialchars($css_classes) . '">';
 			}
 
 			// If sortable, make header text a link which flips sorting
@@ -508,7 +514,14 @@ class DataTable
 			// if the data exists in $row
 			foreach ($this->columns as $column) {
 				$column_key = $column->get_column_key();
-				$writer->write('<td class="column-' . htmlspecialchars($column_key) . '">');
+
+				// TODO: better escaping of css classes
+				$css_classes = "column-" . str_replace(" ", "-", $column_key);
+				if ($column->get_css_class() !== "") {
+					$css_classes .= " " . $column->get_css_class();
+				}
+
+				$writer->write('<td class="' . htmlspecialchars($css_classes) . '">');
 				/** @var DataTableColumn $column */
 				if (array_key_exists($column_key, $row)) {
 					$cell = $row[$column_key];
