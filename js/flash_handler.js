@@ -49,7 +49,9 @@ var FlashHandler = (function() {
                 }
             };
 
-            return $.ajax(params);
+            $(jq(flash_name)).html('<div class="loading"><div class="spinner"><div class="mask"><div class="maskedCircle"></div></div></div></div>');
+            var ret = $.ajax(params);
+            return ret;
         }
         catch (e) {
             $(jq(flash_name)).html("<span class='error'>" + e.message + "</span>");
@@ -92,6 +94,7 @@ var FlashHandler = (function() {
                 $(jq(flash_name)).html("<span class='error'>" + json.error + "</span>");
             }
             else {
+                $(jq(flash_name)).html("");
                 return json;
             }
         }
