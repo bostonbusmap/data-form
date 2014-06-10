@@ -204,3 +204,37 @@ class DataTableColumn {
 		return $this->css_class;
 	}
 }
+
+/**
+ * Converts a callback to a IDataTableCellFormatter. Callback must have only one parameter, $column_data.
+ * If you need the other parameters you will need to implement the interface instead.
+ */
+class CallbackCellFormatter implements IDataTableCellFormatter {
+	/**
+	 * @var callable
+	 */
+	protected $callable;
+	public function __construct($callable) {
+		if (!is_callable($callable)) {
+			throw new Exception("callable must be a callable");
+		}
+
+		if ($callable instanceof Closure) {
+			// make sure there's one argument
+			$reflection = new ReflectionObject($callable);
+			if ($reflection->hasMethod('__invoke')) {
+				$method = $reflection->getMethod('__invoke');
+				if ($method->getNumberOfParameters() !== 1) {
+					throw new Exception("callable must have only one parameter");
+				}
+			}
+		}
+
+		$this->callable = $callable;
+	}
+	public function format($form_name, $column_header, $column_data, $rowid, $state)
+	{
+		$callable = $this->callable;
+		return $callable($column_data);
+	}
+}

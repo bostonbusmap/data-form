@@ -21,7 +21,7 @@ class DataTableColumnBuilder {
 	 */
 	protected $footer_formatter;
 	/**
-	 * @var IDataTableCellFormatter Callback to format cell data for display
+	 * @var IDataTableCellFormatter|callback Callback to format cell data for display
 	 */
 	protected $cell_formatter;
 	/**
@@ -80,7 +80,7 @@ class DataTableColumnBuilder {
 	}
 
 	/**
-	 * @param $cell_formatter IDataTableCellFormatter
+	 * @param $cell_formatter IDataTableCellFormatter|callback
 	 * @return DataTableColumnBuilder
 	 */
 	public function cell_formatter($cell_formatter) {
@@ -215,8 +215,11 @@ class DataTableColumnBuilder {
 		if (is_null($this->cell_formatter)) {
 			$this->cell_formatter = new DefaultCellFormatter();
 		}
+		if (is_callable($this->cell_formatter)) {
+			$this->cell_formatter = new CallbackCellFormatter($this->cell_formatter);
+		}
 		if (!($this->cell_formatter instanceof IDataTableCellFormatter)) {
-			throw new Exception("cell_formatter must be instance of IDataTableHeaderFormatter");
+			throw new Exception("cell_formatter must be instance of IDataTableCellFormatter");
 		}
 
 		if (is_null($this->sortable)) {

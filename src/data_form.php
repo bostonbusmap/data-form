@@ -203,7 +203,7 @@ class DataForm {
 		}
 
 		// flash space for messages
-		$writer->write('<div id="' . htmlspecialchars($this->form_name . "_flash") . '"></div>');
+		$writer->write('<div class="data-form-flash" id="' . htmlspecialchars($this->form_name . "_flash") . '"></div>');
 
 		// form action is set in javascript
 		$writer->write('<form accept-charset="utf-8" name="' . htmlspecialchars($this->form_name) . '" method="' . htmlspecialchars($this->method) . '">');
