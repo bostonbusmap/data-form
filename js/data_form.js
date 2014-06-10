@@ -150,7 +150,7 @@ var DataForm = (function() {
          * to first clear other sorting metadata before setting new metadata
          */
         clearSortThenRefresh : function(element, event, options) {
-            $(element).parents("form").find(".hidden_sorting").attr("value", "");
+            $(element).parents("table").find(".hidden_sorting").attr("value", "");
             return this.refresh(element, event, options);
         }
     };
