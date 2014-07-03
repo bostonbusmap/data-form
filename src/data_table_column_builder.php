@@ -13,11 +13,11 @@
  */
 class DataTableColumnBuilder {
 	/**
-	 * @var IDataTableHeaderFormatter Callback to format header data for display
+	 * @var IDataTableHeaderFormatter|callback Callback to format header data for display
 	 */
 	protected $header_formatter;
 	/**
-	 * @var IDataTableHeaderFormatter Callback to format footer data for display
+	 * @var IDataTableHeaderFormatter|callback Callback to format footer data for display
 	 */
 	protected $footer_formatter;
 	/**
@@ -62,7 +62,7 @@ class DataTableColumnBuilder {
 	}
 
 	/**
-	 * @param $header_formatter IDataTableHeaderFormatter
+	 * @param $header_formatter IDataTableHeaderFormatter|callback
 	 * @return DataTableColumnBuilder
 	 */
 	public function header_formatter($header_formatter) {
@@ -71,7 +71,7 @@ class DataTableColumnBuilder {
 	}
 
 	/**
-	 * @param $footer_formatter IDataTableHeaderFormatter
+	 * @param $footer_formatter IDataTableHeaderFormatter|callback
 	 * @return DataTableColumnBuilder
 	 */
 	public function footer_formatter($footer_formatter) {
@@ -201,12 +201,19 @@ class DataTableColumnBuilder {
 		if (is_null($this->header_formatter)) {
 			$this->header_formatter = new DefaultHeaderFormatter();
 		}
+		if (is_callable($this->header_formatter)) {
+			$this->header_formatter = new CallbackHeaderFormatter($this->header_formatter);
+		}
 		if (!($this->header_formatter instanceof IDataTableHeaderFormatter))
 		{
 			throw new Exception("header_formatter must be instance of IDataTableHeaderFormatter");
 		}
+
 		if (is_null($this->footer_formatter)) {
 			$this->footer_formatter = new DefaultHeaderFormatter();
+		}
+		if (is_callable($this->footer_formatter)) {
+			$this->footer_formatter = new CallbackHeaderFormatter($this->footer_formatter);
 		}
 		if (!($this->footer_formatter instanceof IDataTableHeaderFormatter)) {
 			throw new Exception("footer_formatter must be instance of IDataTableHeaderFormatter");

@@ -114,4 +114,15 @@ class DataTableSearchState {
 		return $this->params;
 	}
 
+	/**
+	 * @return bool Is there any search being done?
+	 */
+	function is_active() {
+		foreach ($this->params as $param) {
+			if ($param !== null && $param !== "") {
+				return true;
+			}
+		}
+		return false;
+	}
 }

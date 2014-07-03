@@ -21,17 +21,9 @@ class ArrayManager implements IPaginator {
 	/** @var  array */
 	protected $array;
 	/**
-	 * @var string
+	 * @var IPaginationInfo
 	 */
-	protected $table_name;
-	/**
-	 * @var DataFormState
-	 */
-	protected $state;
-	/**
-	 * @var DataTableSettings
-	 */
-	protected $settings;
+	protected $pagination_info;
 	/**
 	 * @var bool
 	 */
@@ -62,30 +54,8 @@ class ArrayManager implements IPaginator {
 		return new ArrayManager($array);
 	}
 
-	/**
-	 * @param $table_name string
-	 * @return ArrayManager
-	 */
-	public function table_name($table_name) {
-		$this->table_name = $table_name;
-		return $this;
-	}
-
-	/**
-	 * @param $state DataFormState
-	 * @return ArrayManager
-	 */
-	public function state($state) {
-		$this->state = $state;
-		return $this;
-	}
-
-	/**
-	 * @param $settings DataTableSettings
-	 * @return ArrayManager
-	 */
-	public function settings($settings) {
-		$this->settings = $settings;
+	public function pagination_info($pagination_info) {
+		$this->pagination_info = $pagination_info;
 		return $this;
 	}
 
@@ -103,12 +73,6 @@ class ArrayManager implements IPaginator {
 		if (!is_array($this->array)) {
 			throw new Exception("array must be an array");
 		}
-		if (is_null($this->table_name)) {
-			$this->table_name = "";
-		}
-		if (!is_string($this->table_name)) {
-			throw new Exception("table_name must be a string");
-		}
 		if ($this->ignore_pagination === null) {
 			$this->ignore_pagination = false;
 		}
@@ -123,12 +87,8 @@ class ArrayManager implements IPaginator {
 			throw new Exception("ignore_filtering must be a bool");
 		}
 
-		if ($this->state && !($this->state instanceof DataFormState)) {
-			throw new Exception("state must be instance of DataFormState");
-		}
-
-		if ($this->settings && !($this->settings instanceof DataTableSettings)) {
-			throw new Exception("settings must be DataTableSettings");
+		if (!($this->pagination_info instanceof IPaginationInfo)) {
+			throw new Exception("pagination_info must be instance of IPaginationInfo");
 		}
 	}
 	// for backwards compat
@@ -137,22 +97,12 @@ class ArrayManager implements IPaginator {
 		return array($num_rows, $array);
 	}
 
-	public function obtain_paginated_data() {
-		throw new Exception("Unimplemented for performance reasons. Use obtain_paginated_data_and_row_count() instead");
-	}
-
-	public function obtain_row_count() {
-		throw new Exception("Unimplemented for performance reasons. Use obtain_paginated_data_and_row_count() instead");
-	}
-
 	public function obtain_paginated_data_and_row_count($conn_type, $rowid_key) {
 		$this->validate_input();
 
 		$array = $this->array;
 
-		$settings = $this->settings;
-		$pagination_info = DataFormState::make_pagination_info($this->state, $settings, $this->table_name);
-
+		$pagination_info = $this->pagination_info;
 		// Order is important here
 		if (!$this->ignore_filtering) {
 			$array = self::filter($array, $pagination_info);
@@ -172,7 +122,7 @@ class ArrayManager implements IPaginator {
 
 	/**
 	 * @param $row array
-	 * @param $pagination_info PaginationInfo
+	 * @param $pagination_info IPaginationInfo
 	 * @return bool
 	 * @throws Exception
 	 */
@@ -180,7 +130,7 @@ class ArrayManager implements IPaginator {
 		if (!is_array($row)) {
 			throw new Exception("row must be an array");
 		}
-		if (!($pagination_info instanceof PaginationInfo)) {
+		if (!($pagination_info instanceof IPaginationInfo)) {
 			throw new Exception("pagination_info must be a PaginationInfo");
 		}
 		$searching_state = $pagination_info->get_search_states();
@@ -267,7 +217,7 @@ class ArrayManager implements IPaginator {
 	/**
 	 * Applies filters from $state to array and returns a copy with matched rows removed
 	 * @param $array array
-	 * @param $pagination_info PaginationInfo
+	 * @param $pagination_info IPaginationInfo
 	 * @throws Exception
 	 * @return array
 	 */
@@ -283,13 +233,13 @@ class ArrayManager implements IPaginator {
 	}
 
 	/**
-	 * Applies filters from $state to array and returns a copy with matched rows removed
+	 * Applies filters from $state to array and returns a copy with matched rows removed (NOTE: not an in place sort)
 	 * @param $array array
-	 * @param $pagination_info PaginationInfo
+	 * @param $pagination_info IPaginationInfo
 	 * @throws Exception
 	 * @return array
 	 */
-	protected static function sort($array, $pagination_info)
+	public static function sort($array, $pagination_info)
 	{
 		$sorting_data = $pagination_info->get_sorting_states();
 		foreach ($sorting_data as $column_key => $sorting_state) {
@@ -306,7 +256,7 @@ class ArrayManager implements IPaginator {
 
 	/**
 	 * @param $array array
-	 * @param $pagination_info PaginationInfo
+	 * @param $pagination_info IPaginationInfo
 	 * @param $num_rows int
 	 * @throws Exception
 	 * @return array

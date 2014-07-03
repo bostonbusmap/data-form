@@ -17,12 +17,22 @@ interface ISQLTreeTransform {
 	 * altered since arrays are passed by value, nor would we want to modify it.
 	 *
 	 * @param $input_tree array A SQL tree object produced by PHP-SQL-Parser library
-	 * @param $state DataFormState State from form
-	 * @param $settings DataTableSettings Default settings for DataTable
-	 * @param $table_name string Name of table, if any
+	 * @param $pagination_info IPaginationInfo
 	 * @return array The altered array.
 	 */
-	function alter($input_tree, $state, $settings, $table_name);
+	function alter($input_tree, $pagination_info);
+}
+
+interface ISQLTreeTransformWithCount {
+	/**
+	 * Apply the transform and return the result. Note that the original array is not
+	 * altered since arrays are passed by value, nor would we want to modify it.
+	 *
+	 * @param $input_tree array A SQL tree object produced by PHP-SQL-Parser library
+	 * @param $pagination_info_with_count PaginationInfoWithCount
+	 * @return array The altered array.
+	 */
+	function alter($input_tree, $pagination_info_with_count);
 }
 
 /**
@@ -56,7 +66,7 @@ function &find_select_root_clause(&$tree) {
  * Does no transformation, just returns input tree
  */
 class IdentityTreeTransform implements ISQLTreeTransform {
-	function alter($input_tree, $state, $settings, $table_name)
+	function alter($input_tree, $pagination_info)
 	{
 		return $input_tree;
 	}
@@ -65,7 +75,7 @@ class IdentityTreeTransform implements ISQLTreeTransform {
 /**
  * Paginate on a column value
  */
-class WherePaginationTreeTransform implements ISQLTreeTransform {
+class WherePaginationTreeTransform implements ISQLTreeTransformWithCount {
 	/**
 	 * @var string
 	 */
@@ -77,12 +87,10 @@ class WherePaginationTreeTransform implements ISQLTreeTransform {
 		$this->column_key = $column_key;
 	}
 
-	function alter($input_tree, $state, $settings, $table_name)
+	function alter($input_tree, $pagination_info)
 	{
-		$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
-
 		$limit = $pagination_info->get_limit();
-		$current_page = $pagination_info->calculate_current_page($settings->get_total_rows());
+		$current_page = $pagination_info->calculate_current_page($pagination_info->get_row_count());
 		if ($limit !== 0) {
 
 			$offset = $current_page * $limit;
@@ -117,22 +125,22 @@ class WherePaginationTreeTransform implements ISQLTreeTransform {
 /**
  * Add LIMIT and OFFSET clauses given pagination state and settings
  */
-class LimitPaginationTreeTransform implements ISQLTreeTransform
+class LimitPaginationTreeTransform implements ISQLTreeTransformWithCount
 {
 	/**
-	 * @param $state DataFormState
-	 * @param $settings DataTableSettings
-	 * @param $table_name string
+	 * @param $pagination_info PaginationInfoWithCount
 	 * @throws Exception
 	 * @return string
 	 */
-	public static function make_limit_offset_clause($state, $settings, $table_name)
+	public static function make_limit_offset_clause($pagination_info)
 	{
-		$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
+		if (!($pagination_info instanceof PaginationInfoWithCount)) {
+			throw new Exception("pagination_info must be instance of PaginationInfoWithCount");
+		}
 
 		$limit = $pagination_info->get_limit();
 		if ($limit !== 0) {
-			$current_page = $pagination_info->calculate_current_page($settings->get_total_rows());
+			$current_page = $pagination_info->calculate_current_page($pagination_info->get_row_count());
 
 			$offset = $current_page * $limit;
 
@@ -155,10 +163,10 @@ class LimitPaginationTreeTransform implements ISQLTreeTransform
 		return $tree;
 	}
 
-	function alter($input_tree, $state, $settings, $table_name)
+	function alter($input_tree, $pagination_info)
 	{
 		$tree = $input_tree;
-		$limit_clause = self::make_limit_offset_clause($state, $settings, $table_name);
+		$limit_clause = self::make_limit_offset_clause($pagination_info);
 		if ($limit_clause) {
 			$tree = self::add_limit_offset_clause($input_tree, $limit_clause);
 		}
@@ -171,7 +179,7 @@ class LimitPaginationTreeTransform implements ISQLTreeTransform
  * Put query into subquery and count all rows.
  */
 class CountTreeTransform implements ISQLTreeTransform {
-	function alter($input_tree, $state, $settings, $table_name)
+	function alter($input_tree, $pagination_info)
 	{
 		$root = find_select_root_clause($input_tree);
 		if ($root === null) {
@@ -205,7 +213,7 @@ class ArbitraryTreeTransform implements ISQLTreeTransform {
 		}
 	}
 
-	function alter($input_tree, $state, $settings, $table_name)
+	function alter($input_tree, $pagination_info)
 	{
 		return $this->tree;
 	}
@@ -234,15 +242,13 @@ class SortTreeTransform  implements ISQLTreeTransform
 	}
 
 	/**
-	 * @param $state DataFormState
-	 * @param $settings DataTableSettings
-	 * @param $table_name string
+	 * @param $pagination_info PaginationInfo
 	 * @return string
 	 * @throws Exception
 	 */
-	public static function make_order_clause($state, $settings, $table_name)
+	public static function make_order_clause($pagination_info)
 	{
-		$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
+
 		$ret = "";
 		$sorting_data = $pagination_info->get_sorting_states();
 		foreach ($sorting_data as $column_key => $column_sorting_state) {
@@ -281,11 +287,11 @@ class SortTreeTransform  implements ISQLTreeTransform
 		return $ret;
 	}
 
-	function alter($input_tree, $state, $settings, $table_name)
+	function alter($input_tree, $pagination_info)
 	{
 		$tree = $input_tree;
 
-		$order_clause = self::make_order_clause($state, $settings, $table_name);
+		$order_clause = self::make_order_clause($pagination_info);
 		if ($order_clause) {
 			$tree = self::add_order_clause($tree, $order_clause);
 		}
@@ -384,18 +390,15 @@ class FilterTreeTransform  implements ISQLTreeTransform
 	}
 
 	/**
-	 * @param $state DataFormState
-	 * @param $settings DataTableSettings
-	 * @param $table_name string
+	 * @param $pagination_info IPaginationInfo
 	 * @param $alias_lookup array
 	 * @return string[] List of WHERE clauses, joined with AND
 	 * @throws Exception
 	 */
-	public static function make_where_clauses($state, $settings, $table_name, $alias_lookup)
+	public static function make_where_clauses($pagination_info, $alias_lookup)
 	{
 		$ret = array();
 
-		$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
 		$searching_state = $pagination_info->get_search_states();
 		foreach ($searching_state as $column_key => $obj) {
 			/** @var DataTableSearchState $obj */
@@ -462,13 +465,13 @@ class FilterTreeTransform  implements ISQLTreeTransform
 		return $ret;
 	}
 
-	function alter($input_tree, $state, $settings, $table_name)
+	function alter($input_tree, $pagination_info)
 	{
 		$tree = $input_tree;
 
 		$alias_lookup = self::make_alias_lookup($tree);
 
-		$where_clauses = self::make_where_clauses($state, $settings, $table_name, $alias_lookup);
+		$where_clauses = self::make_where_clauses($pagination_info, $alias_lookup);
 
 		foreach ($where_clauses as $where_clause) {
 			$tree = self::add_where_clause($tree, $where_clause);

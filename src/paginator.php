@@ -6,30 +6,12 @@
  * Implementing classes must be serializable!
  */
 interface IPaginator {
-	/**
-	 * @param $table_name string
-	 * @return SQLBuilder
-	 */
-	public function table_name($table_name);
-
-	/**
-	 * @param $state DataFormState
-	 * @return SQLBuilder
-	 */
-	public function state($state);
-
-	/**
-	 * @param $settings DataTableSettings
-	 * @return SQLBuilder
-	 */
-	public function settings($settings);
-
 
 	/**
 	 * If true, no pagination will be done
 	 *
 	 * @param $ignore_pagination bool
-	 * @return SQLBuilder
+	 * @return IPaginator
 	 */
 	public function ignore_pagination($ignore_pagination = true);
 
@@ -37,9 +19,15 @@ interface IPaginator {
 	 * If true, no filtering will be done
 	 *
 	 * @param $ignore_filtering bool
-	 * @return SQLBuilder
+	 * @return IPaginator
 	 */
 	public function ignore_filtering($ignore_filtering = true);
+
+	/**
+	 * @param $pagination_info IPaginationInfo
+	 * @return IPaginator
+	 */
+	public function pagination_info($pagination_info);
 
 	/**
 	 * This returns an array of (paginated Iterator, row_count)

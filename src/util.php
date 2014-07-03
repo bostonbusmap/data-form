@@ -9,7 +9,6 @@
  */
 
 require_once FILE_BASE_PATH . "/lib/database_iterator.php";
-require_once "sql_constructor.php";
 require_once "iterator_manager.php";
 // Useful functions for working with DataForm and DataTable objects
 
@@ -48,52 +47,36 @@ function create_columns_from_database($res) {
 /**
  * Return a paginated SQL query, and set number of rows on $settings (creating $settings if null)
  *
- * @param $constructor SqlConstructor
- * @param $state DataFormState
- * @param $settings DataTableSettings Table settings. This will become a copy of the input with total_rows
- * set to the number of rows. New default object will be created if this is null.
- * @param $conn_type string Connection type, used for querying for count
- * @param $table_name string Name of table, if more than one table in form
- * @return string SQL
+ * @param $query string SQL
+ * @param &$pagination_info IPaginationInfo Pagination, filtering and sorting information. Will be replaced with PaginationInfoWithCount
+ * @param $conn_type string|null Connection type
+ * @return string paginated SQL
  * @throws Exception
  */
-function paginate_sql_constructor($constructor, $state, &$settings, $conn_type=null, $table_name=null) {
-	if (!($constructor instanceof SqlConstructor)) {
-		throw new Exception("constructor must be instance of SqlConstructor");
+function paginate_sql_with_paginate_info($query, &$pagination_info, $conn_type=null) {
+	if (!is_string($query)) {
+		throw new Exception("query must be a string");
 	}
-	if (!($state instanceof DataFormState)) {
-		throw new Exception("state must be instance of DataFormState");
-	}
-	if ($settings !== null && !($settings instanceof DataTableSettings)) {
-		throw new Exception("settings must be instance of DataTableSettings, or null to create a new object");
+	if (!($pagination_info instanceof IPaginationInfo)) {
+		throw new Exception("pagination_info must be instance of PaginationInfo");
 	}
 	if (($conn_type !== null) && !is_string($conn_type)) {
 		throw new Exception("conn_type must be a string or null");
 	}
-	if ($table_name === null) {
-		$table_name = "";
-	}
-	if (!is_string($table_name)) {
-		throw new Exception("table_name must be a string");
-	}
 
 	// There's a cost to parsing SQL so this object is used twice
-	$count_sql = $constructor->state($state)->settings($settings)->table_name($table_name)->build_count();
+	$sql_builder = SQLBuilder::create($query);
+
+	$count_sql = $sql_builder->pagination_info($pagination_info)->build_count();
 	$count_res = gfy_db::query($count_sql, $conn_type, true);
 	$count_row = gfy_db::fetch_row($count_res);
 	$num_rows = (int)$count_row[0];
 
-	if ($settings) {
-		$settings = $settings->make_builder()->total_rows($num_rows)->build();
-	}
-	else
-	{
-		$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
-	}
-
-	$paginated_sql = $constructor->settings($settings)->build();
+	$pagination_info = new PaginationInfoWithCount($pagination_info, $num_rows);
+	$paginated_sql = $sql_builder
+		->pagination_info($pagination_info)
+		->build();
 	return $paginated_sql;
-
 }
 
 /**
@@ -128,11 +111,13 @@ function paginate_sql($query, $state, &$settings, $conn_type=null, $table_name="
 	// There's a cost to parsing SQL so this object is used twice
 	$sql_builder = SQLBuilder::create($query);
 
-	$count_sql = $sql_builder->state($state)->settings($settings)->table_name($table_name)->build_count();
+	$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
+	$count_sql = $sql_builder->pagination_info($pagination_info)->build_count();
 	$count_res = gfy_db::query($count_sql, $conn_type, true);
 	$count_row = gfy_db::fetch_row($count_res);
 	$num_rows = (int)$count_row[0];
 
+	// Caller is expecting $settings to be modified with the row count
 	if ($settings) {
 		$settings = $settings->make_builder()->total_rows($num_rows)->build();
 	}
@@ -141,7 +126,8 @@ function paginate_sql($query, $state, &$settings, $conn_type=null, $table_name="
 		$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
 	}
 
-	$paginated_sql = $sql_builder->settings($settings)->build();
+	$pagination_info_with_count = new PaginationInfoWithCount($pagination_info, $num_rows);
+	$paginated_sql = $sql_builder->pagination_info($pagination_info_with_count)->build();
 	return $paginated_sql;
 }
 
@@ -174,9 +160,8 @@ function paginate_array($array, $state, &$settings, $table_name="") {
 	// ArrayManager doesn't use the total_rows property of $settings, it gets
 	// that information from count($array)
 	$manager = new ArrayManager($array);
-	$manager->state($state);
-	$manager->settings($settings);
-	$manager->table_name($table_name);
+	$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
+	$manager->pagination_info($pagination_info);
 
 	list($num_rows, $subset) = $manager->make_filtered_subset();
 
@@ -208,7 +193,7 @@ function paginate_array($array, $state, &$settings, $table_name="") {
  * @return Iterator
  * @throws Exception
  */
-function paginate_iterator($iterator, $state, $settings, $table_name="") {
+function paginate_iterator($iterator, $state, &$settings, $table_name="") {
 	if (!($iterator instanceof Iterator)) {
 		throw new Exception("iterator must be an Iterator");
 	}
@@ -222,12 +207,23 @@ function paginate_iterator($iterator, $state, $settings, $table_name="") {
 		throw new Exception("table_name must be a string");
 	}
 
+
 	$manager = new IteratorManager($iterator);
-	$manager->state($state);
-	$manager->settings($settings);
-	$manager->table_name($table_name);
+	$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
+	$manager->pagination_info($pagination_info);
 
 	list($iterator, $row_count) = $manager->obtain_paginated_data_and_row_count(null, null);
+
+	if ($settings === null) {
+		$settings = DataTableSettingsBuilder::create()
+			->total_rows($row_count)
+			->build();
+	}
+	else
+	{
+		$settings = $settings->make_builder()->total_rows($row_count)->build();
+	}
+
 	return $iterator;
 }
 

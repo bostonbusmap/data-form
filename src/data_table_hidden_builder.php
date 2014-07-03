@@ -74,7 +74,7 @@ class DataTableHiddenBuilder {
 			$this->value = "";
 		}
 		if (!is_string($this->value)) {
-			throw new Exception("value must be a string");
+			$this->value = (string)$this->value;
 		}
 
 		return new DataTableHidden($this);

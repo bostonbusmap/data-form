@@ -214,7 +214,7 @@ class DataTableCheckboxBuilder {
 			$this->value = "";
 		}
 		if (!is_string($this->value)) {
-			throw new Exception("value must be a string");
+			$this->value = (string)$this->value;
 		}
 
 		if (is_null($this->checked_by_default)) {

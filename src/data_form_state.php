@@ -376,6 +376,22 @@ class DataFormState
 	}
 
 	/**
+	 * @param $row_count int
+	 * @param DataFormState $state
+	 * @param DataTableSettings $settings
+	 * @param string $table_name
+	 * @throws Exception
+	 * @return PaginationInfoWithCount
+	 */
+	public static function make_pagination_info_with_count($row_count, $state = null, $settings = null, $table_name = "") {
+		if (!is_int($row_count)) {
+			throw new Exception("row_count must be an integer");
+		}
+		$pagination_info = self::make_pagination_info($state, $settings, $table_name);
+		return new PaginationInfoWithCount($pagination_info, $row_count);
+	}
+
+	/**
 	 * Put this state's pagination, sorting and filtering information into a PaginationInfo object
 	 *
 	 * If the state's information doesn't exist, information from $settings is used instead
@@ -386,7 +402,7 @@ class DataFormState
 	 * @throws Exception
 	 * @return PaginationInfo
 	 */
-	public static function make_pagination_info($state = null, &$settings = null, $table_name = "") {
+	public static function make_pagination_info($state = null, $settings = null, $table_name = "") {
 		if (!is_string($table_name)) {
 			throw new Exception("table_name must be a string");
 		}

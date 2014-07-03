@@ -47,7 +47,6 @@ require_once "pagination_info.php";
 require_once "paginator.php";
 require_once "selected.php";
 require_once "sql_builder.php";
-require_once "sql_constructor.php";
 require_once "util.php";
 require_once "validator_rule.php";
 require_once "writer.php";
@@ -469,7 +468,13 @@ class DataTable
 			$count++;
 		}
 
-		$settings = $this->settings;
+		if ($this->settings === null) {
+			$settings = DataTableSettingsBuilder::create()->build();
+		}
+		else
+		{
+			$settings = $this->settings;
+		}
 		$pagination_info = DataFormState::make_pagination_info($state, $settings, $this->table_name);
 
 		if ($pagination_info->get_limit() === 0) {

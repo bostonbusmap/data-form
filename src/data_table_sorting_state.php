@@ -47,4 +47,11 @@ class DataTableSortingState
 	public function get_direction() {
 		return $this->direction;
 	}
+
+	/**
+	 * @return bool
+	 */
+	public function is_active() {
+		return $this->direction !== self::sort_order_default;
+	}
 }

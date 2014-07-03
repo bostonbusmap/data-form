@@ -13,6 +13,7 @@ require_once "paginator.php";
 require_once FILE_BASE_PATH . "/lib/PHP-SQL-Parser/PHPSQLCreator.php";
 require_once FILE_BASE_PATH . "/lib/PHP-SQL-Parser/PHPSQLParser.php";
 
+
 /**
  * Alters SQL using information from special fields in DataFormState for pagination, sorting and filtering
  */
@@ -56,6 +57,11 @@ class SQLBuilder implements IPaginator {
 	 * @var bool
 	 */
 	protected $ignore_filtering;
+
+	/**
+	 * @var IPaginationInfo
+	 */
+	protected $pagination_info;
 
 	/**
 	 * Create SQLBuilder. This parses the SQL into a tree for further modification
@@ -112,6 +118,11 @@ class SQLBuilder implements IPaginator {
 	 */
 	public function settings($settings) {
 		$this->settings = $settings;
+		return $this;
+	}
+
+	public function pagination_info($pagination_info) {
+		$this->pagination_info = $pagination_info;
 		return $this;
 	}
 
@@ -185,12 +196,16 @@ class SQLBuilder implements IPaginator {
 			throw new Exception("table_name must be a string");
 		}
 
-		if ($this->state && !($this->state instanceof DataFormState)) {
+		if ($this->state !== null && !($this->state instanceof DataFormState)) {
 			throw new Exception("state must be instance of DataFormState");
 		}
 
-		if ($this->settings && !($this->settings instanceof DataTableSettings)) {
+		if ($this->settings !== null && !($this->settings instanceof DataTableSettings)) {
 			throw new Exception("settings must be DataTableSettings");
+		}
+
+		if ($this->pagination_info !== null && !($this->pagination_info instanceof IPaginationInfo)) {
+			throw new Exception("pagination_info must be instance of IPaginationInfo");
 		}
 
 		if (!is_array($this->sql_tree)) {
@@ -203,29 +218,29 @@ class SQLBuilder implements IPaginator {
 		if (is_null($this->pagination_transform)) {
 			$this->pagination_transform = new LimitPaginationTreeTransform();
 		}
-		if (!($this->pagination_transform instanceof ISQLTreeTransform)) {
-			throw new Exception("Pagination transform must be instance of ISQLTreeFilter");
+		if (!($this->pagination_transform instanceof ISQLTreeTransformWithCount)) {
+			throw new Exception("Pagination transform must be instance of ISQLTreeTransformWithCount");
 		}
 
 		if (is_null($this->count_transform)) {
 			$this->count_transform = new CountTreeTransform();
 		}
 		if (!($this->count_transform instanceof ISQLTreeTransform)) {
-			throw new Exception("Count transform must be instance of ISQLTreeFilter");
+			throw new Exception("Count transform must be instance of ISQLTreeTransform");
 		}
 
 		if (is_null($this->sort_transform)) {
 			$this->sort_transform = new SortTreeTransform();
 		}
 		if (!($this->sort_transform instanceof ISQLTreeTransform)) {
-			throw new Exception("Sort transform must be instance of ISQLTreeFilter");
+			throw new Exception("Sort transform must be instance of ISQLTreeTransform");
 		}
 
 		if (is_null($this->filter_transform)) {
 			$this->filter_transform = new FilterTreeTransform();
 		}
 		if (!($this->filter_transform instanceof ISQLTreeTransform)) {
-			throw new Exception("Filter transform must be instance of ISQLTreeFilter");
+			throw new Exception("Filter transform must be instance of ISQLTreeTransform");
 		}
 
 		if ($this->ignore_pagination === null) {
@@ -254,15 +269,26 @@ class SQLBuilder implements IPaginator {
 
 		$tree = $this->sql_tree;
 
+		$pagination_info = $this->make_pagination_info();
+
 		if (!$this->ignore_filtering) {
-			$tree = $this->filter_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+			$tree = $this->filter_transform->alter($tree, $pagination_info);
 		}
-		$tree = $this->sort_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+		$tree = $this->sort_transform->alter($tree, $pagination_info);
 		if (!$this->ignore_pagination) {
-			if ($this->settings === null || $this->settings->get_total_rows() === null) {
+			if ($pagination_info instanceof PaginationInfoWithCount) {
+				$num_rows = $pagination_info->get_row_count();
+			}
+			elseif ($this->settings === null || $this->settings->get_total_rows() === null) {
 				throw new Exception("SQLBuilder->settings must contain the number of rows in order to paginate properly");
 			}
-			$tree = $this->pagination_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+			else
+			{
+				$num_rows = $this->settings->get_total_rows();
+			}
+
+			$pagination_info_with_count = new PaginationInfoWithCount($pagination_info, $num_rows);
+			$tree = $this->pagination_transform->alter($tree, $pagination_info_with_count);
 		}
 
 		$creator = new PHPSQLCreator();
@@ -281,14 +307,27 @@ class SQLBuilder implements IPaginator {
 
 		$tree = $this->sql_tree;
 
+		$pagination_info = $this->make_pagination_info();
 		// order is important here. The count transform puts everything within a subquery so it must go last
 		if (!$this->ignore_filtering) {
-			$tree = $this->filter_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+			$tree = $this->filter_transform->alter($tree, $pagination_info);
 		}
-		$tree = $this->count_transform->alter($tree, $this->state, $this->settings, $this->table_name);
+		$tree = $this->count_transform->alter($tree, $pagination_info);
 
 		$creator = new PHPSQLCreator();
 		return $creator->create($tree);
+	}
+
+	/**
+	 * @return PaginationInfo
+	 */
+	private function make_pagination_info() {
+		if ($this->pagination_info !== null) {
+			return $this->pagination_info;
+		}
+		else {
+			return DataFormState::make_pagination_info($this->state, $this->settings, $this->table_name);
+		}
 	}
 
 	/**
@@ -305,17 +344,13 @@ class SQLBuilder implements IPaginator {
 		$count_row = gfy_db::fetch_row($count_res);
 		$num_rows = (int)$count_row[0];
 
-		$settings = $this->settings;
-		if ($settings) {
-			$settings = $settings->make_builder()->total_rows($num_rows)->build();
-		}
-		else
-		{
-			$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
-		}
+		$pagination_info = $this->make_pagination_info();
+		$pagination_info_with_count = new PaginationInfoWithCount($pagination_info, $num_rows);
 
+		// cloning so we don't have to reparse SQL which takes a little while
 		$sql_builder = clone $this;
-		$paginated_sql = $sql_builder->settings($settings)->build();
+		$sql_builder->pagination_info = $pagination_info_with_count;
+		$paginated_sql = $sql_builder->build();
 
 		$iterator = new DatabaseIterator($paginated_sql, $conn_type, $rowid_key);
 		return array($iterator, $num_rows);

@@ -7,20 +7,11 @@ class IteratorManager implements IPaginator {
 	 * @var Iterator
 	 */
 	protected $iterator;
-	/**
-	 * @var string
-	 */
-	protected $table_name;
 
 	/**
-	 * @var DataFormState
+	 * @var IPaginationInfo
 	 */
-	protected $state;
-
-	/**
-	 * @var DataTableSettings
-	 */
-	protected $settings;
+	protected $pagination_info;
 
 	/**
 	 * @var bool
@@ -39,19 +30,9 @@ class IteratorManager implements IPaginator {
 		$this->iterator = $iterator;
 	}
 
-	public function table_name($table_name)
+	public function pagination_info($pagination_info)
 	{
-		$this->table_name = $table_name;
-	}
-
-	public function state($state)
-	{
-		$this->state = $state;
-	}
-
-	public function settings($settings)
-	{
-		$this->settings = $settings;
+		$this->pagination_info = $pagination_info;
 	}
 
 	public function ignore_pagination($ignore_pagination = true)
@@ -66,27 +47,44 @@ class IteratorManager implements IPaginator {
 
 	public function obtain_paginated_data_and_row_count($conn_type, $rowid_key)
 	{
-		$settings = $this->settings;
-		$pagination_info = DataFormState::make_pagination_info($this->state, $settings, $this->table_name);
-
 		$iterator = $this->iterator;
-		if (!$this->ignore_filtering) {
-			$iterator = new RowFilterIterator($iterator, $pagination_info);
+		if (!$this->ignore_filtering && $this->pagination_info->has_search()) {
+			$iterator = new RowFilterIterator($iterator, $this->pagination_info);
 		}
+		if ($this->pagination_info->has_sorting()) {
+			// need to convert iterator to array to sort it
+			$array = iterator_to_array($iterator);
+			$array = ArrayManager::sort($array, $this->pagination_info);
+			$iterator = new ArrayIterator($array);
+		}
+
+		if ($iterator instanceof Countable) {
+			$num_rows = count($iterator);
+		}
+		else
+		{
+			$num_rows = null;
+		}
+
 		if (!$this->ignore_pagination) {
-			if ($pagination_info->get_limit() === 0) {
+			if ($this->pagination_info->get_limit() === 0) {
 				$limit_count = -1;
 			}
 			else
 			{
-				$limit_count = $pagination_info->get_limit();
+				$limit_count = $this->pagination_info->get_limit();
 			}
-			$iterator = new LimitIterator($iterator, $pagination_info->get_offset(), $limit_count);
+			try {
+				$iterator = new LimitIterator($iterator, $this->pagination_info->get_offset(), $limit_count);
+			}
+			catch (OutOfBoundsException $e) {
+				$iterator = new EmptyIterator();
+			}
 		}
 		if ($rowid_key !== null) {
 			$iterator = new ColumnAsKeyIterator($iterator, $rowid_key);
 		}
-		return array($iterator, null);
+		return array($iterator, $num_rows);
 	}
 }
 
@@ -101,7 +99,7 @@ class RowFilterIterator extends FilterIterator
 		if (!($iterator instanceof Iterator)) {
 			throw new Exception("iterator must be Iterator");
 		}
-		if (!($pagination_info instanceof PaginationInfo)) {
+		if (!($pagination_info instanceof IPaginationInfo)) {
 			throw new Exception("pagination_info must be PaginationInfo");
 		}
 
