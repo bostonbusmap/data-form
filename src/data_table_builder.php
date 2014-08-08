@@ -277,11 +277,16 @@ class DataTableBuilder {
 		if (!is_array($this->widgets)) {
 			throw new Exception("buttons must be an array of IDataTableWidget");
 		}
-		foreach ($this->widgets as $button) {
-			if (!($button instanceof IDataTableWidget)) {
-				throw new Exception("Each button must be instance of IDataTableWidget");
+		$this->widgets = array_map(function($widget) {
+			if (is_callable($widget)) {
+				$widget = new CallbackWidget($widget);
 			}
-		}
+			elseif (!($widget instanceof IDataTableWidget)) {
+				throw new Exception("Each widget must be instance of IDataTableWidget or a callback");
+			}
+
+			return $widget;
+		}, $this->widgets);
 
 		if (is_null($this->field_names)) {
 			// make sure this is an array

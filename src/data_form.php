@@ -77,7 +77,7 @@ class DataForm {
 	private $remote;
 
 	/**
-	 * @var IValidatorRule[] A list of validation rules to apply. See validate() for use
+	 * @var IValidatorRule[]|callable[] A list of validation rules to apply. See validate() for use
 	 */
 	private $validator_rules;
 
@@ -308,7 +308,16 @@ class DataForm {
 		}
 		$errors = array();
 		foreach ($this->validator_rules as $rule) {
-			$error = $rule->validate($this, $state);
+			if ($rule instanceof IValidatorRule) {
+				$error = $rule->validate($state);
+			}
+			else
+			{
+				$error = $rule($state);
+			}
+			if ($error && !is_string($error)) {
+				throw new Exception("error must be a string");
+			}
 			if ($error) {
 				$errors[] = '<span class="error">' . htmlspecialchars($error) . "</span>";
 			}

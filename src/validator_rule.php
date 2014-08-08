@@ -13,9 +13,9 @@
  */
 interface IValidatorRule {
 	/**
-	 * @param $form DataForm
 	 * @param $state DataFormState
+	 * @internal param DataForm $form
 	 * @return string Text of the error, or an empty string if no error
 	 */
-	function validate($form, $state);
+	function validate($state);
 }

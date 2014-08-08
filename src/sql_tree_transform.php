@@ -421,7 +421,8 @@ class FilterTreeTransform  implements ISQLTreeTransform
 					$type === DataTableSearchState::in ||
 					$type === DataTableSearchState::not_equal
 				) {
-					$escaped_value = gfy_db::escape_string($params[0]);
+					$value = $params[0];
+					$escaped_value = gfy_db::escape_string($value);
 					// TODO: check is_numeric for numeric comparisons
 					if ($escaped_value !== "") {
 						// subtract 0.0 to convert to float
@@ -445,7 +446,9 @@ class FilterTreeTransform  implements ISQLTreeTransform
 								$phrase = " $column_base_expr = '$escaped_value' ";
 							}
 						} elseif ($type === DataTableSearchState::in) {
-							$phrase = " $column_base_expr IN ($escaped_value) ";
+							$in_pieces = explode(",", $value);
+							$in_map = array_map(function($piece) { return "'" . gfy_db::escape_string($piece) . "'"; }, $in_pieces);
+							$phrase = " $column_base_expr IN (" . implode(",",  $in_map) . ") ";
 						} elseif ($type === DataTableSearchState::not_equal) {
 							if (is_numeric($escaped_value)) {
 								$phrase = " $column_base_expr != $escaped_value ";

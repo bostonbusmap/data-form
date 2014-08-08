@@ -157,7 +157,7 @@ class DataTableLinkBuilder {
 			$this->text = "";
 		}
 		if (!is_string($this->text)) {
-			throw new Exception("text must be a string");
+			$this->text = (string)$this->text;
 		}
 
 		if (is_null($this->link)) {

@@ -53,7 +53,10 @@ class IteratorManager implements IPaginator {
 		}
 		if ($this->pagination_info->has_sorting()) {
 			// need to convert iterator to array to sort it
-			$array = iterator_to_array($iterator);
+			$array = array();
+			foreach ($iterator as $row) {
+				$array[] = $row;
+			}
 			$array = ArrayManager::sort($array, $this->pagination_info);
 			$iterator = new ArrayIterator($array);
 		}

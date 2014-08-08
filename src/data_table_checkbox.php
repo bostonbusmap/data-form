@@ -56,6 +56,10 @@ class DataTableCheckbox implements IDataTableWidget {
 	 * @var string
 	 */
 	protected $array_key;
+	/**
+	 * @var bool
+	 */
+	protected $label_on_right;
 
 	/**
 	 * @param $builder DataTableCheckboxBuilder
@@ -75,6 +79,7 @@ class DataTableCheckbox implements IDataTableWidget {
 		$this->label = $builder->get_label();
 		$this->as_array = $builder->get_as_array();
 		$this->array_key = $builder->get_array_key();
+		$this->label_on_right = $builder->get_label_on_right();
 	}
 
 	public function display($form_name, $form_method, $state)
@@ -86,7 +91,7 @@ class DataTableCheckbox implements IDataTableWidget {
 		{
 			$name_array = array($this->name);
 		}
-		return self::format_checkbox($form_name, $form_method, $this->form_action, $name_array, $this->value, $this->checked_by_default, $this->behavior, $state, $this->label);
+		return self::format_checkbox($form_name, $form_method, $this->form_action, $name_array, $this->value, $this->checked_by_default, $this->behavior, $state, $this->label, $this->label_on_right);
 	}
 
 	public function get_placement()
@@ -106,9 +111,10 @@ class DataTableCheckbox implements IDataTableWidget {
 	 * @param IDataTableBehavior $behavior What happens when checkbox is clicked
 	 * @param DataFormState $state State of form
 	 * @param string $label HTML label
+	 * @param bool $label_on_right Show the HTML label to the right of the checkbox
 	 * @return string HTML for a checkbox
 	 */
-	public static function format_checkbox($form_name, $form_method, $form_action, $name_array, $column_data, $checked_by_default, $behavior, $state, $label) {
+	public static function format_checkbox($form_name, $form_method, $form_action, $name_array, $column_data, $checked_by_default, $behavior, $state, $label, $label_on_right) {
 		if ($state && $state->has_item($name_array)) {
 			$checked_item = $state->find_item($name_array);
 
@@ -137,11 +143,15 @@ class DataTableCheckbox implements IDataTableWidget {
 		}
 
 		$ret = "";
-		if ($label !== "") {
+		if ($label !== "" && !$label_on_right) {
 			$ret .= '<label for="' . htmlspecialchars($input_name) . '">' . $label . '</label>';
 		}
 
 		$ret .= '<input type="checkbox" id="' . htmlspecialchars($input_name) . '" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" onclick="' . htmlspecialchars($onclick) . '" ' . $checked . ' />';
+
+		if ($label !== "" && $label_on_right) {
+			$ret .= '<label for="' . htmlspecialchars($input_name) . '">' . $label . '</label>';
+		}
 
 		// Create hidden field to allow detection of unchecked
 		if ($checked || $checked_by_default) {
@@ -190,7 +200,7 @@ class DataTableCheckboxCellFormatter implements IDataTableCellFormatter {
 			$name_array = array();
 		}
 
-		return DataTableCheckbox::format_checkbox($form_name, "", "POST", $name_array, $column_data, false, null, $state, "");
+		return DataTableCheckbox::format_checkbox($form_name, "", "POST", $name_array, $column_data, false, null, $state, "", false);
 	}
 
 }

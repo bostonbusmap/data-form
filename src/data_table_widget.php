@@ -34,6 +34,49 @@ interface IDataTableWidget {
 }
 
 /**
+ * Convert callback to IDataTableWidget. Defaults to placement_top
+ */
+class CallbackWidget implements IDataTableWidget {
+	/**
+	 * @var callable
+	 */
+	protected $callback;
+	/**
+	 * @var string
+	 */
+	protected $placement;
+
+	/**
+	 * @param $callback callable
+	 * @param string $placement
+	 * @throws Exception
+	 */
+	public function __construct($callback, $placement = IDataTableWidget::placement_top) {
+		if (!is_callable($callback)) {
+			throw new Exception("callback must be a callable");
+		}
+		if ($placement !== IDataTableWidget::placement_top &&
+			$placement !== IDataTableWidget::placement_bottom) {
+			throw new Exception("placement must be top or bottom");
+		}
+
+		$this->callback = $callback;
+		$this->placement = $placement;
+	}
+
+	public function display($form_name, $form_method, $state)
+	{
+		$callback = $this->callback;
+		return $callback($form_name, $form_method, $state);
+	}
+
+	public function get_placement()
+	{
+		return $this->placement;
+	}
+}
+
+/**
  * Convenience class for displaying small pieces of HTML around a DataTable
  */
 class CustomWidget implements IDataTableWidget {

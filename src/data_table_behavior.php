@@ -57,6 +57,8 @@ class DataTableBehaviorSubmit implements IDataTableBehavior {
 	protected $params;
 
 	/**
+	 * Important: any fields specified in $form_params must already exist in the form as hidden fields.
+	 *
 	 * @param array $form_params parameters where key is attribute name on form, value is value for attribute
 	 * @param array $params parameters where key is ID of hidden input field, value is the value attribute
 	 * @throws Exception
@@ -152,6 +154,10 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 		$this->extra_params = $extra_params;
 	}
 	function action($form_name, $form_action, $form_method) {
+		return 'return DataForm.refresh(this, event, ' . json_encode($this->make_options($form_name, $form_action, $form_method)) . ');';
+	}
+
+	function make_options($form_name, $form_action, $form_method) {
 		$only_display_form_name = DataFormState::make_field_name($form_name, DataFormState::only_display_form_key());
 		$params = $this->extra_params;
 		$params[$only_display_form_name] = "true";
@@ -170,8 +176,7 @@ class DataTableBehaviorRefresh implements IDataTableBehavior {
 			"flash_name" => $flash_name,
 			"params" => $params
 		);
-
-		return 'return DataForm.refresh(this, event, ' . json_encode($options) . ');';
+		return $options;
 	}
 }
 
@@ -365,5 +370,12 @@ class DataTableBehaviorReset implements IDataTableBehavior {
 
 		$refresh = new DataTableBehaviorRefresh(array($reset_key => "true"));
 		return $refresh->action($form_name, $form_action, $form_method);
+	}
+
+	function make_options($form_name, $form_action, $form_method) {
+		$reset_key = DataFormState::make_field_name($form_name, DataFormState::get_reset_key());
+
+		$refresh = new DataTableBehaviorRefresh(array($reset_key => "true"));
+		return $refresh->make_options($form_name, $form_action, $form_method);
 	}
 }

@@ -50,6 +50,11 @@ class DataTableCheckboxBuilder {
 	 */
 	protected $array_key;
 
+	/**
+	 * @var bool
+	 */
+	protected $label_on_right;
+
 	public static function create() {
 		return new DataTableCheckboxBuilder();
 	}
@@ -135,6 +140,15 @@ class DataTableCheckboxBuilder {
 	}
 
 	/**
+	 * @param $label_on_right bool
+	 * @return DataTableCheckboxBuilder
+	 */
+	public function label_on_right($label_on_right) {
+		$this->label_on_right = $label_on_right;
+		return $this;
+	}
+
+	/**
 	 * @return string Field name
 	 */
 	public function get_name() {
@@ -202,6 +216,14 @@ class DataTableCheckboxBuilder {
 	}
 
 	/**
+	 * If true, show the label on the right instead of the left
+	 * @return bool
+	 */
+	public function get_label_on_right() {
+		return $this->label_on_right;
+	}
+
+	/**
 	 * @return DataTableCheckbox
 	 * @throws Exception
 	 */
@@ -248,6 +270,13 @@ class DataTableCheckboxBuilder {
 		}
 		if (!is_string($this->label)) {
 			throw new Exception("label must be a string");
+		}
+
+		if ($this->label_on_right === null) {
+			$this->label_on_right = false;
+		}
+		if (!is_bool($this->label_on_right)) {
+			throw new Exception("label_on_right must be a bool");
 		}
 
 		if ($this->as_array === null) {

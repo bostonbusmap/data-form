@@ -40,7 +40,7 @@ class DataFormBuilder {
 	 * */
 	private $remote;
 
-	/** @var IValidatorRule[] A list of rules to apply for validation */
+	/** @var IValidatorRule[]|callable[] A list of rules to apply for validation */
 	private $validator_rules;
 
 	/**
@@ -124,14 +124,13 @@ class DataFormBuilder {
 	/**
 	 * List of rules for validation
 	 *
-	 * @param $validator_rules IValidatorRule[]
+	 * @param $validator_rules callable[]|IValidatorRule[]
 	 * @return DataFormBuilder
 	 */
 	public function validator_rules($validator_rules) {
 		$this->validator_rules = $validator_rules;
 		return $this;
 	}
-
 
 
 	/**
@@ -230,8 +229,8 @@ class DataFormBuilder {
 			$this->validator_rules = array();
 		}
 		foreach ($this->validator_rules as $rule) {
-			if (!$rule || !($rule instanceof IValidatorRule)) {
-				throw new Exception("Validator rules must be of type IValidatorRule");
+			if (!($rule instanceof IValidatorRule) && !(is_callable($rule))) {
+				throw new Exception("Validator rules must be of type IValidatorRule or a callback taking state as its argument");
 			}
 		}
 
@@ -269,7 +268,7 @@ class DataFormBuilder {
 	}
 
 	/**
-	 * @return IValidatorRule[]
+	 * @return IValidatorRule[]|callable[]
 	 */
 	public function get_validator_rules() {
 		return $this->validator_rules;
