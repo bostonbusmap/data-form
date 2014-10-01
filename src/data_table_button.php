@@ -22,6 +22,10 @@ class DataTableButton implements IDataTableWidget {
 	private $action;
 	/** @var  string field name (will be altered to form_name[name]) */
 	private $name;
+	/**
+	 * @var string Value to be submitted with form
+	 */
+	private $value;
 	/** @var  string Either 'submit' or 'reset' */
 	private $type;
 	/**
@@ -51,6 +55,7 @@ class DataTableButton implements IDataTableWidget {
 		$this->action = $builder->get_form_action();
 		$this->behavior = $builder->get_behavior();
 		$this->name = $builder->get_name();
+		$this->value = $builder->get_value();
 		$this->placement = $builder->get_placement();
 		$this->label = $builder->get_label();
 	}
@@ -66,14 +71,21 @@ class DataTableButton implements IDataTableWidget {
 	 * @param $text string Text of button
 	 * @param $type string Type of button (currently either 'submit' or 'reset')
 	 * @param $label string Label HTML for button
-	 * @param $state DataFormState State of form. Currently unused
+	 * @param $value string Value for button
+	 * @param $state DataFormState
 	 * @return string HTML
 	 */
-	public static function display_button($form_name, $name_array, $action, $form_method, $behavior, $text, $type, $label, $state = null) {
+	public static function display_button($form_name, $name_array, $action, $form_method, $behavior, $text, $type, $label, $value, $state) {
 		$ret = "";
 
 		if ($behavior) {
-			$onchange = $behavior->action($form_name, $action, $form_method);
+			$onchange = '';
+			if ($name_array) {
+				$qualified_name = DataFormState::make_field_name($form_name, $name_array);
+				$onchange = '$(DataForm.jq(' . json_encode($qualified_name . '_hidden') . ')).attr("value", ' . json_encode($value) . "); ";
+			}
+
+			$onchange .= $behavior->action($form_name, $action, $form_method);
 		}
 		else
 		{
@@ -87,22 +99,24 @@ class DataTableButton implements IDataTableWidget {
 				$ret .= '<label for="' . htmlspecialchars($qualified_name) . '">' . $label . '</label>';
 			}
 
-			// TODO: value attribute
-			$ret .= '<button type="' . htmlspecialchars($type) . '" id="' . htmlspecialchars($qualified_name) .
-				'" name="' . htmlspecialchars($qualified_name) . '" value="' . htmlspecialchars($text) .
-				'" onclick="' . htmlspecialchars($onchange) . '">' . htmlspecialchars($text) . '</button>';
+			$ret .= '<button type="' . htmlspecialchars($type) . '" id="' . htmlspecialchars($qualified_name . "_button") .
+				'" name="' . htmlspecialchars($qualified_name) . '" onclick="' . htmlspecialchars($onchange) . '">'
+				. htmlspecialchars($text) . '</button>';
+
+			if ($value !== '') {
+				$ret .= DataTableHidden::display_hidden($form_name, $name_array, $qualified_name . "_hidden", '', "hidden_submit");
+			}
 		}
 		else
 		{
-			$ret .= '<button type="' . htmlspecialchars($type) . '" value="' . htmlspecialchars($text) .
-				'" onclick="' . htmlspecialchars($onchange) . '">' . htmlspecialchars($text) . '</button>';
+			$ret .= '<button type="' . htmlspecialchars($type) . '" onclick="' . htmlspecialchars($onchange) . '">'
+				. htmlspecialchars($text) . '</button>';
 		}
 
-		$ret .= "</select>";
 		return $ret;
 	}
 
-	public function display($form_name, $form_method, $state=null)
+	public function display($form_name, $form_method, $remote_url, $state)
 	{
 		if ($this->name) {
 			$name_array = array($this->name);
@@ -111,7 +125,7 @@ class DataTableButton implements IDataTableWidget {
 		{
 			$name_array = array();
 		}
-		return self::display_button($form_name, $name_array, $this->action, $form_method, $this->behavior, $this->text, $this->type, $this->label, $state);
+		return self::display_button($form_name, $name_array, $this->action, $form_method, $this->behavior, $this->text, $this->type, $this->label, $this->value, $state);
 	}
 
 	public function get_placement() {

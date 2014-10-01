@@ -30,6 +30,15 @@ class DataTableLink implements IDataTableWidget {
 	 */
 	protected $title;
 
+	/**
+	 * @var string Field name for submitted value, if present
+	 */
+	protected $name;
+	/**
+	 * @var string Value to submit when link is clicked, if present
+	 */
+	protected $value;
+
 	// add other parameters as appropriate
 
 	/**
@@ -45,6 +54,8 @@ class DataTableLink implements IDataTableWidget {
 		$this->behavior = $builder->get_behavior();
 		$this->placement = $builder->get_placement();
 		$this->title = $builder->get_title();
+		$this->name = $builder->get_name();
+		$this->value = $builder->get_value();
 	}
 
 	public function get_link() {
@@ -59,9 +70,17 @@ class DataTableLink implements IDataTableWidget {
 		return $this->title;
 	}
 
-	public function display($form_name, $form_method, $state)
+	public function get_name() {
+		return $this->name;
+	}
+
+	public function get_value() {
+		return $this->value;
+	}
+
+	public function display($form_name, $form_method, $remote_url, $state)
 	{
-		return self::display_link($form_name, $form_method, $this->link, $this->text, $this->behavior, $this->title);
+		return self::display_link($form_name, $form_method, $this->link, $this->text, $this->behavior, $this->title, array($this->name), $this->value);
 	}
 
 	/**
@@ -73,17 +92,36 @@ class DataTableLink implements IDataTableWidget {
 	 * @param $text string Text of link
 	 * @param $behavior IDataTableBehavior What happens when link is clicked
 	 * @param $title string Mouseover title
+	 * @param $name_array string[]
+	 * @param $value string
+	 * @param $dont_escape bool If true, don't escape HTML in $text
 	 * @return string HTML
 	 */
-	public static function display_link($form_name, $form_method, $link, $text, $behavior, $title) {
+	public static function display_link($form_name, $form_method, $link, $text, $behavior, $title, $name_array, $value, $dont_escape = false) {
+		$ret = '';
+		$onclick = '';
 		if ($behavior) {
-			$onclick = $behavior->action($form_name, $link, $form_method);
+			if ($name_array && $value !== '' && $value !== null) {
+				$id = DataFormState::make_field_name($form_name, $name_array);
+
+				$onclick .= '$(DataForm.jq(' . json_encode($id) . ')).attr("value", ' . json_encode($value) . '); ';
+				$ret .= DataTableHidden::display_hidden($form_name, $name_array, $id, '', "hidden_submit");
+			}
+
+			$onclick .= $behavior->action($form_name, $link, $form_method);
 		}
 		else
 		{
 			$onclick = "";
 		}
-		return '<a href="' . htmlspecialchars($link) . '" onclick="' . htmlspecialchars($onclick) . '" title="' . htmlspecialchars($title) . '">' . $text . '</a>';
+		if ($dont_escape) {
+			$escaped_text = $text;
+		}
+		else {
+			$escaped_text = htmlspecialchars($text);
+		}
+		$ret .= '<a href="' . htmlspecialchars($link) . '" onclick="' . htmlspecialchars($onclick) . '" title="' . htmlspecialchars($title) . '">' . $escaped_text . '</a>';
+		return $ret;
 	}
 
 	public function get_placement()
@@ -115,6 +153,8 @@ class DataTableLinkFormatter implements IDataTableCellFormatter {
 		$text = $column_data->get_text();
 		$link = $column_data->get_link();
 		$title = $column_data->get_title();
-		return DataTableLink::display_link($form_name, "POST", $link, $text, null, $title);
+		$name = $column_data->get_name();
+		$value = $column_data->get_value();
+		return DataTableLink::display_link($form_name, "POST", $link, $text, null, $title, array($name), $value);
 	}
 }

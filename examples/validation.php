@@ -23,7 +23,7 @@ class NoSpacesInTextbox implements IValidatorRule {
 		$this->name = $name;
 	}
 
-	function validate($form, $state)
+	function validate($state)
 	{
 		$data = $state->find_item(array($this->name));
 		if (!is_string($data)) {
@@ -48,7 +48,7 @@ class OnlyEvenItemsSelected implements IValidatorRule {
 		$this->name = $name;
 	}
 
-	function validate($form, $state) {
+	function validate($state) {
 		$selected_items = $state->find_item(array($this->name));
 		if (!$selected_items) {
 			// no numbers selected at all

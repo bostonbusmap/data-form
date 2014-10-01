@@ -85,7 +85,7 @@ function make_form($state) {
 	// PaginationInfo looks at default values from $settings
 	// and user supplied values from $state and figures out the proper values
 	// for pagination, filtering and sorting values
-	$pagination_info = DataFormState::make_pagination_info($state, $settings, $table_name);
+	$pagination_info = DataFormState::make_pagination_info_with_count($total_count, $state, $settings, $table_name);
 	$current_page = $pagination_info->calculate_current_page($total_count);
 
 	$limit = $pagination_info->get_limit();

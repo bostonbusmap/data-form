@@ -49,8 +49,8 @@ class DefaultSortingFormatter implements IDataTableSortingFormatter {
 		$type_key = array_merge($sorting_state_column_key, array(DataTableSortingState::type_key));
 		$direction_key = array_merge($sorting_state_column_key, array(DataTableSortingState::direction_key));
 
-		$ret = DataTableHidden::display_hidden($form_name, $state, $type_key, $value->get_type());
-		$ret .= DataTableHidden::display_hidden($form_name, $state, $direction_key, $value->get_direction(), "hidden_sorting");
+		$ret = DataTableHidden::display_hidden($form_name, $type_key, DataFormState::make_field_name($form_name, $type_key), $value->get_type(), '');
+		$ret .= DataTableHidden::display_hidden($form_name, $direction_key, DataFormState::make_field_name($form_name, $direction_key), $value->get_direction(), "hidden_sorting");
 
 		if ($value->get_direction() === DataTableSortingState::sort_order_asc) {
 			$label_with_arrow = "&uarr; " . $label;
@@ -81,7 +81,7 @@ class DefaultSortingFormatter implements IDataTableSortingFormatter {
 		$sorting_state_name = DataFormState::make_field_name($form_name, array_merge($sorting_state_key, array($column_key)));
 		$onclick_obj = new DataTableBehaviorClearSortThenRefresh(array($sorting_state_name => $new_sorting_state));
 		$ret .= DataTableLink::display_link($form_name, $form_method, "", $label_with_arrow,
-			$onclick_obj, "");
+			$onclick_obj, "", null, null, true);
 
 		return $ret;
 	}

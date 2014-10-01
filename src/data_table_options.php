@@ -61,12 +61,19 @@ class DataTableOptions implements IDataTableWidget {
 	 *
 	 * @param $form_name string Name of form
 	 * @param $form_method string Either GET or POST
+	 * @param DataFormState $remote_url
 	 * @param $state DataFormState
 	 * @return string HTML
 	 */
-	public function display($form_name, $form_method, $state=null)
+	public function display($form_name, $form_method, $remote_url, $state)
 	{
-		return self::display_options($form_name, array($this->name), $this->form_action, $form_method, $this->change_behavior, $this->options, $this->label, $state);
+		if ($this->name !== "") {
+			$name_array = array($this->name);
+		}
+		else {
+			$name_array = array();
+		}
+		return self::display_options($form_name, $name_array, $this->form_action, $form_method, $this->change_behavior, $this->options, $this->label, $state);
 	}
 
 	/**

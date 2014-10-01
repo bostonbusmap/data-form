@@ -15,12 +15,12 @@ require_once "iterator_manager.php";
 /**
  * Create some default datatable columns for a database table
  *
- * @param $res resource
+ * @param $res mysqli_result
  * @return DataTableColumn[]
  * @throws Exception
  */
 function create_columns_from_database($res) {
-	if (!is_resource($res)) {
+	if (!gfy_db::is_result($res)) {
 		throw new Exception("res is not an open database connection");
 	}
 
@@ -37,7 +37,11 @@ function create_columns_from_database($res) {
 
 		$display_header = ucwords(str_replace("_", " ", $field_name));
 
-		$column = DataTableColumnBuilder::create()->display_header_name($display_header)->column_key($field_name)->sortable(true)->build();
+		$column = DataTableColumnBuilder::create()
+			->display_header_name($display_header)
+			->column_key($field_name)
+			->sortable(true)
+			->build();
 		$columns[] = $column;
 	}
 
@@ -119,15 +123,21 @@ function paginate_sql($query, $state, &$settings, $conn_type=null, $table_name="
 
 	// Caller is expecting $settings to be modified with the row count
 	if ($settings) {
-		$settings = $settings->make_builder()->total_rows($num_rows)->build();
+		$settings = $settings->make_builder()
+			->total_rows($num_rows)
+			->build();
 	}
 	else
 	{
-		$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
+		$settings = DataTableSettingsBuilder::create()
+			->total_rows($num_rows)
+			->build();
 	}
 
 	$pagination_info_with_count = new PaginationInfoWithCount($pagination_info, $num_rows);
-	$paginated_sql = $sql_builder->pagination_info($pagination_info_with_count)->build();
+	$paginated_sql = $sql_builder
+		->pagination_info($pagination_info_with_count)
+		->build();
 	return $paginated_sql;
 }
 
@@ -169,11 +179,15 @@ function paginate_array($array, $state, &$settings, $table_name="") {
 
 	// TODO: move total_rows property somewhere that makes more sense
 	if ($settings) {
-		$settings = $settings->make_builder()->total_rows($num_rows)->build();
+		$settings = $settings->make_builder()
+			->total_rows($num_rows)
+			->build();
 	}
 	else
 	{
-		$settings = DataTableSettingsBuilder::create()->total_rows($num_rows)->build();
+		$settings = DataTableSettingsBuilder::create()
+			->total_rows($num_rows)
+			->build();
 	}
 
 
@@ -221,7 +235,9 @@ function paginate_iterator($iterator, $state, &$settings, $table_name="") {
 	}
 	else
 	{
-		$settings = $settings->make_builder()->total_rows($row_count)->build();
+		$settings = $settings->make_builder()
+			->total_rows($row_count)
+			->build();
 	}
 
 	return $iterator;
@@ -258,7 +274,10 @@ function create_table_from_database($sql, $state, $submit_url="", $radio_column_
 	$data_columns = create_columns_from_database($paginated_res);
 
 	if ($radio_column_key !== "") {
-		$checkbox_column = DataTableColumnBuilder::create()->cell_formatter(new DataTableRadioFormatter())->column_key($radio_column_key)->build();
+		$checkbox_column = DataTableColumnBuilder::create()
+			->cell_formatter(new DataTableRadioFormatter())
+			->column_key($radio_column_key)
+			->build();
 		$columns = array_merge(array($checkbox_column), $data_columns);
 	}
 	else
@@ -269,11 +288,21 @@ function create_table_from_database($sql, $state, $submit_url="", $radio_column_
 
 	$widgets = array();
 	if ($submit_url !== "") {
-		$button = DataTableButtonBuilder::create()->text("Submit")->behavior(new DataTableBehaviorSubmit())->form_action($submit_url)->build();
+		$button = DataTableButtonBuilder::create()
+			->text("Submit")
+			->behavior(new DataTableBehaviorSubmit())
+			->form_action($submit_url)
+			->build();
 		$widgets[] = $button;
 	}
 
-	$table = DataTableBuilder::create()->rows($rows)->columns($columns)->settings($settings)->widgets($widgets)->empty_message("No rows in table")->build();
+	$table = DataTableBuilder::create()
+		->rows($rows)
+		->columns($columns)
+		->settings($settings)
+		->widgets($widgets)
+		->empty_message("No rows in table")
+		->build();
 	return $table;
 }
 
@@ -297,6 +326,9 @@ function create_data_form_from_database($sql, $state, $submit_url=null, $radio_c
 	// chop off query string. Since the form data goes into the query string leaving it there will complicate things
 	$this_url = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
 
-	$form = DataFormBuilder::create($state->get_form_name())->remote($this_url)->tables(array($table))->build();
+	$form = DataFormBuilder::create($state->get_form_name())
+		->remote($this_url)
+		->tables(array($table))
+		->build();
 	return $form;
 }

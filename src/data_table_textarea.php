@@ -43,7 +43,7 @@ class DataTableTextarea implements IDataTableWidget {
 		$this->label = $builder->get_label();
 	}
 
-	public function display($form_name, $form_method, $state)
+	public function display($form_name, $form_method, $remote_url, $state)
 	{
 		if ($this->name !== "") {
 			$name_array = array($this->name);

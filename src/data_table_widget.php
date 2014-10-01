@@ -20,13 +20,14 @@ interface IDataTableWidget {
 	 *
 	 * @param $form_name string Name of form
 	 * @param $form_method string GET or POST
+	 * @param $remote_url string
 	 * @param $state DataFormState State which may contain widget state
 	 * @return string HTML
 	 */
-	public function display($form_name, $form_method, $state);
+	public function display($form_name, $form_method, $remote_url, $state);
 
 	/**
-	 * Describes where widget will be rendered relative to textbox
+	 * Describes where widget will be rendered relative to containing DataTable
 	 *
 	 * @return string See IDataTableWidget constants for possible values
 	 */
@@ -64,10 +65,10 @@ class CallbackWidget implements IDataTableWidget {
 		$this->placement = $placement;
 	}
 
-	public function display($form_name, $form_method, $state)
+	public function display($form_name, $form_method, $remote_url, $state)
 	{
 		$callback = $this->callback;
-		return $callback($form_name, $form_method, $state);
+		return $callback($form_name, $form_method, $remote_url, $state);
 	}
 
 	public function get_placement()
@@ -116,7 +117,7 @@ class CustomWidget implements IDataTableWidget {
 		return new CustomWidget($html, $placement);
 	}
 
-	public function display($form_name, $form_method, $state)
+	public function display($form_name, $form_method, $remote_url, $state)
 	{
 		return $this->html;
 	}

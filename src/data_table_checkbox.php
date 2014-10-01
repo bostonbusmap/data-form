@@ -82,7 +82,7 @@ class DataTableCheckbox implements IDataTableWidget {
 		$this->label_on_right = $builder->get_label_on_right();
 	}
 
-	public function display($form_name, $form_method, $state)
+	public function display($form_name, $form_method, $remote_url, $state)
 	{
 		if ($this->as_array) {
 			$name_array = array($this->name, $this->array_key);
@@ -118,19 +118,15 @@ class DataTableCheckbox implements IDataTableWidget {
 		if ($state && $state->has_item($name_array)) {
 			$checked_item = $state->find_item($name_array);
 
-			$checked = ((string)$column_data === (string)$checked_item ? "checked" : "");
+			$checked = (string)$column_data === (string)$checked_item;
 		}
 		else
 		{
 			if ($column_data instanceof Selected) {
-				$checked = ($column_data->is_selected() ? "checked" : "");
+				$checked = $column_data->is_selected();
 			}
-			elseif ($checked_by_default) {
-				$checked = "checked";
-			}
-			else
-			{
-				$checked = "";
+			else {
+				$checked = $checked_by_default;
 			}
 		}
 
@@ -147,7 +143,13 @@ class DataTableCheckbox implements IDataTableWidget {
 			$ret .= '<label for="' . htmlspecialchars($input_name) . '">' . $label . '</label>';
 		}
 
-		$ret .= '<input type="checkbox" id="' . htmlspecialchars($input_name) . '" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" onclick="' . htmlspecialchars($onclick) . '" ' . $checked . ' />';
+		if ($checked) {
+			$checked_html = 'checked="checked"';
+		}
+		else {
+			$checked_html = '';
+		}
+		$ret .= '<input type="checkbox" id="' . htmlspecialchars($input_name) . '" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" onclick="' . htmlspecialchars($onclick) . '" ' . $checked_html . ' />';
 
 		if ($label !== "" && $label_on_right) {
 			$ret .= '<label for="' . htmlspecialchars($input_name) . '">' . $label . '</label>';
@@ -164,7 +166,7 @@ class DataTableCheckbox implements IDataTableWidget {
 			// If not checked we don't want to display this because it's unnecessary and will add many hidden fields
 			// to a form. We only want to cover the case where a checked item is unchecked.
 			$blank_name = array_merge(DataFormState::get_blanks_key(), $name_array);
-			$ret .= DataTableHidden::display_hidden($form_name, $state, $blank_name, "");
+			$ret .= DataTableHidden::display_hidden($form_name, $blank_name, DataFormState::make_field_name($form_name, $blank_name), "", '');
 		}
 
 		return $ret;

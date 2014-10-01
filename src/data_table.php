@@ -59,7 +59,7 @@ require_once "writer.php";
  * from $sql_field_names or a row in $rows.
  *
  */
-class DataTable
+class DataTable implements IDataTableWidget
 {
 	/**
 	 * @var string Allows for table-specific state. Optional
@@ -100,6 +100,11 @@ class DataTable
 	protected $selected_items_column;
 
 	/**
+	 * @var string If contained in another table, placement relative to that table
+	 */
+	protected $placement;
+
+	/**
 	 * @param DataTableBuilder $builder
 	 * @throws Exception
 	 */
@@ -117,6 +122,7 @@ class DataTable
 		$this->header = $builder->get_header();
 		$this->empty_message = $builder->get_empty_message();
 		$this->selected_items_column = $builder->get_selected_items_column();
+		$this->placement = $builder->get_placement();
 	}
 
 	/**
@@ -176,7 +182,7 @@ class DataTable
 		// display top buttons
 		foreach ($this->widgets as $widget) {
 			if ($widget->get_placement() == DataTableButton::placement_top) {
-				$writer->write($widget->display($form_name, $form_method, $state) . " ");
+				$writer->write($widget->display($form_name, $form_method, $remote_url, $state) . " ");
 			}
 		}
 
@@ -246,7 +252,7 @@ class DataTable
 		// write buttons at bottom of table
 		foreach ($this->widgets as $widget) {
 			if ($widget->get_placement() == DataTableButton::placement_bottom) {
-				$writer->write($widget->display($form_name, $form_method, $state) . " ");
+				$writer->write($widget->display($form_name, $form_method, $remote_url, $state) . " ");
 			}
 		}
 	}
@@ -404,9 +410,6 @@ class DataTable
 			}
 			// display special header cell if specified
 
-			if ($column->get_sortable() && $remote_url) {
-				$ret .= "</a>";
-			}
 			$ret .= "</th>";
 		}
 		$ret .= "</tr>";
@@ -563,5 +566,28 @@ class DataTable
 	public function get_settings()
 	{
 		return $this->settings;
+	}
+
+	/**
+	 * Returns HTML to display table as widget.
+	 *
+	 * @param $form_name string Name of form
+	 * @param $form_method string GET or POST
+	 * @param $remote_url
+	 * @param $state DataFormState State which may contain widget state
+	 * @return string HTML
+	 */
+	public function display($form_name, $form_method, $remote_url, $state)
+	{
+		return $this->display_table($form_name, $form_method, $remote_url, $state);
+	}
+
+	/**
+	 * Describes where widget will be rendered relative to textbox
+	 * @return string
+	 */
+	public function get_placement()
+	{
+		return $this->placement;
 	}
 }

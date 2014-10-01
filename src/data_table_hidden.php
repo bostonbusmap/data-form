@@ -29,30 +29,24 @@ class DataTableHidden implements IDataTableWidget {
 		$this->name = $builder->get_name();
 	}
 
-	/**
-	 * Renders hidden field
-	 *
-	 * @param $form_name string Name of form
-	 * @param $form_method string GET or POST
-	 * @param $state DataFormState
-	 * @return string HTML
-	 */
-	public function display($form_name, $form_method, $state)
+	public function display($form_name, $form_method, $remote_url, $state)
 	{
-		return self::display_hidden($form_name, $state, array($this->name), $this->value);
+		return self::display_hidden($form_name, array($this->name), DataFormState::make_field_name($form_name, array($this->name)), $this->value, '');
 	}
 
 	/**
 	 * Returns hidden input field with either whatever's in $state or otherwise $default_value
 	 *
 	 * @param $form_name string Name of form
-	 * @param $state DataFormState State of form
 	 * @param $name_array string[] Array of names which will become the field name, like form_name[a1][a2][a3]...
+	 * @param $id
 	 * @param $default_value string Value if no value in state
 	 * @param $class string Optional class attribute
+	 * @throws Exception
+	 * @internal param DataFormState $state State of form
 	 * @return string HTML
 	 */
-	public static function display_hidden($form_name, $state, $name_array, $default_value, $class = "") {
+	public static function display_hidden($form_name, $name_array, $id, $default_value, $class) {
 		$qualified_name = DataFormState::make_field_name($form_name, $name_array);
 
 		// NOTE: if something uses Javascript to update a hidden field, we would need
@@ -60,7 +54,7 @@ class DataTableHidden implements IDataTableWidget {
 		// instead of what's in $state
 		$value = $default_value;
 
-		$ret = '<input type="hidden" class="' . htmlspecialchars($class) . '" id="' . htmlspecialchars($qualified_name) . '" name="' . htmlspecialchars($qualified_name) . '" value="' . htmlspecialchars($value) . '" />';
+		$ret = '<input type="hidden" class="' . htmlspecialchars($class) . '" id="' . htmlspecialchars($id) . '" name="' . htmlspecialchars($qualified_name) . '" value="' . htmlspecialchars($value) . '" />';
 		return $ret;
 	}
 

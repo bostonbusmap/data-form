@@ -20,6 +20,10 @@ class DataTableLinkBuilder {
 	protected $link;
 	/** @var  string Name of form element */
 	protected $name;
+	/**
+	 * @var string Value to submit
+	 */
+	protected $value;
 	/** @var  IDataTableBehavior What happens when link is clicked */
 	protected $behavior;
 	/** @var  string Where link goes relative to DataTable */
@@ -65,6 +69,17 @@ class DataTableLinkBuilder {
 	 */
 	public function name($name) {
 		$this->name = $name;
+		return $this;
+	}
+
+	/**
+	 * Value for field
+	 *
+	 * @param $value string
+	 * @return DataTableLinkBuilder
+	 */
+	public function value($value) {
+		$this->value = $value;
 		return $this;
 	}
 
@@ -119,6 +134,13 @@ class DataTableLinkBuilder {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function get_value() {
+		return $this->value;
+	}
+
+	/**
 	 * @return IDataTableBehavior
 	 */
 	public function get_behavior() {
@@ -151,6 +173,10 @@ class DataTableLinkBuilder {
 		}
 		if (!is_string($this->name)) {
 			throw new Exception("name must be a string");
+		}
+
+		if (!is_string($this->value)) {
+			$this->value = (string)$this->value;
 		}
 
 		if (is_null($this->text)) {

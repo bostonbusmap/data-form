@@ -47,7 +47,6 @@ function make_form($state) {
 	$buttons = array();
 	$buttons[] = DataTableButtonBuilder::create()
 		->text("Continue >>")
-		->name("submit")
 		->form_action($next_url)
 		->behavior(new DataTableBehaviorSubmit())
 		->build();

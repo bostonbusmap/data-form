@@ -80,6 +80,9 @@ class DataTableBehaviorSubmit implements IDataTableBehavior {
 		$form_params = $this->form_params;
 		$form_params["action"] = $form_action;
 		$form_params["method"] = $form_method;
+		if (!array_key_exists('type', $form_params)) {
+			$form_params["type"] = "submit";
+		}
 		if (!array_key_exists("target", $form_params)) {
 			$form_params["target"] = "";
 		}
@@ -89,29 +92,50 @@ class DataTableBehaviorSubmit implements IDataTableBehavior {
 			"params" => $this->params
 		);
 
-		return 'return DataForm.submit(this, event, ' . json_encode($options) . ');';
+		return 'DataForm.submit(this, event, ' . json_encode($options) . ');';
 	}
 }
 
 /**
  * Use AJAX to validate form, then submit form if validation succeeded, else display errors in flash area.
- *
- * TODO: change name to ValidateAndSubmit when convenient
  */
 class DataTableBehaviorValidateThenSubmit implements IDataTableBehavior {
 	/** @var  string */
 	protected $validation_url;
-	public function __construct($validation_url) {
+	/**
+	 * @var array
+	 */
+	protected $params;
+
+	/**
+	 * @var array
+	 */
+	protected $form_params;
+
+	/**
+	 * @param $validation_url string URL for requesting validation
+	 * @param array $params parameters where key is attribute name on form, value is value for attribute
+	 * @param array $form_params parameters where key is ID of hidden input field, value is the value attribute
+	 * @throws Exception
+	 */
+	public function __construct($validation_url, $params=array(), $form_params=array()) {
 		if (!$validation_url || !is_string($validation_url)) {
 			throw new Exception("validation_url must be a non-empty string");
 		}
+		if (!is_array($params)) {
+			throw new Exception("params must be array");
+		}
+		if (!is_array($form_params)) {
+			throw new Exception("form_params must be an array");
+		}
 		$this->validation_url = $validation_url;
+		$this->params = $params;
+		$this->form_params = $form_params;
 	}
 
 	function action($form_name, $form_action, $form_method)
 	{
 		$validate_name = DataFormState::make_field_name($form_name, DataFormState::only_validate_key());
-		$params = array($validate_name => "true");
 
 		$method = strtolower($form_method);
 		if ($method != "post" && $method != "get") {
@@ -119,13 +143,22 @@ class DataTableBehaviorValidateThenSubmit implements IDataTableBehavior {
 		}
 		$flash_name = $form_name . "_flash";
 
+		$form_params = $this->form_params;
+		$form_params["action"] = $form_action;
+		$form_params["method"] = $form_method;
+		// set type to something other than 'submit' so that we force '$form.submit()' to be used
+		$form_params["type"] = "";
+		if (!array_key_exists("target", $form_params)) {
+			$form_params["target"] = "";
+		}
+
 		// form_action, method, validation_url, flash_name, params
 		$options = array(
-			"form_action" => $form_action,
-			"form_method" => $form_method,
 			"validation_url" => $this->validation_url,
 			"flash_name" => $flash_name,
-			"params" => $params
+			"params" => $this->params,
+			"form_params" => $form_params,
+			"validation_key" => $validate_name
 		);
 
 

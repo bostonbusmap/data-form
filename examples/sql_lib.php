@@ -13,6 +13,7 @@ require_once "../../../../../lib/main_lib.php";
 require_once FILE_BASE_PATH . "/www/browser/lib/data_table/data_form.php";
 require_once FILE_BASE_PATH . "/www/browser/lib/data_table/sql_builder.php";
 require_once FILE_BASE_PATH . "/lib/database_iterator.php";
+require_once FILE_BASE_PATH . "/lib/output_lib.php";
 
 /**
  * Return SQL showing the searches for the logged in user
@@ -72,10 +73,6 @@ function make_organisms_form($state, $this_url) {
 	// Define the pieces of HTML which surround the DataTable
 	$widgets = array();
 
-	// Make the field name for 'selected_only', which will be 'searches[selected_only]'
-	// We need that field name to use it in an AJAX request to export rows
-	$selected_only_name = DataFormState::make_field_name($state->get_form_name(), array("selected_only"));
-
 	// Make two links: Export all rows and Export selected rows
 	// The difference between them is the value we set for the field name we just defined
 
@@ -84,13 +81,17 @@ function make_organisms_form($state, $this_url) {
 	$widgets[] = DataTableLinkBuilder::create()
 		->text("Export all rows")
 		->link("sql_export.php")
-		->behavior(new DataTableBehaviorSubmit(array($selected_only_name => false)))
+		->name("export_all_rows")
+		->value(true)
+		->behavior(new DataTableBehaviorSubmit())
 		->build();
 	$widgets[] = CustomWidget::create("<br />");
 	$widgets[] = DataTableLinkBuilder::create()
 		->text("Export selected rows")
 		->link("sql_export.php")
-		->behavior(new DataTableBehaviorSubmit(array($selected_only_name => true)))
+		->name("export_selected_rows")
+		->value(true)
+		->behavior(new DataTableBehaviorSubmit())
 		->build();
 	$widgets[] = CustomWidget::create("<br />");
 	$widgets[] = DataTableButtonBuilder::create()
@@ -99,7 +100,9 @@ function make_organisms_form($state, $this_url) {
 		->build();
 
 	// We need to have a hidden field to set so the value is passed when submitting the form.
-	$widgets[] = DataTableHiddenBuilder::create()->name("selected_only")->build();
+	$widgets[] = DataTableHiddenBuilder::create()
+		->name("selected_only")
+		->build();
 
 
 	// Create a DataTable from the variables we defined.
@@ -129,7 +132,7 @@ function make_organisms_form($state, $this_url) {
  */
 function export_rows($state) {
 	// cast string to boolean
-	$selected_only = filter_var($state->find_item(array("selected_only")), FILTER_VALIDATE_BOOLEAN);
+	$selected_only = filter_var($state->find_item(array("export_selected_rows")), FILTER_VALIDATE_BOOLEAN);
 
 	// selected_items is a list of search ids
 	$selected_items = $state->find_item(array("organism_id"));
@@ -154,64 +157,20 @@ function export_rows($state) {
 	// make a new SQL query that accounts for these concerns
 	$query = $sql_builder->build();
 
-	// Prepare to write TSV to output
-	header("Content-Disposition: attachment; filename=\"export_searches.tsv\"");
-	header("Content-Type: text/tab-delimited-values");
-
 	// Make data set, filtering selected rows manually
-	// We could filter in SQL instead if the number of rows became a problem
-	$headers = array("organism_name", "organism_scientific");
 	$rows = array();
 	foreach (new DatabaseIterator($query) as $row) {
 		$search_id = (string)$row["organism_id"];
 
 		// if 'Export all rows' or if nothing is selected, or if we're on a selected item
 		if (!$selected_only || !$selected_items || in_array($search_id, $selected_items)) {
-			$rows[] = array($row["organism_name"], $row["organism_scientific"]);
+			$rows[] = array(
+				"organism_name" => $row["organism_name"],
+				"organism_scientific" => $row["organism_scientific"]
+			);
 		}
 	}
 
 	// write TSV
-	$stdout = fopen("php://output", "w");
-	fwritetsv($stdout, $rows, $headers);
-}
-
-/**
- * Write a TSV to a file. Exception is thrown on failure
- *
- * Originally from tmt_stats/lib/util.php
- *
- * @param $f resource Opened file resource
- * @param $data array Rows of data as array of arrays
- * @param $headers string[] Headers to write
- * @throws Exception
- */
-function fwritetsv($f, $data, $headers) {
-	if (!$f || !is_resource($f)) {
-		throw new Exception("f must be a resource");
-	}
-	if (!$headers) {
-		throw new Exception("Headers are missing");
-	}
-	if (!is_array($headers)) {
-		throw new Exception("headers must be an array");
-	}
-	if (!is_array($data)) {
-		throw new Exception("data must be an array");
-	}
-
-	fwrite($f, join("\t", $headers));
-	fwrite($f, "\n");
-
-	$row_count = 0;
-	foreach ($data as $row) {
-		if (count($row) != count($headers)) {
-			throw new Exception("row #" . ($row_count + 1) . " has " . count($row) . " columns but header has " . count($headers) . " columns");
-		}
-
-		fwrite($f, join("\t", $row));
-		fwrite($f, "\n");
-
-		$row_count++;
-	}
+	Output::write_tsv($rows, "export_searches.tsv");
 }

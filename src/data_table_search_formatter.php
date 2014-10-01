@@ -68,7 +68,7 @@ class TextboxSearchFormatter implements IDataTableSearchFormatter {
 		$type_key = array_merge($searching_state_key, array($column_key, DataTableSearchState::type_key));
 		$params_key = array_merge($searching_state_key, array($column_key, DataTableSearchState::params_key, "0"));
 
-		$ret = DataTableHidden::display_hidden($form_name, $state, $type_key, $default_type);
+		$ret = DataTableHidden::display_hidden($form_name, $type_key, DataFormState::make_field_name($form_name, $type_key), $default_type, '');
 		$ret .= DataTableTextbox::display_textbox($form_name, $params_key, $form_action, $form_method, new DataTableBehaviorRefresh(), $default_param, $label, $state);
 
 		return $ret;

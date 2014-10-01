@@ -432,13 +432,13 @@ class FilterTreeTransform  implements ISQLTreeTransform
 						} elseif ($type === DataTableSearchState::rlike) {
 							$phrase = " $column_base_expr RLIKE '$escaped_value' ";
 						} elseif ($type === DataTableSearchState::less_than) {
-							$phrase = " ($column_base_expr)-0.0 < $escaped_value ";
+							$phrase = " ($column_base_expr)-0.0 < '$escaped_value' ";
 						} elseif ($type === DataTableSearchState::less_or_equal) {
-							$phrase = " ($column_base_expr)-0.0  <= $escaped_value ";
+							$phrase = " ($column_base_expr)-0.0  <= '$escaped_value' ";
 						} elseif ($type === DataTableSearchState::greater_than) {
-							$phrase = " ($column_base_expr)-0.0  > $escaped_value ";
+							$phrase = " ($column_base_expr)-0.0  > '$escaped_value' ";
 						} elseif ($type === DataTableSearchState::greater_or_equal) {
-							$phrase = " ($column_base_expr)-0.0  >= $escaped_value ";
+							$phrase = " ($column_base_expr)-0.0  >= '$escaped_value' ";
 						} elseif ($type === DataTableSearchState::equal) {
 							if (is_numeric($escaped_value)) {
 								$phrase = " $column_base_expr = $escaped_value ";

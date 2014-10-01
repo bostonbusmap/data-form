@@ -77,10 +77,11 @@ class DataTableSearchWidget implements IDataTableWidget {
 	 *
 	 * @param $form_name string Name of form
 	 * @param $form_method string GET or POST
+	 * @param DataFormState $remote_url
 	 * @param $state DataFormState
 	 * @return string HTML
 	 */
-	public function display($form_name, $form_method, $state)
+	public function display($form_name, $form_method, $remote_url, $state)
 	{
 		return $this->formatter->format($form_name, $this->form_action, $form_method, $this->table_name, $this->column_key, $state, $this->default_value, $this->label);
 	}

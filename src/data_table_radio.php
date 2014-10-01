@@ -102,33 +102,35 @@ class DataTableRadio implements IDataTableWidget {
 	{
 		if ($state && !is_null($state->find_item($name_array))) {
 			$selected_item = $state->find_item($name_array);
-			$checked = ((string)$selected_item === (string)$column_data) ? "checked" : "";
+			$checked = ((string)$selected_item === (string)$column_data);
 		}
 		else
 		{
 			$selected_item = null;
 			if ($column_data instanceof Selected) {
-				$checked = ($column_data->is_selected() ? "checked" : "");
+				$checked = $column_data->is_selected();
 			}
-			elseif ($checked_by_default) {
-				$checked = "checked";
-			}
-			else
-			{
-				$checked = "";
+			else {
+				$checked = $checked_by_default;
 			}
 		}
 		$input_name = DataFormState::make_field_name($form_name, $name_array);
 
+		if ($checked) {
+			$checked_html = 'checked="checked"';
+		}
+		else {
+			$checked_html = '';
+		}
 		$ret = "";
 		if ($label !== "") {
 			$ret .= '<label for="' . htmlspecialchars($id_name) . '">' . $label . '</label>';
 		}
-		$ret .= '<input type="radio" id="' . htmlspecialchars($id_name) . '" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" ' . $checked . ' />';
+		$ret .= '<input type="radio" id="' . htmlspecialchars($id_name) . '" name="' . htmlspecialchars($input_name) . '" value="' . htmlspecialchars($column_data) . '" ' . $checked_html . ' />';
 		return $ret;
 	}
 
-	public function display($form_name, $form_method, $state)
+	public function display($form_name, $form_method, $remote_url, $state)
 	{
 		return self::format_radio($form_name, $form_method, array($this->name), $this->id, $this->value, $this->checked_by_default, $state, $this->label);
 	}

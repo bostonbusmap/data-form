@@ -107,7 +107,6 @@ function make_form($state) {
 	// sorting links are clicked.
 	$buttons = array();
 	$buttons[] = DataTableButtonBuilder::create()
-		->name("refresh")
 		->text("(x * ?) % 7")
 		->form_action($this_url)
 		->behavior(new DataTableBehaviorRefresh())

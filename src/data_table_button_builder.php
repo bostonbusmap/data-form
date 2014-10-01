@@ -20,6 +20,8 @@ class DataTableButtonBuilder {
 	protected $type;
 	/** @var  string Name of form element */
 	protected $name;
+	/** @var  string Value of button */
+	protected $value;
 	/** @var  string URL to submit to */
 	protected $form_action;
 	/** @var  IDataTableBehavior What happens when button is clicked */
@@ -63,6 +65,15 @@ class DataTableButtonBuilder {
 	 */
 	public function name($name) {
 		$this->name = $name;
+		return $this;
+	}
+
+	/**
+	 * @param $value string
+	 * @return DataTableButtonBuilder
+	 */
+	public function value($value) {
+		$this->value = $value;
 		return $this;
 	}
 
@@ -126,6 +137,13 @@ class DataTableButtonBuilder {
 	/**
 	 * @return string
 	 */
+	public function get_value() {
+		return $this->value;
+	}
+
+	/**
+	 * @return string
+	 */
 	public function get_form_action() {
 		return $this->form_action;
 	}
@@ -165,11 +183,15 @@ class DataTableButtonBuilder {
 			throw new Exception("name must be a string");
 		}
 
-		if (is_null($this->text)) {
-			$this->text = "";
-		}
 		if (!is_string($this->text)) {
 			$this->text = (string)$this->text;
+		}
+
+		if (!is_string($this->value)) {
+			$this->value = (string)$this->value;
+		}
+		if ($this->value !== "" && $this->name === "") {
+			throw new Exception("If value is specified, name must be specified too");
 		}
 
 		if (is_null($this->type)) {

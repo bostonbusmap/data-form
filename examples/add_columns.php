@@ -90,20 +90,21 @@ function make_form($state) {
 	// add Add Column and Remove Column buttons
 	$widgets = array();
 
-	$num_columns_name = DataFormState::make_field_name($form_name, array("num_columns"));
-	$add_column_behavior = new DataTableBehaviorRefresh(array($num_columns_name => ($num_columns + 1)));
 	$widgets[] = DataTableButtonBuilder::create()
 		->text("Add Column")
+		->name("num_columns")
+		->value((string)($num_columns + 1))
 		->form_action($this_url)
-		->behavior($add_column_behavior)
+		->behavior(new DataTableBehaviorRefresh())
 		->build();
 
 	if ($num_columns > 2) {
-		$remove_column_behavior = new DataTableBehaviorRefresh(array($num_columns_name => ($num_columns - 1)));
 		$widgets[] = DataTableButtonBuilder::create()
 			->text("Remove Column")
+			->name("num_columns")
+			->value((string)($num_columns - 1))
 			->form_action($this_url)
-			->behavior($remove_column_behavior)
+			->behavior(new DataTableBehaviorRefresh())
 			->build();
 	}
 

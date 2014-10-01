@@ -51,6 +51,11 @@ class DataTableBuilder {
 	private $selected_items_column;
 
 	/**
+	 * @var string If displaying as a widget of another table, placement next to the containing table.
+	 */
+	private $placement;
+
+	/**
 	 * This is like the constructor but allows for chaining of methods
 	 * (ie, DataTableBuilder::create_builder()->buttons($buttons)->build())
 	 * @return DataTableBuilder
@@ -167,6 +172,15 @@ class DataTableBuilder {
 	}
 
 	/**
+	 * @param $placement string If displaying as a widget of another table, placement next to the containing table.
+	 * @return DataTableBuilder
+	 */
+	public function placement($placement) {
+		$this->placement = $placement;
+		return $this;
+	}
+
+	/**
 	 * @return string Name of table
 	 */
 	public function get_table_name() {
@@ -241,6 +255,10 @@ class DataTableBuilder {
 	 */
 	public function get_selected_items_column() {
 		return $this->selected_items_column;
+	}
+
+	public function get_placement() {
+		return $this->placement;
 	}
 
 	/**
@@ -343,6 +361,14 @@ class DataTableBuilder {
 		}
 		if (!is_string($this->selected_items_column)) {
 			throw new Exception("selected_items_column must be a string column key");
+		}
+
+		if ($this->placement === null) {
+			$this->placement = IDataTableWidget::placement_top;
+		}
+		if ($this->placement !== IDataTableWidget::placement_top &&
+			$this->placement !== IDataTableWidget::placement_bottom) {
+			throw new Exception("placement must be 'top' or 'bottom'");
 		}
 
 		return new DataTable($this);

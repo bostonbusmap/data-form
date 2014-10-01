@@ -111,6 +111,7 @@ function make_form($state) {
 
 	// Figure out pagination from default $settings
 	// and user provided $state
+	$settings = DataTableSettingsBuilder::create()->build();
 	$pagination_info = DataFormState::make_pagination_info($state, $settings);
 
 	if ($pagination_info->get_limit() === 0) {

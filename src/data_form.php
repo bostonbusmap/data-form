@@ -319,7 +319,7 @@ class DataForm {
 				throw new Exception("error must be a string");
 			}
 			if ($error) {
-				$errors[] = '<span class="error">' . htmlspecialchars($error) . "</span>";
+				$errors[] = $error;
 			}
 		}
 		if ($errors) {

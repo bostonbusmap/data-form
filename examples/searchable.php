@@ -87,7 +87,6 @@ function make_form($state) {
 	$buttons = array();
 	$buttons[] = DataTableButtonBuilder::create()
 		->text("Refresh")
-		->name("refresh")
 		->form_action($this_url)
 		->behavior(new DataTableBehaviorRefresh())
 		->build();
